@@ -1,0 +1,21 @@
+order_id,address,delivery_time,delivery_price,returned,actual_shipping_cost
+O0010,16566 Shields Center,5,13.94,True,13.62
+O0006,65133 Amanda Dam,2,13.94,True,12.49
+O0015,47317 Brent Plains Apt. 132,4,13.94,True,11.68
+O0011,7360 Nicholas Loaf Suite 746,2,13.94,True,12.17
+O0005,34309 Julie Centers Apt. 978,6,13.94,False,16.36
+O0001,81219 Emma Freeway,3,13.94,True,14.71
+O0008,93990 Robert Prairie Suite 435,1,13.94,True,14.03
+O0012,6247 Hickman Cliffs,3,13.94,True,14.82
+O0012,9911 William Curve,4,13.94,True,13.58
+O0005,35427 Carr Valley Apt. 841,2,13.94,True,15.22
+O0007,1182 Campbell Fords,2,13.94,False,11.42
+O0004,48740 Cynthia Village Suite 005,5,13.94,True,14.31
+O0006,427 Hoffman Creek,2,13.94,True,12.04
+O0013,280 Aguilar Drive,5,13.94,True,11.82
+O0020,04505 Evelyn Shores Apt. 586,6,13.94,True,13.06
+O0015,22602 Patton Loop,1,13.94,True,11.66
+O0003,2160 Walker Viaduct,4,13.94,True,11.68
+O0008,4330 Raymond Harbors Apt. 458,5,13.94,True,12.89
+O0020,850 Natalie Green Apt. 940,1,13.94,True,16.61
+O0016,655 Obrien Pass,2,13.94,False,12.13
