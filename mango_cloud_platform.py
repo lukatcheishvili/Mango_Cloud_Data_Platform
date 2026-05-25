@@ -185,7 +185,7 @@ with st.sidebar:
     <div style='font-size:10px; color:#2a4060; text-align:center; line-height:1.7'>
       IE University · MBD-EN2025<br>
       Cloud Analytics · Group Work B<br>
-      Due: Feb 27, 2026
+      Due: June 19, 2026
     </div>
     """, unsafe_allow_html=True)
 
