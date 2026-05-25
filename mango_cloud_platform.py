@@ -7,7 +7,7 @@ import os
 
 # ── Page Config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Manga Cloud Platform · RFP Response",
+    page_title="Mango Retail · AWS Cloud Data Platform",
     page_icon="🛍️",
     layout="wide",
     initial_sidebar_state="expanded",
