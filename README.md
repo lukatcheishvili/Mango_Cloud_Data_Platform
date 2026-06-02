@@ -14,6 +14,13 @@
 
 **[https://manga-cloud-platform.streamlit.app/](https://manga-cloud-platform.streamlit.app/)**
 
+### 📐 Architecture Diagrams (Figma)
+
+| Diagram | Link |
+|---|---|
+| 🗺️ High-Level Architecture | **[View in FigJam](https://www.figma.com/board/UtHLPjygSysLe43cpzNCAp)** |
+| ⚙️ Low-Level AWS Architecture | **[View in FigJam](https://www.figma.com/board/mvaVaoJErDBqNXt114FPqU)** |
+
 ---
 
 ## Overview
