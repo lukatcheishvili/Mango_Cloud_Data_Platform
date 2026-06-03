@@ -109,6 +109,24 @@ DATA SOURCES          CATALOGING & SEARCH (bidirectional ↔ Processing)
 
 ---
 
+## 🎨 Design System
+
+All visual work (Streamlit app, Figma diagrams) must follow **`DESIGN.md`** in the repo root.
+It covers:
+- Color tokens (canvas, surfaces, accent, semantic colors, gradient accents)
+- Typography scale (sizes, weights, letter-spacing per role)
+- Spacing system (5px base unit)
+- Border radius scale
+- Card, badge, navigation component patterns
+- Plotly chart styling rules
+- Architecture diagram node colors per layer
+- HTML interactive diagram CSS
+- Do's and Don'ts for consistency
+
+**Never introduce a new color, font size, or spacing value that isn't in `DESIGN.md`.**
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -117,6 +135,7 @@ Mango_Cloud_Data_Platform/
 ├── requirements.txt               # Python dependencies (streamlit, pandas, plotly)
 ├── README.md                      # Project overview and documentation
 ├── CLAUDE.md                      # ← THIS FILE — AI context and project state
+├── DESIGN.md                      # Design system — colors, typography, spacing, components
 ├── sales_sample.csv               # POS / e-commerce transactions
 ├── customers_sample.csv           # CRM / loyalty data (contains PII)
 ├── inventory_sample.csv           # ERP / WMS stock levels
@@ -239,21 +258,3 @@ Requirements: `streamlit>=1.32.0`, `pandas>=2.0.0`, `plotly>=5.18.0`
 | Redshift + S3 (not Snowflake) | Stays within AWS ecosystem; Spectrum allows querying S3 without loading |
 | Three-zone lakehouse (Raw/Curated/Gold) | Industry standard; Raw enables full reprocessing; PII masking at Curated boundary |
 | CloudTrail for GDPR | Immutable audit logs required for Right of Access / Right to Erasure compliance |
-
----
-
-## 🔄 How to Update This File
-
-When you push changes, update the relevant section(s):
-
-- **Fixed a bug or improved a feature** → update "What Has Been Completed" and check off any tasks in "Remaining Tasks"
-- **Added a new feature or page** → update "App Structure" and "What Has Been Completed"
-- **Made an architectural decision** → add a row to "Important Decisions & Rationale"
-- **Identified new work** → add to "Remaining Tasks" under the appropriate priority
-- **Changed a file or added a new one** → update "Repository Structure"
-
-A GitHub Action will warn you on every push if you forgot to update this file.
-
----
-
-*Last updated: 2026-06-03 | Updated by: Luka Tcheishvili*
