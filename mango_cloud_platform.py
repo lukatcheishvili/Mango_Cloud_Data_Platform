@@ -69,6 +69,20 @@ header[data-testid="stHeader"]{{display:none}}
 [data-testid="stTabs"] button[aria-selected="true"]{{color:{INK}!important;border-bottom:2px solid {ACCENT}!important}}
 [data-testid="stDataFrame"]{{border:1px solid {HAIR};border-radius:8px}}
 hr{{border-color:{HAIR}!important}}
+/* Hide sidebar — use top nav instead */
+[data-testid="collapsedControl"]{{display:none!important}}
+section[data-testid="stSidebar"]{{display:none!important}}
+/* Style all nav buttons */
+div[data-testid="stHorizontalBlock"] .stButton>button{{
+    background:transparent!important;border:1px solid {HAIR}!important;
+    color:{INK_M}!important;border-radius:100px!important;
+    padding:4px 0!important;font-size:11px!important;font-weight:500!important;
+    font-family:'Inter',sans-serif!important;transition:all .15s!important;
+    min-height:0!important;line-height:1.5!important;
+}}
+div[data-testid="stHorizontalBlock"] .stButton>button:hover{{
+    background:{SURF1}!important;border-color:{ACCENT}!important;color:{INK}!important;
+}}
 </style>""", unsafe_allow_html=True)
 
 # ── DATA LOADER ─────────────────────────────────────────────────────────────
@@ -299,39 +313,84 @@ LLA_EDGES = [
     (4.4,0.67,7.5,0.67),  # SageMaker → API Gateway (serve results)
 ]
 
-# ── SIDEBAR ─────────────────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown(f"""
-    <div style='text-align:center;padding:14px 0 20px'>
-      <div style='font-size:26px'>🛍️</div>
-      <div style='font-size:13px;font-weight:800;color:{INK};letter-spacing:-.5px;margin-top:4px'>Manga Cloud Platform</div>
-      <div style='font-size:9px;color:{INK_F};letter-spacing:.1em;text-transform:uppercase;margin-top:3px'>RFP Response · AWS Proposal</div>
-    </div>""", unsafe_allow_html=True)
+# ── SESSION STATE ───────────────────────────────────────────────────────────
+if "page" not in st.session_state:
+    st.session_state.page = "overview"
 
-    pages = {
-        "🏠  Overview":                "overview",
-        "📐  High-Level Architecture": "hla",
-        "⚙️  Low-Level Architecture":  "lla",
-        "🗄️  Data Sources":            "data",
-        "📊  Data Insights":           "insights",
-        "✅  Requirements Coverage":   "reqs",
-        "💡  Use Cases":               "usecases",
-    }
-    if "page" not in st.session_state:
-        st.session_state.page = "overview"
+# ── FULLSCREEN BUTTON (fixed, top-right) ────────────────────────────────────
+st.components.v1.html("""
+<button id="fsBtn" onclick="toggleFS()"
+  style="position:fixed;top:10px;right:14px;z-index:9999;background:#141414;
+         border:1px solid #262626;border-radius:8px;color:#999999;font-size:16px;
+         cursor:pointer;padding:5px 11px;transition:all .15s;font-family:Inter,sans-serif;
+         line-height:1;" title="Toggle fullscreen">⛶</button>
+<script>
+function toggleFS(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(function(){});
+  } else { document.exitFullscreen(); }
+}
+document.addEventListener('fullscreenchange',function(){
+  var b=document.getElementById('fsBtn');
+  if(b) b.textContent=document.fullscreenElement?'✕':'⛶';
+});
+</script>""", height=0)
 
-    st.markdown(f'<div class="section-title">Navigation</div>', unsafe_allow_html=True)
-    for label, key in pages.items():
-        if st.button(label, key=f"nav_{key}", use_container_width=True):
-            st.session_state.page = key
+# ── TOP NAVIGATION BAR ───────────────────────────────────────────────────────
+NAV = [
+    ("🏠 Overview",        "overview"),
+    ("📐 HLA",             "hla"),
+    ("⚙️ LLA",             "lla"),
+    ("🗄️ Data Sources",    "data"),
+    ("📊 Data Insights",   "insights"),
+    ("✅ Requirements",     "reqs"),
+    ("💡 Use Cases",        "usecases"),
+]
 
-    st.markdown("---")
-    st.markdown(f"""
-    <div style='font-size:10px;color:{INK_F};text-align:center;line-height:1.8'>
-      IE University · MBD-EN2025<br>
-      Cloud Analytics · Group Work B<br>
-      Due: June 19, 2026
-    </div>""", unsafe_allow_html=True)
+st.markdown(f'''<div style="display:flex;align-items:center;gap:8px;padding:10px 0 6px;border-bottom:1px solid {HAIR};margin-bottom:20px;">
+  <span style="font-size:13px;font-weight:800;color:{INK};letter-spacing:-.4px;margin-right:8px;white-space:nowrap;">🛍️ Manga Cloud Platform</span>
+  <span style="width:1px;height:18px;background:{HAIR};display:inline-block;margin-right:4px;"></span>
+</div>''', unsafe_allow_html=True)
+
+_cols = st.columns(len(NAV))
+for _col, (_lbl, _key) in zip(_cols, NAV):
+    _active = st.session_state.page == _key
+    with _col:
+        _pressed = st.button(_lbl, key=f"nav_{_key}", use_container_width=True)
+        if _pressed:
+            st.session_state.page = _key
+            st.rerun()
+        if _active:
+            st.markdown(f'''<style>
+            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) button[data-testid="baseButton-secondary"]{{}}
+            </style>''', unsafe_allow_html=True)
+
+# Highlight active button via JS injection
+_active_idx = [k for _,k in NAV].index(st.session_state.page)
+st.components.v1.html(f"""
+<script>
+(function(){{
+  function highlight(){{
+    var btns = window.parent.document.querySelectorAll('section.main button');
+    var navBtns = Array.from(btns).slice(0, {len(NAV)});
+    navBtns.forEach(function(b, i){{
+      if(i === {_active_idx}){{
+        b.style.background = 'rgba(0,153,255,0.14)';
+        b.style.borderColor = '#0099ff';
+        b.style.color = '#ffffff';
+        b.style.fontWeight = '600';
+      }} else {{
+        b.style.background = 'transparent';
+        b.style.borderColor = '#262626';
+        b.style.color = '#999999';
+        b.style.fontWeight = '400';
+      }}
+    }});
+  }}
+  setTimeout(highlight, 100);
+  setTimeout(highlight, 400);
+}})();
+</script>""", height=0)
 
 PAGE = st.session_state.page
 
