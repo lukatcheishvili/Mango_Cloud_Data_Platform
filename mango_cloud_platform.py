@@ -313,6 +313,7 @@ with st.sidebar:
         "📐  High-Level Architecture": "hla",
         "⚙️  Low-Level Architecture":  "lla",
         "🗄️  Data Sources":            "data",
+        "📊  Data Insights":           "insights",
         "✅  Requirements Coverage":   "reqs",
         "💡  Use Cases":               "usecases",
     }
@@ -621,4 +622,3 @@ elif PAGE == "usecases":
         coloraxis_showscale=False, height=260,
         margin=dict(l=160,r=20,t=20,b=60), xaxis=dict(side="bottom"),
     )
-    st.plotly_chart(fig2, use_container_width=True)
