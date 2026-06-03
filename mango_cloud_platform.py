@@ -313,84 +313,162 @@ LLA_EDGES = [
     (4.4,0.67,7.5,0.67),  # SageMaker → API Gateway (serve results)
 ]
 
-# ── SESSION STATE ───────────────────────────────────────────────────────────
+# ── SESSION STATE ────────────────────────────────────────────────────────────
 if "page" not in st.session_state:
     st.session_state.page = "overview"
 
-# ── FULLSCREEN BUTTON (fixed, top-right) ────────────────────────────────────
+# ── RAIL TOGGLE + FULLSCREEN BUTTONS (fixed, top-left, exact HTML style) ─────
 st.components.v1.html("""
-<button id="fsBtn" onclick="toggleFS()"
-  style="position:fixed;top:10px;right:14px;z-index:9999;background:#141414;
-         border:1px solid #262626;border-radius:8px;color:#999999;font-size:16px;
-         cursor:pointer;padding:5px 11px;transition:all .15s;font-family:Inter,sans-serif;
-         line-height:1;" title="Toggle fullscreen">⛶</button>
+<button id="rail-toggle" type="button" aria-label="Toggle sidebar" title="Toggle sidebar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+    <line x1="9" y1="4" x2="9" y2="20"></line>
+  </svg>
+</button>
+<button id="fs-toggle" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">
+  <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M4 9V4h5"/><path d="M20 9V4h-5"/>
+    <path d="M4 15v5h5"/><path d="M20 15v5h-5"/>
+  </svg>
+  <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 4v5H4"/><path d="M15 4v5h5"/>
+    <path d="M9 20v-5H4"/><path d="M15 20v-5h5"/>
+  </svg>
+</button>
+<style>
+  #rail-toggle, #fs-toggle {
+    position:fixed; left:16px; z-index:99999;
+    width:32px; height:32px;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:0; background:rgba(20,20,20,0.72); color:rgba(255,255,255,0.85);
+    border:1px solid rgba(255,255,255,0.10); border-radius:6px;
+    cursor:pointer; opacity:0.65;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    transition:opacity 160ms ease, background 160ms ease,
+                border-color 160ms ease, left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms ease;
+  }
+  #rail-toggle { top:16px; }
+  #fs-toggle   { top:56px; }
+  #rail-toggle:hover, #fs-toggle:hover {
+    opacity:1; background:rgba(40,40,40,0.9); border-color:rgba(255,255,255,0.22);
+  }
+  #rail-toggle:active, #fs-toggle:active { transform:scale(0.94); }
+  #rail-toggle svg, #fs-toggle svg { width:18px; height:18px; }
+  #fs-toggle .fs-exit { display:none; }
+  #fs-toggle[data-on="true"] .fs-enter { display:none; }
+  #fs-toggle[data-on="true"] .fs-exit  { display:inline; }
+  /* Shift buttons right when sidebar is open */
+  #rail-toggle[data-rail="open"], #fs-toggle[data-rail="open"] {
+    left:calc(240px + 12px);
+  }
+  @media print { #rail-toggle, #fs-toggle { display:none; } }
+</style>
 <script>
-function toggleFS(){
-  if(!document.fullscreenElement){
-    document.documentElement.requestFullscreen().catch(function(){});
-  } else { document.exitFullscreen(); }
-}
-document.addEventListener('fullscreenchange',function(){
-  var b=document.getElementById('fsBtn');
-  if(b) b.textContent=document.fullscreenElement?'✕':'⛶';
-});
+(function(){
+  // We detect sidebar state by polling the parent frame DOM
+  var rail = document.getElementById('rail-toggle');
+  var fs   = document.getElementById('fs-toggle');
+
+  function isSidebarOpen(){
+    try {
+      var sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
+      if(!sidebar) return false;
+      var rect = sidebar.getBoundingClientRect();
+      return rect.width > 50;
+    } catch(e){ return false; }
+  }
+
+  function syncRail(){
+    var open = isSidebarOpen();
+    rail.setAttribute('data-rail', open ? 'open' : 'closed');
+    fs.setAttribute('data-rail',  open ? 'open' : 'closed');
+  }
+
+  // Toggle sidebar by clicking Streamlit's collapse button
+  rail.addEventListener('click', function(){
+    try {
+      var btn = window.parent.document.querySelector('[data-testid="collapsedControl"] button, button[data-testid="baseButton-secondary"][aria-expanded]');
+      if(!btn){
+        // Try the sidebar itself for a collapse button
+        var btns = window.parent.document.querySelectorAll('[data-testid="stSidebar"] button, [data-testid="collapsedControl"]');
+        btns.forEach(function(b){ if(b.offsetParent !== null) b.click(); });
+      } else { btn.click(); }
+    } catch(e){}
+    setTimeout(syncRail, 50);
+    setTimeout(syncRail, 300);
+  });
+
+  // Fullscreen
+  fs.addEventListener('click', function(){
+    var doc = window.parent.document || document;
+    var el  = window.parent.document.documentElement || document.documentElement;
+    if(doc.fullscreenElement || doc.webkitFullscreenElement){
+      (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+    } else {
+      (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    }
+  });
+  function syncFs(){
+    var doc = window.parent.document || document;
+    fs.setAttribute('data-on', String(!!(doc.fullscreenElement || doc.webkitFullscreenElement)));
+  }
+  window.parent.document.addEventListener('fullscreenchange', syncFs);
+  window.parent.document.addEventListener('webkitfullscreenchange', syncFs);
+
+  syncRail();
+  setInterval(syncRail, 800);
+})();
 </script>""", height=0)
 
-# ── TOP NAVIGATION BAR ───────────────────────────────────────────────────────
-NAV = [
-    ("🏠 Overview",        "overview"),
-    ("📐 HLA",             "hla"),
-    ("⚙️ LLA",             "lla"),
-    ("🗄️ Data Sources",    "data"),
-    ("📊 Data Insights",   "insights"),
-    ("✅ Requirements",     "reqs"),
-    ("💡 Use Cases",        "usecases"),
+# ── SIDEBAR ───────────────────────────────────────────────────────────────────
+NAV_PAGES = [
+    ("🏠", "Overview",           "overview"),
+    ("📐", "High-Level Arch",    "hla"),
+    ("⚙️", "Low-Level Arch",     "lla"),
+    ("🗄️", "Data Sources",       "data"),
+    ("📊", "Data Insights",      "insights"),
+    ("✅", "Requirements",        "reqs"),
+    ("💡", "Use Cases",           "usecases"),
 ]
 
-st.markdown(f'''<div style="display:flex;align-items:center;gap:8px;padding:10px 0 6px;border-bottom:1px solid {HAIR};margin-bottom:20px;">
-  <span style="font-size:13px;font-weight:800;color:{INK};letter-spacing:-.4px;margin-right:8px;white-space:nowrap;">🛍️ Manga Cloud Platform</span>
-  <span style="width:1px;height:18px;background:{HAIR};display:inline-block;margin-right:4px;"></span>
-</div>''', unsafe_allow_html=True)
+with st.sidebar:
+    st.markdown(f"""
+    <div style="padding:48px 0 24px;text-align:left;">
+      <div style="font-size:11px;font-weight:800;color:{INK};letter-spacing:.08em;
+                  text-transform:uppercase;margin-bottom:2px;">Manga Cloud</div>
+      <div style="font-size:10px;color:{INK_F};letter-spacing:.06em;text-transform:uppercase;">
+        RFP Response · AWS
+      </div>
+    </div>""", unsafe_allow_html=True)
 
-_cols = st.columns(len(NAV))
-for _col, (_lbl, _key) in zip(_cols, NAV):
-    _active = st.session_state.page == _key
-    with _col:
-        _pressed = st.button(_lbl, key=f"nav_{_key}", use_container_width=True)
-        if _pressed:
-            st.session_state.page = _key
+    for icon, label, key in NAV_PAGES:
+        active = st.session_state.page == key
+        bg     = f"rgba(0,153,255,0.12)" if active else "transparent"
+        border = f"1px solid {ACCENT}" if active else f"1px solid transparent"
+        color  = INK if active else INK_M
+        weight = "600" if active else "400"
+        st.markdown(f"""
+        <div style="background:{bg};border:{border};border-radius:8px;
+                    padding:9px 12px;margin-bottom:3px;cursor:pointer;
+                    transition:all .15s;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:15px;line-height:1">{icon}</span>
+          <span style="font-size:13px;font-weight:{weight};color:{color};
+                       letter-spacing:-.01em">{label}</span>
+        </div>""", unsafe_allow_html=True)
+        if st.button(label, key=f"nav_{key}", use_container_width=True):
+            st.session_state.page = key
             st.rerun()
-        if _active:
-            st.markdown(f'''<style>
-            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) button[data-testid="baseButton-secondary"]{{}}
-            </style>''', unsafe_allow_html=True)
 
-# Highlight active button via JS injection
-_active_idx = [k for _,k in NAV].index(st.session_state.page)
-st.components.v1.html(f"""
-<script>
-(function(){{
-  function highlight(){{
-    var btns = window.parent.document.querySelectorAll('section.main button');
-    var navBtns = Array.from(btns).slice(0, {len(NAV)});
-    navBtns.forEach(function(b, i){{
-      if(i === {_active_idx}){{
-        b.style.background = 'rgba(0,153,255,0.14)';
-        b.style.borderColor = '#0099ff';
-        b.style.color = '#ffffff';
-        b.style.fontWeight = '600';
-      }} else {{
-        b.style.background = 'transparent';
-        b.style.borderColor = '#262626';
-        b.style.color = '#999999';
-        b.style.fontWeight = '400';
-      }}
-    }});
-  }}
-  setTimeout(highlight, 100);
-  setTimeout(highlight, 400);
-}})();
-</script>""", height=0)
+    st.markdown(f"""
+    <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 16px;
+                font-size:10px;color:{INK_F};line-height:1.7;">
+      IE University · MBD-EN2025<br>
+      Cloud Analytics · Group B<br>
+      Due: June 19, 2026
+    </div>""", unsafe_allow_html=True)
 
 PAGE = st.session_state.page
 
