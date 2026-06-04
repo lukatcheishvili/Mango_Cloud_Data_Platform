@@ -233,6 +233,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Stakeholder tags redesigned as pill badges with colored dot indicators
 - [x] Badges unified to monochrome SURF2 background (matches Framer do's/don'ts)
 - [x] Sidebar toggle fixed — mn-rail/mn-fs buttons programmatically click Streamlit's native collapse button
+- [x] Sidebar nav button CSS hardened — section-scoped selectors, gap:4px on stVerticalBlock, flex layout, works across Streamlit versions (kind=primary, baseButton-primary, stBaseButton-primary all covered)
 
 ---
 

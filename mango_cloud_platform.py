@@ -69,22 +69,35 @@ section[data-testid="stMain"]{{width:100%!important}}
 [data-testid="stSidebar"]{{background:#0a0a0a!important;border-right:1px solid {HAIR};min-width:248px!important;width:248px!important}}
 [data-testid="stSidebarContent"]{{padding:24px 14px 18px!important}}
 [data-testid="stSidebar"] *{{color:{INK_M}!important}}
-[data-testid="stSidebar"] .stButton>button{{
-    width:100%!important;justify-content:flex-start!important;text-align:left!important;
-    min-height:38px!important;padding:9px 12px!important;margin:0 0 4px!important;
+/* ── SIDEBAR NAV BUTTONS (robust across Streamlit versions) ── */
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"]{{gap:4px!important}}
+section[data-testid="stSidebar"] .stButton{{width:100%!important;margin:0!important}}
+section[data-testid="stSidebar"] .stButton>button{{
+    width:100%!important;display:flex!important;align-items:center!important;
+    justify-content:flex-start!important;text-align:left!important;
+    min-height:42px!important;padding:10px 14px!important;margin:0!important;
     background:transparent!important;border:1px solid transparent!important;
-    border-radius:10px!important;color:{INK_M}!important;font-size:13px!important;
-    font-weight:500!important;letter-spacing:-.01em!important;font-family:var(--font-body)!important;
+    border-radius:10px!important;color:{INK_M}!important;
+    font-size:14px!important;font-weight:500!important;letter-spacing:-.14px!important;
+    font-family:var(--font-body)!important;
     transition:background 160ms ease,border-color 160ms ease,color 160ms ease!important;
 }}
-[data-testid="stSidebar"] .stButton>button:hover{{
+section[data-testid="stSidebar"] .stButton>button>div,
+section[data-testid="stSidebar"] .stButton>button [data-testid="stMarkdownContainer"],
+section[data-testid="stSidebar"] .stButton>button p{{
+    width:100%!important;text-align:left!important;margin:0!important;color:inherit!important;
+    justify-content:flex-start!important;
+}}
+section[data-testid="stSidebar"] .stButton>button:hover{{
     background:{SURF1}!important;border-color:{HAIR}!important;color:{INK}!important;
 }}
-[data-testid="stSidebar"] .stButton>button[data-testid="baseButton-primary"]{{
+section[data-testid="stSidebar"] .stButton>button[kind="primary"],
+section[data-testid="stSidebar"] .stButton>button[data-testid="baseButton-primary"],
+section[data-testid="stSidebar"] .stButton>button[data-testid="stBaseButton-primary"]{{
     background:{SURF2}!important;border-color:{HAIR}!important;
     color:{INK}!important;font-weight:600!important;
 }}
-[data-testid="stSidebar"] .stButton>button p{{color:inherit!important}}
+section[data-testid="stSidebar"] .stButton>button p{{color:inherit!important}}
 /* collapsedControl kept visible so JS can click it */
 header[data-testid="stHeader"]{{display:none}}
 
