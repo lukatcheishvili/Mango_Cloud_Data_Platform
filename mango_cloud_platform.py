@@ -62,7 +62,7 @@ html,body,[data-testid="stAppViewContainer"]{{background:{CANVAS}!important;colo
     color:{INK}!important;box-shadow:0 0 0 1px rgba(0,153,255,.12) inset!important;
 }}
 [data-testid="stSidebar"] .stButton>button p{{color:inherit!important}}
-[data-testid="collapsedControl"],[data-testid="stSidebarCollapseButton"]{{display:none!important}}
+/* collapsedControl kept visible so JS can click it */
 header[data-testid="stHeader"]{{display:none}}
 .card{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:18px 20px;margin-bottom:12px;transition:border-color .18s}}
 .card:hover{{border-color:{ACCENT}55}}
@@ -91,7 +91,7 @@ header[data-testid="stHeader"]{{display:none}}
 [data-testid="stTabs"] button[aria-selected="true"]{{color:{INK}!important;border-bottom:2px solid {ACCENT}!important}}
 [data-testid="stDataFrame"]{{border:1px solid {HAIR};border-radius:8px}}
 hr{{border-color:{HAIR}!important}}
-html.manga-rail-hidden section[data-testid="stSidebar"]{{display:none!important}}
+/* sidebar visibility controlled by Streamlit native toggle */
 /* Style horizontal Streamlit buttons outside the sidebar */
 div[data-testid="stHorizontalBlock"] .stButton>button{{
     background:transparent!important;border:1px solid {HAIR}!important;
@@ -385,150 +385,151 @@ if "page" not in st.session_state:
 
 # ── RAIL TOGGLE + FULLSCREEN BUTTONS (injected into parent page) ────────────
 st.components.v1.html("""
+<style>
+  #mn-rail, #mn-fs {
+    position:fixed; left:16px; z-index:999999;
+    width:32px; height:32px;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:0; margin:0;
+    background:rgba(20,20,20,0.75); color:rgba(255,255,255,0.85);
+    border:1px solid rgba(255,255,255,0.12); border-radius:6px;
+    cursor:pointer; opacity:0.65;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    transition:opacity 160ms, background 160ms, border-color 160ms,
+               left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms;
+    font-family:inherit;
+  }
+  #mn-rail { top:16px; }
+  #mn-fs   { top:56px; }
+  #mn-rail:hover, #mn-fs:hover {
+    opacity:1; background:rgba(45,45,45,0.92);
+    border-color:rgba(255,255,255,0.24);
+  }
+  #mn-rail:active, #mn-fs:active { transform:scale(0.93); }
+  #mn-rail svg, #mn-fs svg { width:18px; height:18px; pointer-events:none; }
+  .fs-exit { display:none; }
+</style>
+
+<button id="mn-rail" title="Toggle sidebar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+       stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <line x1="9" y1="4" x2="9" y2="20"/>
+  </svg>
+</button>
+
+<button id="mn-fs" title="Toggle fullscreen">
+  <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 9V4h5"/><path d="M20 9V4h-5"/>
+    <path d="M4 15v5h5"/><path d="M20 15v5h-5"/>
+  </svg>
+  <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 4v5H4"/><path d="M15 4v5h5"/>
+    <path d="M9 20v-5H4"/><path d="M15 20v-5h5"/>
+  </svg>
+</button>
+
 <script>
 (function(){
-  var parentWin = window.parent;
   var doc = window.parent.document;
-  var root = doc.documentElement;
 
-  function ensureStyle(){
-    var style = doc.getElementById('manga-floating-controls-style');
-    if(style) return;
-    style = doc.createElement('style');
-    style.id = 'manga-floating-controls-style';
-    style.textContent = `
-      #manga-rail-toggle, #manga-fs-toggle {
-        position: fixed;
-        left: 16px;
-        z-index: 999999;
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        background: rgba(20, 20, 20, 0.72);
-        color: rgba(255, 255, 255, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.10);
-        border-radius: 6px;
-        cursor: pointer;
-        opacity: 0.62;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        transition: opacity 160ms ease, background 160ms ease, border-color 160ms ease,
-                    left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms ease;
+  // ── Move buttons into the parent page so they render at root level ──
+  function mountButtons(){
+    ['mn-rail','mn-fs'].forEach(function(id){
+      var existing = doc.getElementById(id);
+      if(existing) existing.remove();
+      var el = document.getElementById(id);
+      if(el){
+        var clone = el.cloneNode(true);
+        doc.body.appendChild(clone);
+        // Copy styles too
+        var styleEl = document.querySelector('style');
+        if(styleEl && !doc.getElementById('mn-style')){
+          var s = doc.createElement('style');
+          s.id = 'mn-style';
+          s.textContent = styleEl.textContent;
+          doc.head.appendChild(s);
+        }
       }
-      #manga-rail-toggle { top: 16px; }
-      #manga-fs-toggle { top: 56px; }
-      #manga-rail-toggle:hover, #manga-fs-toggle:hover {
-        opacity: 1;
-        background: rgba(40, 40, 40, 0.88);
-        border-color: rgba(255, 255, 255, 0.22);
-      }
-      #manga-rail-toggle:active, #manga-fs-toggle:active { transform: scale(0.94); }
-      #manga-rail-toggle svg, #manga-fs-toggle svg { width: 18px; height: 18px; }
-      #manga-fs-toggle .fs-exit { display: none; }
-      #manga-fs-toggle[data-on="true"] .fs-enter { display: none; }
-      #manga-fs-toggle[data-on="true"] .fs-exit { display: inline; }
-      #manga-rail-toggle[data-on="true"],
-      #manga-fs-toggle[data-on-rail="true"] {
-        left: calc(var(--manga-rail-w, 248px) + 12px);
-      }
-      @media print { #manga-rail-toggle, #manga-fs-toggle { display: none; } }
-    `;
-    doc.head.appendChild(style);
+    });
+    bindEvents();
   }
 
-  function makeButton(id, title, html){
-    var btn = doc.getElementById(id);
-    if(!btn){
-      btn = doc.createElement('button');
-      btn.id = id;
-      btn.type = 'button';
-      doc.body.appendChild(btn);
-    }
-    btn.setAttribute('aria-label', title);
-    btn.title = title;
-    btn.innerHTML = html;
-    return btn;
+  function getSidebarBtn(){
+    // When sidebar is OPEN: collapse button inside the sidebar
+    return doc.querySelector('[data-testid="stSidebarCollapseButton"] button') ||
+           doc.querySelector('button[aria-label="Close sidebar"]') ||
+           doc.querySelector('[data-testid="stSidebar"] button[kind="header"]');
+  }
+  function getExpandBtn(){
+    // When sidebar is CLOSED: the expand arrow on the left edge
+    return doc.querySelector('[data-testid="collapsedControl"]') ||
+           doc.querySelector('button[aria-label="Open sidebar"]');
+  }
+  function isSidebarOpen(){
+    var sb = doc.querySelector('[data-testid="stSidebar"]');
+    if(!sb) return false;
+    return sb.getBoundingClientRect().width > 40;
   }
 
-  ensureStyle();
-  var rail = makeButton('manga-rail-toggle', 'Toggle page selection', `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
-      <line x1="9" y1="4" x2="9" y2="20"></line>
-    </svg>
-  `);
-  var fs = makeButton('manga-fs-toggle', 'Toggle fullscreen', `
-    <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M4 9V4h5"></path><path d="M20 9V4h-5"></path>
-      <path d="M4 15v5h5"></path><path d="M20 15v5h-5"></path>
-    </svg>
-    <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M9 4v5H4"></path><path d="M15 4v5h5"></path>
-      <path d="M9 20v-5H4"></path><path d="M15 20v-5h5"></path>
-    </svg>
-  `);
-
-  function railOn(){
-    try { return localStorage.getItem('manga-cloud.railVisible') !== '0'; } catch(e) {}
-    return true;
-  }
-
-  function setRail(on){
-    root.classList.toggle('manga-rail-hidden', !on);
-    try { localStorage.setItem('manga-cloud.railVisible', on ? '1' : '0'); } catch(e) {}
-    syncRail();
-  }
-
-  function syncRail(){
-    var on = railOn();
-    var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-    if(sidebar && on){
-      var width = Math.round(sidebar.getBoundingClientRect().width || 248);
-      root.style.setProperty('--manga-rail-w', width + 'px');
-    }
-    root.classList.toggle('manga-rail-hidden', !on);
-    rail.setAttribute('data-on', String(on));
-    fs.setAttribute('data-on-rail', String(on));
-  }
-
-  rail.onclick = function(){ setRail(!railOn()); };
-
-  function inFs(){
-    return !!(doc.fullscreenElement || doc.webkitFullscreenElement);
+  function syncPosition(){
+    var rail = doc.getElementById('mn-rail');
+    var fs   = doc.getElementById('mn-fs');
+    if(!rail || !fs) return;
+    var open = isSidebarOpen();
+    var w = open ? (doc.querySelector('[data-testid="stSidebar"]').getBoundingClientRect().width + 12) : 16;
+    rail.style.left = w + 'px';
+    fs.style.left   = w + 'px';
   }
 
   function syncFs(){
-    fs.setAttribute('data-on', String(inFs()));
+    var fs = doc.getElementById('mn-fs');
+    if(!fs) return;
+    var on = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
+    fs.querySelector('.fs-enter').style.display = on ? 'none' : '';
+    fs.querySelector('.fs-exit').style.display  = on ? '' : 'none';
   }
 
-  fs.onclick = function(){
-    var target = doc.documentElement;
-    if(inFs()){
-      (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
-    } else {
-      (target.requestFullscreen || target.webkitRequestFullscreen).call(target);
-    }
-  };
+  function bindEvents(){
+    var rail = doc.getElementById('mn-rail');
+    var fs   = doc.getElementById('mn-fs');
+    if(!rail || !fs) return;
 
-  if(parentWin.__mangaSyncFs){
-    doc.removeEventListener('fullscreenchange', parentWin.__mangaSyncFs);
-    doc.removeEventListener('webkitfullscreenchange', parentWin.__mangaSyncFs);
+    rail.onclick = function(){
+      if(isSidebarOpen()){
+        var btn = getSidebarBtn();
+        if(btn){ btn.click(); return; }
+      } else {
+        var btn = getExpandBtn();
+        if(btn){ btn.click(); return; }
+      }
+    };
+
+    fs.onclick = function(){
+      var el = doc.documentElement;
+      if(doc.fullscreenElement || doc.webkitFullscreenElement){
+        (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+      } else {
+        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      }
+    };
   }
-  parentWin.__mangaSyncFs = syncFs;
+
   doc.addEventListener('fullscreenchange', syncFs);
   doc.addEventListener('webkitfullscreenchange', syncFs);
 
-  syncRail();
-  syncFs();
-  setTimeout(syncRail, 150);
+  // Mount on load and re-sync periodically (Streamlit re-renders wipe DOM)
+  mountButtons();
+  setInterval(function(){
+    if(!doc.getElementById('mn-rail')) mountButtons();
+    syncPosition();
+    syncFs();
+  }, 600);
 })();
-</script>""", height=0)
+</script>
+""", height=1)
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 NAV_PAGES = [
@@ -536,6 +537,7 @@ NAV_PAGES = [
     ("📐", "High-Level Arch",    "hla"),
     ("⚙️", "Low-Level Arch",     "lla"),
     ("🗄️", "Data Sources",       "data"),
+    ("📊", "Data Insights",      "insights"),
     ("✅", "Requirements",        "reqs"),
     ("💡", "Use Cases",           "usecases"),
 ]
