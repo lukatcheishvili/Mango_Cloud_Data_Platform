@@ -125,6 +125,14 @@ It covers:
 
 **Never introduce a new color, font size, or spacing value that isn't in `DESIGN.md`.**
 
+**Active tokens (as implemented):**
+- Display font: `Mona Sans` → fallback `Inter` — page titles, metric values, spotlight text
+- Body font: `Inter` with feature settings `cv01 cv05 cv09 cv11 ss03`
+- Gradient spotlight hues: `G_VIOLET=#6a4cf5`, `G_MAGENTA=#d44df0`, `G_ORANGE=#ff7a3d`
+- Content max-width: `1240px`, padding: `72px 48px 96px`
+- Card border-radius: `15px` (was 10px)
+- New component: `.spotlight` — gradient hero card used on Overview page
+
 ---
 
 ## 📁 Repository Structure
@@ -218,6 +226,13 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Data Insights page added — 10 charts across all 6 datasets
 - [x] Top navigation bar replaced with proper sidebar + fixed rail/fullscreen buttons
 - [x] Framer design system fully applied (Inter font, pure black canvas, #0099ff accent)
+- [x] Mona Sans added as display font (fallback Inter) with Framer font-feature-settings (cv01,cv05,cv09,cv11,ss03)
+- [x] Gradient spotlight card added (.spotlight — violet→magenta→orange, used on Overview page hero)
+- [x] Centered layout — max-width 1240px, padding 72px 48px 96px, auto margins
+- [x] Typography refined — 46px/600 display titles, 36px metrics, tighter letter-spacing
+- [x] Stakeholder tags redesigned as pill badges with colored dot indicators
+- [x] Badges unified to monochrome SURF2 background (matches Framer do's/don'ts)
+- [x] Sidebar toggle fixed — mn-rail/mn-fs buttons programmatically click Streamlit's native collapse button
 
 ---
 
@@ -289,4 +304,4 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 ---
 
-*Last updated: 2026-06-04 | Updated by: Luka Tcheishvili (Codex + Claude)*
+*Last updated: 2026-06-04 | Updated by: Luka Tcheishvili*
