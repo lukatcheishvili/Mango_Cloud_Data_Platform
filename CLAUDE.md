@@ -144,6 +144,9 @@ Mango_Cloud_Data_Platform/
 ├── shipping_sample.csv            # Logistics partner data (contains PII)
 ├── Group Work B - Retail.pdf      # Original RFP document from professor
 ├── Manga_DataHub_RFP_Response.pdf # Our written RFP response document
+├── assets/                        # Exported architecture images (from Figma)
+│   ├── manga-cloud-platform-high-level-architecture.jpg
+│   └── manga-cloud-platform-low-level-aws-architecture.jpg
 └── .github/
     └── workflows/
         └── update-context-reminder.yml  # Reminds team to update CLAUDE.md on every push
@@ -163,6 +166,11 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 | `data` | Data Sources | Expandable panels for each of the 6 CSVs with schema and ingestion info |
 | `reqs` | Requirements Coverage | R1–R8 cards with AWS services + coverage bar chart |
 | `usecases` | Use Cases | 5 ML use case expanders + dataset usage heatmap |
+
+**Architecture image rendering:**
+- `render_figma_architecture()` — loads exported JPG from `assets/` folder and renders it in HLA/LLA pages
+- Falls back to Plotly diagram if image file not found
+- Images: `assets/manga-cloud-platform-high-level-architecture.jpg` and `assets/manga-cloud-platform-low-level-aws-architecture.jpg`
 
 **Key implementation notes:**
 - Both HLA and LLA pages use `st.tabs()` with two tabs: Interactive HTML diagram + Plotly chart
@@ -204,6 +212,12 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] README fully rewritten: executive summary, requirements table, what we did, tech stack, use cases
 - [x] CLAUDE.md created (this file)
 - [x] GitHub Actions workflow for CLAUDE.md update reminders
+- [x] Figma architecture images exported and added to assets/ folder
+- [x] render_figma_architecture() added to app — displays Figma JPG exports in HLA/LLA pages
+- [x] Sidebar rail toggle improved — localStorage persistence, manga-rail-toggle/manga-fs-toggle IDs
+- [x] Data Insights page added — 10 charts across all 6 datasets
+- [x] Top navigation bar replaced with proper sidebar + fixed rail/fullscreen buttons
+- [x] Framer design system fully applied (Inter font, pure black canvas, #0099ff accent)
 
 ---
 
@@ -258,3 +272,21 @@ Requirements: `streamlit>=1.32.0`, `pandas>=2.0.0`, `plotly>=5.18.0`
 | Redshift + S3 (not Snowflake) | Stays within AWS ecosystem; Spectrum allows querying S3 without loading |
 | Three-zone lakehouse (Raw/Curated/Gold) | Industry standard; Raw enables full reprocessing; PII masking at Curated boundary |
 | CloudTrail for GDPR | Immutable audit logs required for Right of Access / Right to Erasure compliance |
+
+---
+
+## 🔄 How to Update This File
+
+When you push changes, update the relevant section(s):
+
+- **Fixed a bug or improved a feature** → update "What Has Been Completed" and check off any tasks in "Remaining Tasks"
+- **Added a new feature or page** → update "App Structure" and "What Has Been Completed"
+- **Made an architectural decision** → add a row to "Important Decisions & Rationale"
+- **Identified new work** → add to "Remaining Tasks" under the appropriate priority
+- **Changed a file or added a new one** → update "Repository Structure"
+
+A GitHub Action will warn you on every push if you forgot to update this file.
+
+---
+
+*Last updated: 2026-06-04 | Updated by: Luka Tcheishvili (Codex + Claude)*

@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from pathlib import Path
+import base64
 
 st.set_page_config(
     page_title="Manga · AWS Cloud Platform",
@@ -42,14 +43,35 @@ st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 html,body,[data-testid="stAppViewContainer"]{{background:{CANVAS}!important;color:{INK};font-family:'Inter',-apple-system,sans-serif}}
-[data-testid="stSidebar"]{{background:#0a0a0a!important;border-right:1px solid {HAIR}}}
+[data-testid="stSidebar"]{{background:#0a0a0a!important;border-right:1px solid {HAIR};min-width:248px!important;width:248px!important}}
+[data-testid="stSidebarContent"]{{padding:24px 14px 18px!important}}
 [data-testid="stSidebar"] *{{color:{INK_M}!important}}
+[data-testid="stSidebar"] .stButton>button{{
+    width:100%!important;justify-content:flex-start!important;text-align:left!important;
+    min-height:38px!important;padding:9px 12px!important;margin:0 0 4px!important;
+    background:transparent!important;border:1px solid transparent!important;
+    border-radius:10px!important;color:{INK_M}!important;font-size:13px!important;
+    font-weight:500!important;letter-spacing:-.01em!important;font-family:'Inter',sans-serif!important;
+    transition:background 160ms ease,border-color 160ms ease,color 160ms ease!important;
+}}
+[data-testid="stSidebar"] .stButton>button:hover{{
+    background:{SURF1}!important;border-color:{HAIR}!important;color:{INK}!important;
+}}
+[data-testid="stSidebar"] .stButton>button[data-testid="baseButton-primary"]{{
+    background:rgba(0,153,255,.13)!important;border-color:{ACCENT}!important;
+    color:{INK}!important;box-shadow:0 0 0 1px rgba(0,153,255,.12) inset!important;
+}}
+[data-testid="stSidebar"] .stButton>button p{{color:inherit!important}}
+[data-testid="collapsedControl"],[data-testid="stSidebarCollapseButton"]{{display:none!important}}
 header[data-testid="stHeader"]{{display:none}}
 .card{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:18px 20px;margin-bottom:12px;transition:border-color .18s}}
 .card:hover{{border-color:{ACCENT}55}}
 .metric-card{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:18px;text-align:center}}
 .metric-value{{font-size:32px;font-weight:800;color:{INK};letter-spacing:-1.5px}}
 .metric-label{{font-size:11px;color:{INK_M};text-transform:uppercase;letter-spacing:.1em;margin-top:5px}}
+.figma-chart-frame{{background:#ffffff;border:1px solid #ececec;border-radius:8px;padding:18px;overflow:auto;box-shadow:0 18px 48px rgba(0,0,0,.32);margin:8px 0 18px}}
+.figma-chart-frame img{{display:block;width:100%;max-width:1500px;height:auto;margin:0 auto}}
+.figma-chart-missing{{background:{SURF1};border:1px solid {HAIR};border-radius:8px;padding:14px 16px;color:{INK_M};font-size:12px;margin-bottom:12px}}
 .section-title{{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:{INK_F};margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid {HAIR}}}
 .page-title{{font-size:38px;font-weight:800;color:{INK};letter-spacing:-2px;margin-bottom:6px;line-height:1.05}}
 .page-sub{{font-size:16px;color:{INK_M};margin-bottom:28px;font-weight:400;letter-spacing:-.01em}}
@@ -69,10 +91,8 @@ header[data-testid="stHeader"]{{display:none}}
 [data-testid="stTabs"] button[aria-selected="true"]{{color:{INK}!important;border-bottom:2px solid {ACCENT}!important}}
 [data-testid="stDataFrame"]{{border:1px solid {HAIR};border-radius:8px}}
 hr{{border-color:{HAIR}!important}}
-/* Hide sidebar — use top nav instead */
-[data-testid="collapsedControl"]{{display:none!important}}
-section[data-testid="stSidebar"]{{display:none!important}}
-/* Style all nav buttons */
+html.manga-rail-hidden section[data-testid="stSidebar"]{{display:none!important}}
+/* Style horizontal Streamlit buttons outside the sidebar */
 div[data-testid="stHorizontalBlock"] .stButton>button{{
     background:transparent!important;border:1px solid {HAIR}!important;
     color:{INK_M}!important;border-radius:100px!important;
@@ -101,6 +121,52 @@ def load_data():
     return out
 
 DATA = load_data()
+
+# ── FIGMA ARCHITECTURE EXPORTS ──────────────────────────────────────────────
+APP_DIR = Path(__file__).parent
+
+HLA_IMAGE_CANDIDATES = (
+    "assets/manga-cloud-platform-high-level-architecture.jpg",
+    "Manga Cloud Platform — High-Level Architecture.jpg",
+)
+
+LLA_IMAGE_CANDIDATES = (
+    "assets/manga-cloud-platform-low-level-aws-architecture.jpg",
+    "Manga Cloud Platform — Low-Level AWS Architecture.jpg",
+)
+
+def resolve_architecture_image(*candidates):
+    search_roots = (APP_DIR, APP_DIR / "assets", Path.home() / "Downloads")
+    for candidate in candidates:
+        candidate_path = Path(candidate)
+        if candidate_path.is_absolute() and candidate_path.exists():
+            return candidate_path
+        for root in search_roots:
+            image_path = root / candidate_path
+            if image_path.exists():
+                return image_path
+    return None
+
+@st.cache_data(show_spinner=False)
+def encode_architecture_image(path_str, modified_at):
+    _ = modified_at
+    return base64.b64encode(Path(path_str).read_bytes()).decode("ascii")
+
+def render_figma_architecture(candidates, alt_text):
+    image_path = resolve_architecture_image(*candidates)
+    if image_path is None:
+        st.markdown(
+            '<div class="figma-chart-missing">Figma architecture export not found. Showing generated fallback diagram.</div>',
+            unsafe_allow_html=True,
+        )
+        return False
+
+    encoded = encode_architecture_image(str(image_path), image_path.stat().st_mtime)
+    st.markdown(
+        f'<div class="figma-chart-frame"><img src="data:image/jpeg;base64,{encoded}" alt="{alt_text}"></div>',
+        unsafe_allow_html=True,
+    )
+    return True
 
 # ── ARCHITECTURE DIAGRAM BUILDER ────────────────────────────────────────────
 def arch_fig(title, nodes, edges, xr, yr, h=600):
@@ -317,109 +383,150 @@ LLA_EDGES = [
 if "page" not in st.session_state:
     st.session_state.page = "overview"
 
-# ── RAIL TOGGLE + FULLSCREEN BUTTONS (fixed, top-left, exact HTML style) ─────
+# ── RAIL TOGGLE + FULLSCREEN BUTTONS (injected into parent page) ────────────
 st.components.v1.html("""
-<button id="rail-toggle" type="button" aria-label="Toggle sidebar" title="Toggle sidebar">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <rect x="3" y="4" width="18" height="16" rx="2"></rect>
-    <line x1="9" y1="4" x2="9" y2="20"></line>
-  </svg>
-</button>
-<button id="fs-toggle" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">
-  <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M4 9V4h5"/><path d="M20 9V4h-5"/>
-    <path d="M4 15v5h5"/><path d="M20 15v5h-5"/>
-  </svg>
-  <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M9 4v5H4"/><path d="M15 4v5h5"/>
-    <path d="M9 20v-5H4"/><path d="M15 20v-5h5"/>
-  </svg>
-</button>
-<style>
-  #rail-toggle, #fs-toggle {
-    position:fixed; left:16px; z-index:99999;
-    width:32px; height:32px;
-    display:inline-flex; align-items:center; justify-content:center;
-    padding:0; background:rgba(20,20,20,0.72); color:rgba(255,255,255,0.85);
-    border:1px solid rgba(255,255,255,0.10); border-radius:6px;
-    cursor:pointer; opacity:0.65;
-    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-    transition:opacity 160ms ease, background 160ms ease,
-                border-color 160ms ease, left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms ease;
-  }
-  #rail-toggle { top:16px; }
-  #fs-toggle   { top:56px; }
-  #rail-toggle:hover, #fs-toggle:hover {
-    opacity:1; background:rgba(40,40,40,0.9); border-color:rgba(255,255,255,0.22);
-  }
-  #rail-toggle:active, #fs-toggle:active { transform:scale(0.94); }
-  #rail-toggle svg, #fs-toggle svg { width:18px; height:18px; }
-  #fs-toggle .fs-exit { display:none; }
-  #fs-toggle[data-on="true"] .fs-enter { display:none; }
-  #fs-toggle[data-on="true"] .fs-exit  { display:inline; }
-  /* Shift buttons right when sidebar is open */
-  #rail-toggle[data-rail="open"], #fs-toggle[data-rail="open"] {
-    left:calc(240px + 12px);
-  }
-  @media print { #rail-toggle, #fs-toggle { display:none; } }
-</style>
 <script>
 (function(){
-  // We detect sidebar state by polling the parent frame DOM
-  var rail = document.getElementById('rail-toggle');
-  var fs   = document.getElementById('fs-toggle');
+  var parentWin = window.parent;
+  var doc = window.parent.document;
+  var root = doc.documentElement;
 
-  function isSidebarOpen(){
-    try {
-      var sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
-      if(!sidebar) return false;
-      var rect = sidebar.getBoundingClientRect();
-      return rect.width > 50;
-    } catch(e){ return false; }
+  function ensureStyle(){
+    var style = doc.getElementById('manga-floating-controls-style');
+    if(style) return;
+    style = doc.createElement('style');
+    style.id = 'manga-floating-controls-style';
+    style.textContent = `
+      #manga-rail-toggle, #manga-fs-toggle {
+        position: fixed;
+        left: 16px;
+        z-index: 999999;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        background: rgba(20, 20, 20, 0.72);
+        color: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 6px;
+        cursor: pointer;
+        opacity: 0.62;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition: opacity 160ms ease, background 160ms ease, border-color 160ms ease,
+                    left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms ease;
+      }
+      #manga-rail-toggle { top: 16px; }
+      #manga-fs-toggle { top: 56px; }
+      #manga-rail-toggle:hover, #manga-fs-toggle:hover {
+        opacity: 1;
+        background: rgba(40, 40, 40, 0.88);
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+      #manga-rail-toggle:active, #manga-fs-toggle:active { transform: scale(0.94); }
+      #manga-rail-toggle svg, #manga-fs-toggle svg { width: 18px; height: 18px; }
+      #manga-fs-toggle .fs-exit { display: none; }
+      #manga-fs-toggle[data-on="true"] .fs-enter { display: none; }
+      #manga-fs-toggle[data-on="true"] .fs-exit { display: inline; }
+      #manga-rail-toggle[data-on="true"],
+      #manga-fs-toggle[data-on-rail="true"] {
+        left: calc(var(--manga-rail-w, 248px) + 12px);
+      }
+      @media print { #manga-rail-toggle, #manga-fs-toggle { display: none; } }
+    `;
+    doc.head.appendChild(style);
+  }
+
+  function makeButton(id, title, html){
+    var btn = doc.getElementById(id);
+    if(!btn){
+      btn = doc.createElement('button');
+      btn.id = id;
+      btn.type = 'button';
+      doc.body.appendChild(btn);
+    }
+    btn.setAttribute('aria-label', title);
+    btn.title = title;
+    btn.innerHTML = html;
+    return btn;
+  }
+
+  ensureStyle();
+  var rail = makeButton('manga-rail-toggle', 'Toggle page selection', `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+      <line x1="9" y1="4" x2="9" y2="20"></line>
+    </svg>
+  `);
+  var fs = makeButton('manga-fs-toggle', 'Toggle fullscreen', `
+    <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 9V4h5"></path><path d="M20 9V4h-5"></path>
+      <path d="M4 15v5h5"></path><path d="M20 15v5h-5"></path>
+    </svg>
+    <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M9 4v5H4"></path><path d="M15 4v5h5"></path>
+      <path d="M9 20v-5H4"></path><path d="M15 20v-5h5"></path>
+    </svg>
+  `);
+
+  function railOn(){
+    try { return localStorage.getItem('manga-cloud.railVisible') !== '0'; } catch(e) {}
+    return true;
+  }
+
+  function setRail(on){
+    root.classList.toggle('manga-rail-hidden', !on);
+    try { localStorage.setItem('manga-cloud.railVisible', on ? '1' : '0'); } catch(e) {}
+    syncRail();
   }
 
   function syncRail(){
-    var open = isSidebarOpen();
-    rail.setAttribute('data-rail', open ? 'open' : 'closed');
-    fs.setAttribute('data-rail',  open ? 'open' : 'closed');
+    var on = railOn();
+    var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+    if(sidebar && on){
+      var width = Math.round(sidebar.getBoundingClientRect().width || 248);
+      root.style.setProperty('--manga-rail-w', width + 'px');
+    }
+    root.classList.toggle('manga-rail-hidden', !on);
+    rail.setAttribute('data-on', String(on));
+    fs.setAttribute('data-on-rail', String(on));
   }
 
-  // Toggle sidebar by clicking Streamlit's collapse button
-  rail.addEventListener('click', function(){
-    try {
-      var btn = window.parent.document.querySelector('[data-testid="collapsedControl"] button, button[data-testid="baseButton-secondary"][aria-expanded]');
-      if(!btn){
-        // Try the sidebar itself for a collapse button
-        var btns = window.parent.document.querySelectorAll('[data-testid="stSidebar"] button, [data-testid="collapsedControl"]');
-        btns.forEach(function(b){ if(b.offsetParent !== null) b.click(); });
-      } else { btn.click(); }
-    } catch(e){}
-    setTimeout(syncRail, 50);
-    setTimeout(syncRail, 300);
-  });
+  rail.onclick = function(){ setRail(!railOn()); };
 
-  // Fullscreen
-  fs.addEventListener('click', function(){
-    var doc = window.parent.document || document;
-    var el  = window.parent.document.documentElement || document.documentElement;
-    if(doc.fullscreenElement || doc.webkitFullscreenElement){
+  function inFs(){
+    return !!(doc.fullscreenElement || doc.webkitFullscreenElement);
+  }
+
+  function syncFs(){
+    fs.setAttribute('data-on', String(inFs()));
+  }
+
+  fs.onclick = function(){
+    var target = doc.documentElement;
+    if(inFs()){
       (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
     } else {
-      (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      (target.requestFullscreen || target.webkitRequestFullscreen).call(target);
     }
-  });
-  function syncFs(){
-    var doc = window.parent.document || document;
-    fs.setAttribute('data-on', String(!!(doc.fullscreenElement || doc.webkitFullscreenElement)));
+  };
+
+  if(parentWin.__mangaSyncFs){
+    doc.removeEventListener('fullscreenchange', parentWin.__mangaSyncFs);
+    doc.removeEventListener('webkitfullscreenchange', parentWin.__mangaSyncFs);
   }
-  window.parent.document.addEventListener('fullscreenchange', syncFs);
-  window.parent.document.addEventListener('webkitfullscreenchange', syncFs);
+  parentWin.__mangaSyncFs = syncFs;
+  doc.addEventListener('fullscreenchange', syncFs);
+  doc.addEventListener('webkitfullscreenchange', syncFs);
 
   syncRail();
-  setInterval(syncRail, 800);
+  syncFs();
+  setTimeout(syncRail, 150);
 })();
 </script>""", height=0)
 
@@ -429,7 +536,6 @@ NAV_PAGES = [
     ("📐", "High-Level Arch",    "hla"),
     ("⚙️", "Low-Level Arch",     "lla"),
     ("🗄️", "Data Sources",       "data"),
-    ("📊", "Data Insights",      "insights"),
     ("✅", "Requirements",        "reqs"),
     ("💡", "Use Cases",           "usecases"),
 ]
@@ -446,19 +552,8 @@ with st.sidebar:
 
     for icon, label, key in NAV_PAGES:
         active = st.session_state.page == key
-        bg     = f"rgba(0,153,255,0.12)" if active else "transparent"
-        border = f"1px solid {ACCENT}" if active else f"1px solid transparent"
-        color  = INK if active else INK_M
-        weight = "600" if active else "400"
-        st.markdown(f"""
-        <div style="background:{bg};border:{border};border-radius:8px;
-                    padding:9px 12px;margin-bottom:3px;cursor:pointer;
-                    transition:all .15s;display:flex;align-items:center;gap:10px;">
-          <span style="font-size:15px;line-height:1">{icon}</span>
-          <span style="font-size:13px;font-weight:{weight};color:{color};
-                       letter-spacing:-.01em">{label}</span>
-        </div>""", unsafe_allow_html=True)
-        if st.button(label, key=f"nav_{key}", use_container_width=True):
+        if st.button(f"{icon}  {label}", key=f"nav_{key}",
+                     use_container_width=True, type="primary" if active else "secondary"):
             st.session_state.page = key
             st.rerun()
 
@@ -538,25 +633,26 @@ elif PAGE == "hla":
     st.markdown('<div class="page-title">High-Level Architecture</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Technology-agnostic conceptual design — architectural process layers without vendor specifics (RFP Section 2)</div>', unsafe_allow_html=True)
 
-    st.info("💡 **Hover** over any node to see its role, design rationale, and which RFP requirements it covers.")
-    fig_hla = arch_fig(
-        "High-Level Architecture — Hover any node for details",
-        HLA_NODES, HLA_EDGES,
-        xr=[-0.2, 9.0], yr=[0.2, 8.0], h=620
-    )
-    st.plotly_chart(fig_hla, use_container_width=True)
+    if not render_figma_architecture(HLA_IMAGE_CANDIDATES, "Manga Cloud Platform High-Level Architecture"):
+        st.info("💡 **Hover** over any node to see its role, design rationale, and which RFP requirements it covers.")
+        fig_hla = arch_fig(
+            "High-Level Architecture — Hover any node for details",
+            HLA_NODES, HLA_EDGES,
+            xr=[-0.2, 9.0], yr=[0.2, 8.0], h=620
+        )
+        st.plotly_chart(fig_hla, use_container_width=True)
 
-    # Layer legend
-    st.markdown("---")
-    cols = st.columns(9)
-    for col, (lbl, (fc, bc)) in zip(cols, [
-        ("Data Sources", C["src"]), ("Ingestion", C["ing"]),
-        ("Cataloging", C["cat"]), ("Processing", C["proc"]),
-        ("Raw Zone", C["raw"]), ("Cleaned Zone", C["sil"]),
-        ("Curated Zone", C["gld"]), ("Consumption", C["con"]),
-        ("Security", C["sec"]),
-    ]):
-        col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
+        # Layer legend
+        st.markdown("---")
+        cols = st.columns(9)
+        for col, (lbl, (fc, bc)) in zip(cols, [
+            ("Data Sources", C["src"]), ("Ingestion", C["ing"]),
+            ("Cataloging", C["cat"]), ("Processing", C["proc"]),
+            ("Raw Zone", C["raw"]), ("Cleaned Zone", C["sil"]),
+            ("Curated Zone", C["gld"]), ("Consumption", C["con"]),
+            ("Security", C["sec"]),
+        ]):
+            col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -566,25 +662,26 @@ elif PAGE == "lla":
     st.markdown('<div class="page-title">Low-Level AWS Architecture</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Specific AWS services mapped to every Manga data source and use case (RFP Section 3)</div>', unsafe_allow_html=True)
 
-    st.info("💡 **Hover** over any service node to see rationale, cost model, and which RFP requirement (R1–R8) it addresses.")
-    fig_lla = arch_fig(
-        "Low-Level AWS Architecture — Hover any node for details",
-        LLA_NODES, LLA_EDGES,
-        xr=[-0.3, 11.2], yr=[0.3, 10.2], h=700
-    )
-    st.plotly_chart(fig_lla, use_container_width=True)
+    if not render_figma_architecture(LLA_IMAGE_CANDIDATES, "Manga Cloud Platform Low-Level AWS Architecture"):
+        st.info("💡 **Hover** over any service node to see rationale, cost model, and which RFP requirement (R1–R8) it addresses.")
+        fig_lla = arch_fig(
+            "Low-Level AWS Architecture — Hover any node for details",
+            LLA_NODES, LLA_EDGES,
+            xr=[-0.3, 11.2], yr=[0.3, 10.2], h=700
+        )
+        st.plotly_chart(fig_lla, use_container_width=True)
 
-    # Layer legend
-    st.markdown("---")
-    cols = st.columns(9)
-    for col, (lbl, (fc, bc)) in zip(cols, [
-        ("Sources", C["src"]), ("Ingestion", C["ing"]),
-        ("Raw Zone", C["raw"]), ("Curated Zone", C["sil"]),
-        ("Gold / DWH", C["gld"]), ("NoSQL", C["dyn"]),
-        ("Governance", C["gov"]), ("Consumption", C["con"]),
-        ("Security", C["sec"]),
-    ]):
-        col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
+        # Layer legend
+        st.markdown("---")
+        cols = st.columns(9)
+        for col, (lbl, (fc, bc)) in zip(cols, [
+            ("Sources", C["src"]), ("Ingestion", C["ing"]),
+            ("Raw Zone", C["raw"]), ("Curated Zone", C["sil"]),
+            ("Gold / DWH", C["gld"]), ("NoSQL", C["dyn"]),
+            ("Governance", C["gov"]), ("Consumption", C["con"]),
+            ("Security", C["sec"]),
+        ]):
+            col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
