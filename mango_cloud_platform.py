@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from pathlib import Path
 import base64
+import html
 
 st.set_page_config(
     page_title="Manga · AWS Cloud Platform",
@@ -116,6 +117,23 @@ header[data-testid="stHeader"]{{display:none}}
 .spotlight .sl-pillars{{font-family:var(--font-display);font-size:34px;font-weight:600;letter-spacing:-1.6px;line-height:1.04;margin-top:10px}}
 .spotlight .sl-sub{{font-size:14px;line-height:1.5;opacity:.9;margin-top:12px;max-width:760px}}
 
+@keyframes manga-page-enter{{
+  from{{opacity:0;transform:translateY(16px)}}
+  to{{opacity:1;transform:translateY(0)}}
+}}
+.manga-anim-target{{
+  opacity:0;will-change:opacity,transform;
+}}
+.manga-anim-playing .manga-anim-target{{
+  animation:manga-page-enter .55s cubic-bezier(.22,.61,.36,1) both;
+  animation-delay:calc(80ms + var(--manga-anim-i, 0) * 60ms);
+}}
+@media (prefers-reduced-motion: reduce){{
+  .manga-anim-target,.manga-anim-playing .manga-anim-target{{
+    opacity:1!important;transform:none!important;animation:none!important;
+  }}
+}}
+
 .figma-chart-frame{{
   background-color:#f4f4f5;
   background-image:radial-gradient(circle, #cdcdd3 1px, transparent 1.5px);
@@ -124,6 +142,57 @@ header[data-testid="stHeader"]{{display:none}}
   box-shadow:0 18px 48px rgba(0,0,0,.32);margin:8px 0 18px;
 }}
 .figma-chart-frame img{{display:block;width:100%;max-width:1500px;height:auto;margin:0 auto;mix-blend-mode:multiply}}
+.arch-hover-stage{{position:relative;width:100%;max-width:1500px;margin:0 auto;line-height:0}}
+.arch-hover-stage img{{width:100%;max-width:none}}
+.arch-hotspot{{
+  position:absolute;display:block;padding:0;margin:0;border:0;border-radius:10px;
+  background:rgba(0,153,255,0);cursor:help;appearance:none;z-index:2;
+}}
+.arch-hotspot:hover,.arch-hotspot:focus-visible{{
+  outline:none;box-shadow:0 0 0 2px rgba(0,153,255,.72),0 10px 28px rgba(0,0,0,.22);
+  background:rgba(0,153,255,.035);
+}}
+.arch-tooltip{{
+  position:absolute;left:50%;top:calc(100% + 12px);width:min(340px,42vw);
+  transform:translate(-50%,8px);opacity:0;pointer-events:none;z-index:20;
+  background:rgba(20,20,20,.97);border:1px solid rgba(255,255,255,.09);
+  border-radius:18px;padding:18px 20px 17px;text-align:left;line-height:1.45;
+  box-shadow:0 24px 70px rgba(0,0,0,.44);backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);transition:opacity 140ms ease,transform 140ms ease;
+}}
+.arch-hotspot:hover .arch-tooltip,.arch-hotspot:focus-visible .arch-tooltip{{
+  opacity:1;transform:translate(-50%,0);
+}}
+.arch-hotspot[data-placement="above"] .arch-tooltip{{top:auto;bottom:calc(100% + 12px);transform:translate(-50%,-8px)}}
+.arch-hotspot[data-placement="above"]:hover .arch-tooltip,
+.arch-hotspot[data-placement="above"]:focus-visible .arch-tooltip{{transform:translate(-50%,0)}}
+.arch-hotspot[data-align="left"] .arch-tooltip{{left:0;transform:translate(0,8px)}}
+.arch-hotspot[data-align="left"]:hover .arch-tooltip,
+.arch-hotspot[data-align="left"]:focus-visible .arch-tooltip{{transform:translate(0,0)}}
+.arch-hotspot[data-align="right"] .arch-tooltip{{left:auto;right:0;transform:translate(0,8px)}}
+.arch-hotspot[data-align="right"]:hover .arch-tooltip,
+.arch-hotspot[data-align="right"]:focus-visible .arch-tooltip{{transform:translate(0,0)}}
+.arch-hotspot[data-placement="above"][data-align="left"] .arch-tooltip,
+.arch-hotspot[data-placement="above"][data-align="right"] .arch-tooltip{{transform:translate(0,-8px)}}
+.arch-hotspot[data-placement="above"][data-align="left"]:hover .arch-tooltip,
+.arch-hotspot[data-placement="above"][data-align="left"]:focus-visible .arch-tooltip,
+.arch-hotspot[data-placement="above"][data-align="right"]:hover .arch-tooltip,
+.arch-hotspot[data-placement="above"][data-align="right"]:focus-visible .arch-tooltip{{transform:translate(0,0)}}
+.arch-tip-head{{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}}
+.arch-tip-layer{{display:block;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:{INK_F};margin-bottom:5px}}
+.arch-tip-title{{display:block;font-size:18px;font-weight:650;color:{INK};letter-spacing:-.45px;line-height:1.08;text-shadow:0 1px 0 rgba(0,0,0,.4)}}
+.arch-tip-mode{{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;border:1px solid {HAIR};border-radius:999px;background:{SURF2};color:{INK_M};font-size:11px;font-weight:550;padding:4px 9px;white-space:nowrap}}
+.arch-tip-mode::before{{content:"";width:6px;height:6px;border-radius:50%;background:{ACCENT};box-shadow:0 0 12px rgba(0,153,255,.55)}}
+.arch-tip-section{{display:block;font-size:10px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:{INK_F};margin:13px 0 6px}}
+.arch-tip-copy,.arch-tip-data{{display:block;font-size:13px;color:#d6d6d6;line-height:1.55;margin:0}}
+.arch-tip-data{{color:{INK_M}}}
+.arch-tip-rule{{display:block;height:1px;background:{HAIR};margin:14px 0 12px}}
+.arch-tip-tags{{display:flex;flex-wrap:wrap;gap:6px}}
+.arch-tip-tag{{display:inline-flex;border:1px solid {HAIR};border-radius:999px;background:{SURF2};color:{INK_M};font-size:10px;font-weight:550;padding:4px 9px;line-height:1}}
+@media (max-width:760px){{
+  .arch-tooltip{{width:min(300px,76vw)}}
+  .figma-chart-frame{{padding:14px}}
+}}
 .figma-chart-missing{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:14px 16px;color:{INK_M};font-size:12px;margin-bottom:12px}}
 .section-title{{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:{INK_F};margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid {HAIR}}}
 .page-title{{font-family:var(--font-display);font-size:46px;font-weight:600;color:{INK};letter-spacing:-2.4px;margin-bottom:8px;line-height:1.0}}
@@ -208,7 +277,42 @@ def encode_architecture_image(path_str, modified_at):
     _ = modified_at
     return base64.b64encode(Path(path_str).read_bytes()).decode("ascii")
 
-def render_figma_architecture(candidates, alt_text):
+def render_arch_hotspot(item):
+    x, y, w, h = item["box"]
+    tags = "".join(
+        f'<span class="arch-tip-tag">{html.escape(tag)}</span>'
+        for tag in item.get("tags", [])
+    )
+    align = item.get("align")
+    if align is None:
+        center_x = x + (w / 2)
+        align = "left" if center_x < 24 else "right" if center_x > 76 else "center"
+    placement = item.get("placement")
+    if placement is None:
+        placement = "above" if y > 78 else "below"
+    aria = html.escape(f'{item["title"]}: {item["why"]}', quote=True)
+    return f"""
+      <button class="arch-hotspot" type="button" aria-label="{aria}"
+              data-placement="{placement}" data-align="{align}"
+              style="left:{x:.2f}%;top:{y:.2f}%;width:{w:.2f}%;height:{h:.2f}%;">
+        <span class="arch-tooltip" role="tooltip">
+          <span class="arch-tip-head">
+            <span>
+              <span class="arch-tip-layer">{html.escape(item["layer"])}</span>
+              <span class="arch-tip-title">{html.escape(item["title"])}</span>
+            </span>
+            <span class="arch-tip-mode">{html.escape(item["mode"])}</span>
+          </span>
+          <span class="arch-tip-section">Why it&apos;s here</span>
+          <span class="arch-tip-copy">{html.escape(item["why"])}</span>
+          <span class="arch-tip-section">Data handled</span>
+          <span class="arch-tip-data">{html.escape(item["data"])}</span>
+          <span class="arch-tip-rule"></span>
+          <span class="arch-tip-tags">{tags}</span>
+        </span>
+      </button>"""
+
+def render_figma_architecture(candidates, alt_text, hotspots=None):
     image_path = resolve_architecture_image(*candidates)
     if image_path is None:
         st.markdown(
@@ -218,11 +322,174 @@ def render_figma_architecture(candidates, alt_text):
         return False
 
     encoded = encode_architecture_image(str(image_path), image_path.stat().st_mtime)
+    hotspot_html = "".join(render_arch_hotspot(item) for item in (hotspots or []))
     st.markdown(
-        f'<div class="figma-chart-frame"><img src="data:image/jpeg;base64,{encoded}" alt="{alt_text}"></div>',
+        f'''
+        <div class="figma-chart-frame">
+          <div class="arch-hover-stage">
+            <img src="data:image/jpeg;base64,{encoded}" alt="{html.escape(alt_text, quote=True)}">
+            {hotspot_html}
+          </div>
+        </div>''',
         unsafe_allow_html=True,
     )
     return True
+
+def arch_hotspot(x, y, w, h, layer, title, mode, why, data, tags, **extra):
+    return {
+        "box": (x, y, w, h),
+        "layer": layer,
+        "title": title,
+        "mode": mode,
+        "why": why,
+        "data": data,
+        "tags": tags,
+        **extra,
+    }
+
+HLA_FIGMA_HOTSPOTS = [
+    arch_hotspot(16.39,3.74,20.08,3.68,"Security and governance","Security & Governance","Cross-cutting",
+        "Applies access control, encryption, auditability and privacy rules across every layer so the lakehouse can support regulated retail analytics.",
+        "All data paths, user access, audit logs, PII masking",["R4 Security","GDPR","All layers"], align="left"),
+    arch_hotspot(34.14,17.20,10.48,3.45,"Data sources","Structured","Batch",
+        "Keeps schema-defined operational records easy to validate and query before they enter the platform.",
+        "Sales, customers, inventory, shipping tables",["R1 Unified","R5 Quality"]),
+    arch_hotspot(48.11,17.20,10.48,3.45,"Data sources","Streaming","Streaming",
+        "Captures high-frequency events immediately so managers can act on live signals instead of yesterday's Excel export.",
+        "POS transactions, web clicks, reviews, add-to-cart events",["R1 Real-time","R3 Automation"]),
+    arch_hotspot(62.08,17.20,10.48,3.45,"Data sources","Batch","Batch",
+        "Supports scheduled large-volume loads where real-time delivery is unnecessary or the source system is legacy.",
+        "ERP extracts, CRM syncs, daily inventory reconciliations",["R3 Batch","R6 Cost"]),
+    arch_hotspot(76.04,17.20,10.48,3.45,"Data sources","Unstructured","Streaming + batch",
+        "Brings text, image and log data into the same governed platform so sentiment and AI use cases are possible.",
+        "Review text, product images, clickstream logs",["R1 Multimodal","ML ready"], align="right"),
+    arch_hotspot(11.15,29.57,10.57,3.57,"Cataloging and search","Cataloging & Search","Governance",
+        "Makes datasets discoverable with ownership, schema, lineage and freshness metadata instead of analyst guesswork.",
+        "Metadata, lineage, schema versions, dataset tags",["R4 Lineage","R7 Self-service"], align="left"),
+    arch_hotspot(33.17,29.57,16.78,3.57,"Ingestion","Ingestion","Streaming + batch",
+        "Creates one controlled entry point for all source types, replacing disconnected cron scripts with monitored pipelines.",
+        "Streaming feeds, scheduled files, CDC, API pulls",["R1 Unified","R3 Automation"]),
+    arch_hotspot(20.95,41.94,11.93,3.62,"Processing","Validate / Clean / Standardize","Streaming + batch",
+        "Stops bad records before storage by checking nulls, ranges, duplicates and formats.",
+        "Raw records, validation failures, standardized fields",["R5 Quality","R4 Alerts"], align="left"),
+    arch_hotspot(20.95,49.37,11.93,3.57,"Processing","Transform & Enrich","Streaming + batch",
+        "Turns clean records into business context by joining sources and calculating reusable KPIs.",
+        "Joined sales, customer, product, campaign and logistics features",["R1 Analytics","ML features"], align="left"),
+    arch_hotspot(44.71,64.10,10.67,3.57,"Storage","Raw Zone","Streaming + batch",
+        "Stores every source exactly as received so the company can replay pipelines and keep a complete audit trail.",
+        "Immutable source data in original formats",["Bronze","R4 Audit"]),
+    arch_hotspot(44.71,71.46,10.67,3.57,"Storage","Cleaned Zone","Streaming + batch",
+        "Keeps the trusted, validated and PII-masked version that analysts and non-production environments can safely use.",
+        "Deduplicated, validated, PII-masked Parquet",["Silver","R5 Quality"]),
+    arch_hotspot(41.13,79.75,14.26,3.57,"Storage","Curated Zone","Serving",
+        "Publishes BI and ML-ready datasets so dashboards, models and APIs do not rebuild the same logic repeatedly.",
+        "Aggregated KPIs, ML features, BI-ready tables",["Gold","R1 BI/ML"], placement="above"),
+    arch_hotspot(19.88,92.64,13.09,3.57,"Consumption","Consumption","Serving",
+        "Exposes the platform to business users, ML teams, partners and AI agents without coupling them to raw storage.",
+        "BI dashboards, model outputs, partner APIs, AI-agent responses",["R7 APIs","Self-service"], align="left", placement="above"),
+]
+
+LLA_FIGMA_HOTSPOTS = [
+    arch_hotspot(23.38,4.68,6.19,3.26,"Security and monitoring","AWS CloudTrail","Cross-cutting",
+        "Records every AWS API call so access to customer data can be audited for security reviews and GDPR evidence.",
+        "Audit events, user actions, API calls",["R4 Security","GDPR"]),
+    arch_hotspot(31.42,4.68,6.19,3.26,"Security and monitoring","Amazon VPC","Cross-cutting",
+        "Isolates platform services in private networking so data traffic stays controlled and least-privilege rules can be enforced.",
+        "Private service traffic, security groups, VPC endpoints",["R4 Network","Isolation"]),
+    arch_hotspot(39.45,4.68,6.19,3.26,"Security and monitoring","Terraform / CDK","Cross-cutting",
+        "Defines infrastructure as code so Dev, Pre-Prod and Prod are repeatable, reviewed and rollback-friendly.",
+        "Infrastructure definitions, environment parameters",["R2 Environments","R3 IaC"]),
+    arch_hotspot(47.49,4.68,6.19,3.26,"Security and monitoring","IAM & KMS","Cross-cutting",
+        "Controls who can access services and encrypts sensitive data at rest and in transit.",
+        "Service roles, keys, encrypted S3, Redshift and DynamoDB data",["R4 Auth","Encryption"]),
+    arch_hotspot(55.52,4.68,6.19,3.26,"Security and monitoring","CloudWatch","Cross-cutting",
+        "Centralizes logs, metrics and alerts so pipeline failures and quality issues are visible immediately.",
+        "Pipeline metrics, logs, alarms, operational dashboards",["R4 Monitoring","R5 Alerts"]),
+    arch_hotspot(63.56,4.68,6.19,3.26,"Security and monitoring","AWS Organizations","Cross-cutting",
+        "Separates Dev, Pre-Prod and Prod accounts with guardrails so experiments cannot accidentally affect production.",
+        "Account structure, service control policies, cost boundaries",["R2 Multi-env","Governance"]),
+    arch_hotspot(56.75,12.99,6.14,3.26,"Processing and governance","Amazon MWAA","Streaming + batch",
+        "Replaces cron with managed Airflow DAGs, dependencies, retries and SLA alerts for every pipeline.",
+        "Pipeline schedules, orchestration metadata, task status",["R3 Automation","Open Airflow"]),
+    arch_hotspot(64.79,12.99,6.14,3.26,"Processing and governance","Amazon Macie","Batch scan",
+        "Finds sensitive data in S3 automatically so PII is caught before it appears in the wrong zone or environment.",
+        "S3 objects, PII findings, security alerts",["R4 GDPR","PII scanning"]),
+    arch_hotspot(72.82,12.99,6.14,3.26,"Processing and governance","Glue Data Catalog","Governance",
+        "Registers every dataset with schema and metadata so Athena, Redshift, SageMaker and analysts use one catalog.",
+        "Table metadata, schemas, partitions, lineage context",["R4 Metadata","R7 Discovery"]),
+    arch_hotspot(80.86,12.99,6.14,3.26,"Processing and governance","Glue Data Quality","Streaming + batch",
+        "Runs automated checks after ingestion and transformation so bad data triggers alerts before consumers see it.",
+        "Validation rules, freshness checks, quality scores",["R5 Quality","CloudWatch alerts"], align="right"),
+    arch_hotspot(88.90,12.99,6.14,3.26,"Processing and governance","Lake Formation","Governance",
+        "Applies column and row-level permissions centrally so analysts see only the data they are allowed to see.",
+        "Access policies, masking rules, governed table permissions",["R4 RBAC","GDPR"], align="right"),
+    arch_hotspot(5.02,13.04,6.03,3.15,"Data sources","External APIs","Batch",
+        "Brings in scheduled context such as weather and logistics signals without maintaining servers.",
+        "Weather, campaigns, logistics updates",["R7 Extensible","Lambda"], align="left"),
+    arch_hotspot(13.06,13.04,6.03,3.15,"Data sources","CRM System","Batch + CDC",
+        "Feeds customer and loyalty data into the lakehouse while preserving change history for migration and sync.",
+        "Customer profiles, loyalty status, PII fields",["R4 PII","DMS CDC"], align="left"),
+    arch_hotspot(21.09,13.04,6.03,3.15,"Data sources","3rd-Party Data","Batch",
+        "Adds market and demographic signals through managed subscriptions instead of manual file exchange.",
+        "Market signals, licensed enrichment datasets",["R7 Interoperability","Data Exchange"]),
+    arch_hotspot(29.13,13.04,6.03,3.15,"Data sources","Web and App Events","Streaming",
+        "Captures user behavior and reviews as they happen so personalization and sentiment analysis stay current.",
+        "Clickstream, reviews, add-to-cart, app events",["R1 Real-time","NLP"]),
+    arch_hotspot(37.17,13.04,6.03,3.15,"Data sources","POS and ERP","Streaming + batch",
+        "Combines real-time sales movement with scheduled inventory and product master data.",
+        "POS transactions, inventory, product and store records",["R1 Sales","R3 Batch"]),
+    arch_hotspot(45.20,13.04,6.03,3.15,"Data sources","SaaS and Files","Batch",
+        "Supports partners and legacy systems that can only send SFTP/FTPS files.",
+        "Partner files, SaaS exports, SFTP drops",["R7 Partners","File transfer"]),
+    arch_hotspot(6.03,26.45,6.08,3.26,"Ingestion layer","AWS Lambda","Batch",
+        "Runs lightweight API connectors on schedules so new sources can be added independently.",
+        "API responses, weather and logistics pulls, connector logs",["R3 Serverless","R7 Extensible"], align="left"),
+    arch_hotspot(14.06,26.45,6.08,3.26,"Ingestion layer","AWS DMS","Batch + CDC",
+        "Migrates and replicates database changes without downtime, especially for CRM and operational stores.",
+        "Database snapshots, CDC records, migration state",["R3 Migration","CDC"], align="left"),
+    arch_hotspot(22.10,26.45,6.08,3.26,"Ingestion layer","AWS Data Exchange","Batch",
+        "Automates licensed third-party data delivery directly into the platform.",
+        "Subscribed datasets, provider updates, license metadata",["R7 Third-party","Batch"]),
+    arch_hotspot(30.13,26.45,6.08,3.26,"Ingestion layer","Kinesis Data Streams","Streaming",
+        "Captures POS and web events with sub-second latency for live dashboards and real-time features.",
+        "Sales events, clickstream, review events",["R1 Real-time","Scalable"]),
+    arch_hotspot(38.17,26.45,6.08,3.26,"Ingestion layer","Transfer Family","Batch",
+        "Provides managed SFTP/FTPS so partners can land files in S3 without custom servers.",
+        "Partner file drops, legacy exports, transfer logs",["R7 SFTP","Managed"]),
+    arch_hotspot(46.21,26.45,6.08,3.26,"Ingestion layer","AWS Glue ETL","Batch",
+        "Runs managed Spark jobs for batch ingestion, cleaning and transformation with bookmarks and retries.",
+        "Batch files, source tables, transformed records",["R3 ETL","R5 Quality"]),
+    arch_hotspot(30.13,33.18,6.08,3.26,"Ingestion layer","Kinesis Firehose","Streaming",
+        "Turns streaming records into reliable S3 micro-batches and columnar files with almost no operations burden.",
+        "Kinesis records, micro-batches, Parquet files",["R1 Streaming","S3 landing"]),
+    arch_hotspot(40.68,52.52,6.14,3.26,"S3 data lakehouse","S3 Raw Zone","Streaming + batch",
+        "Keeps immutable source data for replay, audit and future reprocessing when business rules change.",
+        "As-received events, files, snapshots, raw API payloads",["Bronze","R4 Audit"]),
+    arch_hotspot(43.92,61.78,6.14,3.26,"S3 data lakehouse","S3 Curated Zone","Streaming + batch",
+        "Stores validated and PII-masked Parquet so analytics tools can share a trusted version.",
+        "Cleaned records, masked PII, validated Parquet tables",["Silver","R5 Trusted"]),
+    arch_hotspot(45.98,71.03,6.19,3.26,"Serving layer","Amazon DynamoDB","Serving",
+        "Serves low-latency recommendations and real-time feature lookups that would be too slow from the warehouse.",
+        "ML serving records, live feature lookups, cached recommendations",["<10ms","ML serving"], placement="above"),
+    arch_hotspot(53.01,71.03,6.19,3.26,"Serving layer","Amazon Redshift","Batch + BI",
+        "Provides a columnar warehouse for fast dashboards and governed analytical queries.",
+        "Gold tables, BI aggregates, warehouse query results",["Gold","BI dashboards"], placement="above"),
+    arch_hotspot(24.89,84.49,6.14,3.26,"Consumption layer","Amazon SageMaker","Batch + real-time",
+        "Trains and serves forecasting, recommendation and pricing models from curated features.",
+        "Training datasets, feature vectors, model predictions",["ML platform","R1 Use cases"], align="left", placement="above"),
+    arch_hotspot(32.92,84.49,6.14,3.26,"Consumption layer","Amazon Athena","Batch / ad hoc",
+        "Lets analysts run serverless SQL directly on S3 without loading data into another system.",
+        "Ad-hoc SQL over raw and curated S3 tables",["Self-service","Pay per query"], placement="above"),
+    arch_hotspot(40.96,84.49,6.14,3.26,"Consumption layer","Amazon Comprehend","Streaming + batch",
+        "Extracts sentiment and NLP signals from customer review text without building a custom NLP model.",
+        "Review text, sentiment scores, entities",["NLP","Customer reviews"], placement="above"),
+    arch_hotspot(51.84,84.49,6.14,3.26,"Consumption layer","Amazon QuickSight","Serving",
+        "Gives business teams interactive BI dashboards that replace the daily Excel reporting layer.",
+        "Dashboard queries, KPIs, Redshift/Athena results",["BI","Pay per session"], align="right", placement="above"),
+    arch_hotspot(40.23,92.17,6.14,3.26,"Consumption layer","API Gateway","Serving",
+        "Publishes curated data and ML outputs to partner systems, internal apps and future AI agents.",
+        "REST/GraphQL responses, partner API traffic, AI-agent requests",["R7 APIs","Serve results"], placement="above"),
+]
 
 # ── ARCHITECTURE DIAGRAM BUILDER ────────────────────────────────────────────
 def arch_fig(title, nodes, edges, xr, yr, h=600):
@@ -441,75 +708,95 @@ if "page" not in st.session_state:
 
 # ── RAIL TOGGLE + FULLSCREEN BUTTONS (injected into parent page) ────────────
 st.components.v1.html("""
-<style>
-  #mn-rail, #mn-fs {
-    position:fixed; left:16px; z-index:999999;
-    width:32px; height:32px;
-    display:inline-flex; align-items:center; justify-content:center;
-    padding:0; margin:0;
-    background:rgba(20,20,20,0.75); color:rgba(255,255,255,0.85);
-    border:1px solid rgba(255,255,255,0.12); border-radius:6px;
-    cursor:pointer; opacity:0.65;
-    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-    transition:opacity 160ms, background 160ms, border-color 160ms,
-               left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms;
-    font-family:inherit;
-  }
-  #mn-rail { top:16px; }
-  #mn-fs   { top:54px; }
-  #mn-rail:hover, #mn-fs:hover {
-    opacity:1; background:rgba(45,45,45,0.92);
-    border-color:rgba(255,255,255,0.24);
-  }
-  #mn-rail:active, #mn-fs:active { transform:scale(0.93); }
-  #mn-rail svg, #mn-fs svg { width:18px; height:18px; pointer-events:none; }
-  .fs-exit { display:none; }
-</style>
-
-<button id="mn-rail" title="Toggle sidebar">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-       stroke-linecap="round" stroke-linejoin="round">
-    <rect x="3" y="4" width="18" height="16" rx="2"/>
-    <line x1="9" y1="4" x2="9" y2="20"/>
-  </svg>
-</button>
-
-<button id="mn-fs" title="Toggle fullscreen">
-  <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 9V4h5"/><path d="M20 9V4h-5"/>
-    <path d="M4 15v5h5"/><path d="M20 15v5h-5"/>
-  </svg>
-  <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M9 4v5H4"/><path d="M15 4v5h5"/>
-    <path d="M9 20v-5H4"/><path d="M15 20v-5h5"/>
-  </svg>
-</button>
-
 <script>
 (function(){
   var doc = window.parent.document;
+  var root = doc.documentElement;
+  var lastLeft = Number(window.parent.__mangaControlsLeft || 22);
+  var lastSignature = "";
 
-  // ── Move buttons into the parent page so they render at root level ──
-  function mountButtons(){
-    ['mn-rail','mn-fs'].forEach(function(id){
-      var existing = doc.getElementById(id);
-      if(existing) existing.remove();
-      var el = document.getElementById(id);
-      if(el){
-        var clone = el.cloneNode(true);
-        doc.body.appendChild(clone);
-        // Copy styles too
-        var styleEl = document.querySelector('style');
-        if(styleEl && !doc.getElementById('mn-style')){
-          var s = doc.createElement('style');
-          s.id = 'mn-style';
-          s.textContent = styleEl.textContent;
-          doc.head.appendChild(s);
-        }
+  function ensureControlStyle(){
+    var style = doc.getElementById('mn-style');
+    if(!style){
+      style = doc.createElement('style');
+      style.id = 'mn-style';
+      doc.head.appendChild(style);
+    }
+    style.textContent = `
+      #mn-rail, #mn-fs {
+        position: fixed;
+        left: var(--manga-controls-left, 22px);
+        z-index: 999999;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+        background: rgba(20,20,20,0.75);
+        color: rgba(255,255,255,0.85);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 6px;
+        cursor: pointer;
+        opacity: 0.65;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition: opacity 160ms ease, background 160ms ease, border-color 160ms ease,
+                    left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms ease;
+        font-family: inherit;
       }
-    });
+      #mn-rail { top: 16px; }
+      #mn-fs { top: 54px; }
+      #mn-rail:hover, #mn-fs:hover {
+        opacity: 1;
+        background: rgba(45,45,45,0.92);
+        border-color: rgba(255,255,255,0.24);
+      }
+      #mn-rail:active, #mn-fs:active { transform: scale(0.93); }
+      #mn-rail svg, #mn-fs svg { width: 18px; height: 18px; pointer-events: none; }
+      #mn-fs .fs-exit { display: none; }
+      #mn-fs[data-on="true"] .fs-enter { display: none; }
+      #mn-fs[data-on="true"] .fs-exit { display: inline; }
+      @media print { #mn-rail, #mn-fs { display: none; } }
+    `;
+  }
+
+  function ensureButton(id, title, html){
+    var button = doc.getElementById(id);
+    if(!button){
+      button = doc.createElement('button');
+      button.id = id;
+      button.type = 'button';
+      doc.body.appendChild(button);
+    }
+    button.title = title;
+    button.setAttribute('aria-label', title);
+    button.innerHTML = html;
+    return button;
+  }
+
+  function mountButtons(){
+    ensureControlStyle();
+    ensureButton('mn-rail', 'Toggle page selection', `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+        <line x1="9" y1="4" x2="9" y2="20"></line>
+      </svg>
+    `);
+    ensureButton('mn-fs', 'Toggle fullscreen', `
+      <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 9V4h5"></path><path d="M20 9V4h-5"></path>
+        <path d="M4 15v5h5"></path><path d="M20 15v5h5"></path>
+      </svg>
+      <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 4v5H4"></path><path d="M15 4v5h5"></path>
+        <path d="M9 20v-5H4"></path><path d="M15 20v-5h5"></path>
+      </svg>
+    `);
     bindEvents();
   }
 
@@ -531,25 +818,31 @@ st.components.v1.html("""
   }
 
   function syncPosition(){
-    // Pin both controls to the far-left top, regardless of sidebar state
-    var rail = doc.getElementById('mn-rail');
-    var fs   = doc.getElementById('mn-fs');
-    if(rail) rail.style.left = '16px';
-    if(fs)   fs.style.left   = '16px';
+    var title = doc.getElementById('manga-sidebar-title');
+    if(title){
+      var rect = title.getBoundingClientRect();
+      if(rect.width > 0 && rect.left > 0){
+        lastLeft = Math.round(rect.left);
+        window.parent.__mangaControlsLeft = lastLeft;
+      }
+    }
+    root.style.setProperty('--manga-controls-left', (lastLeft || 22) + 'px');
   }
 
   function syncFs(){
     var fs = doc.getElementById('mn-fs');
     if(!fs) return;
     var on = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
-    fs.querySelector('.fs-enter').style.display = on ? 'none' : '';
-    fs.querySelector('.fs-exit').style.display  = on ? '' : 'none';
+    fs.setAttribute('data-on', String(on));
   }
 
   function bindEvents(){
     var rail = doc.getElementById('mn-rail');
     var fs   = doc.getElementById('mn-fs');
     if(!rail || !fs) return;
+
+    rail.onclick = null;
+    fs.onclick = null;
 
     rail.onclick = function(){
       if(isSidebarOpen()){
@@ -571,15 +864,72 @@ st.components.v1.html("""
     };
   }
 
-  doc.addEventListener('fullscreenchange', syncFs);
-  doc.addEventListener('webkitfullscreenchange', syncFs);
+  function animationBlocks(){
+    var main = doc.querySelector('section.main') ||
+               doc.querySelector('[data-testid="stAppViewContainer"] main') ||
+               doc.querySelector('main');
+    if(!main) return [];
+    var selector = [
+      '.page-title',
+      '.page-sub',
+      '.spotlight',
+      '.metric-card',
+      '.section-title',
+      '.card',
+      '.stk-card',
+      '.figma-chart-frame',
+      '[data-testid="stExpander"]',
+      '[data-testid="stDataFrame"]',
+      '[data-testid="stPlotlyChart"]'
+    ].join(',');
+    var all = Array.prototype.slice.call(main.querySelectorAll(selector))
+      .filter(function(el){
+        var rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
+    return all.filter(function(el){
+      return !all.some(function(other){ return other !== el && other.contains(el); });
+    });
+  }
+
+  function playPageAnimation(force){
+    var blocks = animationBlocks();
+    if(!blocks.length) return;
+    var pageTitle = doc.querySelector('.page-title');
+    var signature = (pageTitle ? pageTitle.textContent : '') + '|' + blocks.length;
+    if(!force && signature === lastSignature) return;
+    lastSignature = signature;
+    blocks.forEach(function(el, i){
+      el.classList.add('manga-anim-target');
+      el.style.setProperty('--manga-anim-i', String(Math.min(i, 12)));
+    });
+    root.classList.remove('manga-anim-playing');
+    void root.offsetWidth;
+    root.classList.add('manga-anim-playing');
+  }
+
+  if(window.parent.__mangaSyncFs){
+    doc.removeEventListener('fullscreenchange', window.parent.__mangaSyncFs);
+    doc.removeEventListener('webkitfullscreenchange', window.parent.__mangaSyncFs);
+  }
+  window.parent.__mangaSyncFs = function(){
+    mountButtons();
+    syncPosition();
+    syncFs();
+  };
+  doc.addEventListener('fullscreenchange', window.parent.__mangaSyncFs);
+  doc.addEventListener('webkitfullscreenchange', window.parent.__mangaSyncFs);
 
   // Mount on load and re-sync periodically (Streamlit re-renders wipe DOM)
   mountButtons();
+  syncPosition();
+  syncFs();
+  setTimeout(function(){ playPageAnimation(true); }, 120);
   setInterval(function(){
-    if(!doc.getElementById('mn-rail')) mountButtons();
+    if(!doc.getElementById('mn-rail') || !doc.getElementById('mn-fs')) mountButtons();
     syncPosition();
     syncFs();
+    playPageAnimation(false);
   }, 600);
 })();
 </script>
@@ -598,8 +948,8 @@ NAV_PAGES = [
 with st.sidebar:
     st.markdown(f"""
     <div style="padding:40px 8px 22px;text-align:left;">
-      <div style="font-family:var(--font-display);font-size:16px;font-weight:600;color:{INK};
-                  letter-spacing:-.4px;margin-bottom:4px;">Manga Cloud</div>
+          <div id="manga-sidebar-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;color:{INK};
+                      letter-spacing:-.4px;margin-bottom:4px;">Manga Cloud</div>
       <div style="font-size:11px;color:{INK_F};letter-spacing:.12em;text-transform:uppercase;font-weight:500;">
         RFP Response · AWS
       </div>
@@ -696,7 +1046,7 @@ elif PAGE == "hla":
     st.markdown('<div class="page-title">High-Level Architecture</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Technology-agnostic conceptual design — architectural process layers without vendor specifics (RFP Section 2)</div>', unsafe_allow_html=True)
 
-    if not render_figma_architecture(HLA_IMAGE_CANDIDATES, "Manga Cloud Platform High-Level Architecture"):
+    if not render_figma_architecture(HLA_IMAGE_CANDIDATES, "Manga Cloud Platform High-Level Architecture", HLA_FIGMA_HOTSPOTS):
         st.info("**Hover** over any node to see its role, design rationale, and which RFP requirements it covers.")
         fig_hla = arch_fig(
             "High-Level Architecture — Hover any node for details",
@@ -725,7 +1075,7 @@ elif PAGE == "lla":
     st.markdown('<div class="page-title">Low-Level AWS Architecture</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Specific AWS services mapped to every Manga data source and use case (RFP Section 3)</div>', unsafe_allow_html=True)
 
-    if not render_figma_architecture(LLA_IMAGE_CANDIDATES, "Manga Cloud Platform Low-Level AWS Architecture"):
+    if not render_figma_architecture(LLA_IMAGE_CANDIDATES, "Manga Cloud Platform Low-Level AWS Architecture", LLA_FIGMA_HOTSPOTS):
         st.info("**Hover** over any service node to see rationale, cost model, and which RFP requirement (R1–R8) it addresses.")
         fig_lla = arch_fig(
             "Low-Level AWS Architecture — Hover any node for details",
