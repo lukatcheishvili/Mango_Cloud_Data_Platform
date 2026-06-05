@@ -14,6 +14,17 @@
 
 **[https://manga-cloud-platform.streamlit.app/](https://manga-cloud-platform.streamlit.app/)**
 
+---
+
+## 👥 Project Team
+
+- ANDREA ALARCÓN VALLES
+- MATEUS CARNEIRO
+- TINA JANNASCH
+- RICARDO LIÉVANO PEDROZA
+- LUKA TCHEISHVILI
+- NICKLAS URBAN
+
 ### 📐 Architecture Diagrams (Figma)
 
 | Diagram | Link |

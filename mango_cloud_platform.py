@@ -754,10 +754,11 @@ st.components.v1.html("""
         border-color: rgba(255,255,255,0.24);
       }
       #mn-rail:active, #mn-fs:active { transform: scale(0.93); }
-      #mn-rail svg, #mn-fs svg { width: 18px; height: 18px; pointer-events: none; }
+      #mn-rail svg, #mn-fs svg { width: 18px; height: 18px; display: block; pointer-events: none; }
+      #mn-fs .fs-enter { display: block; }
       #mn-fs .fs-exit { display: none; }
       #mn-fs[data-on="true"] .fs-enter { display: none; }
-      #mn-fs[data-on="true"] .fs-exit { display: inline; }
+      #mn-fs[data-on="true"] .fs-exit { display: block; }
       @media print { #mn-rail, #mn-fs { display: none; } }
     `;
   }
@@ -788,13 +789,17 @@ st.components.v1.html("""
     ensureButton('mn-fs', 'Toggle fullscreen', `
       <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M4 9V4h5"></path><path d="M20 9V4h-5"></path>
-        <path d="M4 15v5h5"></path><path d="M20 15v5h5"></path>
+        <polyline points="8 3 3 3 3 8"></polyline>
+        <polyline points="16 3 21 3 21 8"></polyline>
+        <polyline points="3 16 3 21 8 21"></polyline>
+        <polyline points="16 21 21 21 21 16"></polyline>
       </svg>
       <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M9 4v5H4"></path><path d="M15 4v5h5"></path>
-        <path d="M9 20v-5H4"></path><path d="M15 20v-5h5"></path>
+        <polyline points="9 3 9 9 3 9"></polyline>
+        <polyline points="15 3 15 9 21 9"></polyline>
+        <polyline points="3 15 9 15 9 21"></polyline>
+        <polyline points="21 15 15 15 15 21"></polyline>
       </svg>
     `);
     bindEvents();
@@ -834,6 +839,8 @@ st.components.v1.html("""
     if(!fs) return;
     var on = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
     fs.setAttribute('data-on', String(on));
+    fs.title = on ? 'Exit fullscreen' : 'Enter fullscreen';
+    fs.setAttribute('aria-label', fs.title);
   }
 
   function bindEvents(){
@@ -984,6 +991,26 @@ if PAGE == "overview":
       <div class="sl-eyebrow">The proposal in three moves</div>
       <div class="sl-pillars">Unify &nbsp;·&nbsp; Accelerate &nbsp;·&nbsp; Enable</div>
       <div class="sl-sub">One governed AWS lakehouse for every data source · time-to-insight cut from 24 hours to sub-second · ML-powered recommendations, dynamic pricing and demand forecasting that are impossible today.</div>
+    </div>""", unsafe_allow_html=True)
+
+    team_members = [
+        "ANDREA ALARCÓN VALLES",
+        "MATEUS CARNEIRO",
+        "TINA JANNASCH",
+        "RICARDO LIÉVANO PEDROZA",
+        "LUKA TCHEISHVILI",
+        "NICKLAS URBAN",
+    ]
+    member_tags = "".join(
+        f'<span style="display:inline-flex;align-items:center;border:1px solid {HAIR};'
+        f'border-radius:999px;background:{SURF2};color:{INK_M};font-size:11px;'
+        f'font-weight:550;letter-spacing:.02em;padding:7px 11px;line-height:1;">{name}</span>'
+        for name in team_members
+    )
+    st.markdown(f"""
+    <div class="section-title" style="margin-top:18px">Project Team</div>
+    <div class="card" style="padding:16px 18px">
+      <div style="display:flex;flex-wrap:wrap;gap:8px 9px">{member_tags}</div>
     </div>""", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)

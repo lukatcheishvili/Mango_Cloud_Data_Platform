@@ -135,6 +135,22 @@ It covers:
 
 ---
 
+## 🤝 AI Collaboration Rules
+
+If an AI assistant has any question or uncertainty about how to implement a task, what design direction to use, what visual style to follow, which colors, shapes, fonts, spacing, layout, interaction pattern, or any other project decision to choose, it must ask Luka before implementing.
+
+Do not make unclear design or implementation decisions silently. When in doubt, ask first and wait for the answer.
+
+After every 5 user prompts in an active project session, update this `CLAUDE.md` file with the latest project information, including completed changes, new decisions, remaining tasks, known issues, and any important implementation notes.
+
+For engineering work, especially data architecture, implementation quality, deployment decisions, testing strategy, review practices, and project delivery workflows, AI assistants should reference the external skills repository when relevant:
+
+- https://github.com/mattpocock/skills
+
+Use this repository as an additional engineering skills source, while keeping this project's `CLAUDE.md`, `DESIGN.md`, RFP constraints, and Luka's direct instructions as the highest-priority guidance.
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -234,6 +250,8 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Badges unified to monochrome SURF2 background (matches Framer do's/don'ts)
 - [x] Sidebar toggle fixed — mn-rail/mn-fs buttons programmatically click Streamlit's native collapse button
 - [x] Sidebar nav button CSS hardened — section-scoped selectors, gap:4px on stVerticalBlock, flex layout, works across Streamlit versions (kind=primary, baseButton-primary, stBaseButton-primary all covered)
+- [x] Overview page now includes the full project team member list
+- [x] README now includes the full project team member list
 
 ---
 
@@ -246,7 +264,6 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [ ] **Record the video walkthrough** — walk through the live Streamlit app explaining each page; mention RFP requirements being addressed; show the Figma diagrams
 - [ ] **Finalise the written RFP response PDF** (`Manga_DataHub_RFP_Response.pdf`) — ensure all 8 requirements are addressed in the written document with the same content as the app
 - [ ] **Review and proofread the app** — check all text for typos, consistent terminology (Manga not Mango), correct RFP references
-- [ ] **Add team member names** to the Overview page and README (currently missing)
 
 ### Medium Priority (improvements)
 
@@ -300,9 +317,10 @@ When you push changes, update the relevant section(s):
 - **Made an architectural decision** → add a row to "Important Decisions & Rationale"
 - **Identified new work** → add to "Remaining Tasks" under the appropriate priority
 - **Changed a file or added a new one** → update "Repository Structure"
+- **Reached every 5 user prompts in an active project session** → update this file with the latest project state, decisions, completed work, open issues, and next tasks
 
 A GitHub Action will warn you on every push if you forgot to update this file.
 
 ---
 
-*Last updated: 2026-06-04 | Updated by: Luka Tcheishvili*
+*Last updated: 2026-06-05 | Updated by: Codex*
