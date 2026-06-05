@@ -302,8 +302,7 @@ def arch_fig(title, nodes, edges, xr, yr, h=600):
     )
     return fig
 
-
-# ── INTERACTIVE HTML ARCHITECTURE (hover cards) ───────────────────────────────
+# ── INTERACTIVE HTML ARCHITECTURE (hover cards — Option B) ───────────────────
 _LAYER_EYEBROW = {
     "src":"Data Source","ing":"Ingestion Layer","proc":"Processing","cat":"Governance",
     "raw":"Storage · Bronze","sil":"Storage · Silver","gld":"Storage · Gold",
@@ -316,191 +315,211 @@ _NEUTRAL_TAG = {
 }
 
 def _parse_hover(h):
+    """Pull title / why / what / cost / rfp out of an existing hover string."""
     title, fields = "", {}
     for part in re.split(r"<br>", h):
         part = part.strip()
         m = re.match(r"<b>(.*?)</b>\s*(.*)", part, re.S)
-        if not m: continue
+        if not m:
+            continue
         lab, val = m.group(1).strip(), m.group(2).strip()
-        if lab.endswith(":"): fields[lab[:-1].strip().lower()] = val
+        if lab.endswith(":"):
+            fields[lab[:-1].strip().lower()] = val
         elif ":" in lab and not val:
-            k,v = lab.split(":",1); fields[k.strip().lower()] = v.strip()
+            k, v = lab.split(":", 1)
+            fields[k.strip().lower()] = v.strip()
         elif ":" in lab:
-            k,v = lab.split(":",1); fields[k.strip().lower()] = (v.strip()+" "+val).strip()
-        elif not title: title = (lab+(" "+val if val else "")).strip()
-    rfp = [x.strip() for x in re.split(r"[,\xb7]", fields.get("rfp","")) if x.strip()]
-    return title, fields.get("why",""), fields.get("what",""), fields.get("cost",""), rfp
+            k, v = lab.split(":", 1)
+            fields[k.strip().lower()] = (v.strip() + " " + val).strip()
+        elif not title:
+            title = (lab + (" " + val if val else "")).strip()
+    rfp = []
+    if fields.get("rfp"):
+        rfp = [x.strip() for x in re.split(r"[,\u00b7]", fields["rfp"]) if x.strip()]
+    return title, fields.get("why", ""), fields.get("what", ""), fields.get("cost", ""), rfp
 
 def _datatype_tags(text, c, label):
     t = text.lower()
-    stream = bool(re.search(r"stream|real-?time|sub-second|kinesis|event|cdc|<10ms", t))
-    batch  = bool(re.search(r"batch|cron|nightly|daily|hourly|glue|schedul|\bdms\b|sftp|firehose", t))
-    if stream and batch: return [["Streaming","stream"],["Batch","batch"]]
-    if stream: return [["Streaming","stream"]]
-    if batch:  return [["Batch","batch"]]
-    return [[label if c=="src" else _NEUTRAL_TAG.get(c,"Cross-cutting"),"neutral"]]
+    stream = bool(re.search(r"stream|real-?time|sub-second|kinesis|event|cdc|<10ms|millisecond", t))
+    batch  = bool(re.search(r"batch|cron|nightly|daily|hourly|glue|schedul|\bdms\b|sftp|firehose|micro-batch", t))
+    tags = []
+    if stream: tags.append(["Streaming", "stream"])
+    if batch:  tags.append(["Batch", "batch"])
+    if not tags:
+        tags = [[label if c == "src" else _NEUTRAL_TAG.get(c, "Cross-cutting"), "neutral"]]
+    return tags
 
 def _build_nodes(nodes):
     out = []
     for n in nodes:
-        fill,stroke = C[n["c"]]
-        title,why,what,cost,rfp = _parse_hover(n.get("hover",""))
-        text = " ".join([n["label"],n.get("sub",""),what,why])
-        out.append({"x":n["x"],"y":n["y"],"w":n["w"],"h":n["h"],
-            "fill":fill,"stroke":stroke,"label":n["label"],"sub":n.get("sub",""),
-            "eyebrow":_LAYER_EYEBROW.get(n["c"],""),
-            "ttl":(title or n["label"]).split(" — ")[0],
-            "tags":_datatype_tags(text,n["c"],n["label"]),
-            "why":why or what,"handled":n.get("sub",""),"cost":cost,"rfp":rfp})
+        fill, stroke = C[n["c"]]
+        title, why, what, cost, rfp = _parse_hover(n.get("hover", ""))
+        ttl = (title or n["label"]).split(" — ")[0]
+        text = " ".join([n["label"], n.get("sub", ""), what, why])
+        out.append({
+            "x": n["x"], "y": n["y"], "w": n["w"], "h": n["h"],
+            "fill": fill, "stroke": stroke,
+            "label": n["label"], "sub": n.get("sub", ""),
+            "eyebrow": _LAYER_EYEBROW.get(n["c"], ""),
+            "ttl": ttl,
+            "tags": _datatype_tags(text, n["c"], n["label"]),
+            "why": why or what,
+            "handled": n.get("sub", ""),
+            "cost": cost,
+            "rfp": rfp,
+        })
     return out
 
 def arch_component(nodes, edges, sx=100, sy=78, padx=60, padtop=220, padbot=34):
     data = _build_nodes(nodes)
-    xs=[n["x"]-n["w"]/2 for n in nodes]+[n["x"]+n["w"]/2 for n in nodes]
-    ys=[n["y"]-n["h"]/2 for n in nodes]+[n["y"]+n["h"]/2 for n in nodes]
-    minx,maxx,miny,maxy=min(xs),max(xs),min(ys),max(ys)
-    W=(maxx-minx)*sx+padx*2; H=(maxy-miny)*sy+padtop+padbot
-    cfg=dict(SX=sx,SY=sy,PADX=padx,PADTOP=padtop,MINX=minx,MAXY=maxy,W=W,H=H)
-    html=(_ARCH_TMPL.replace("__NODES__",json.dumps(data))
-                    .replace("__EDGES__",json.dumps(edges))
-                    .replace("__CFG__",json.dumps(cfg)))
-    return html,int(H)+8
+    xs = [n["x"] - n["w"] / 2 for n in nodes] + [n["x"] + n["w"] / 2 for n in nodes]
+    ys = [n["y"] - n["h"] / 2 for n in nodes] + [n["y"] + n["h"] / 2 for n in nodes]
+    minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+    W = (maxx - minx) * sx + padx * 2
+    H = (maxy - miny) * sy + padtop + padbot
+    cfg = dict(SX=sx, SY=sy, PADX=padx, PADTOP=padtop, MINX=minx, MAXY=maxy, W=W, H=H)
+    html = _ARCH_TMPL.replace("__NODES__", json.dumps(data)) \
+                     .replace("__EDGES__", json.dumps(edges)) \
+                     .replace("__CFG__", json.dumps(cfg))
+    return html, int(H) + 8
 
-_ARCH_CSS = (
-    "*{box-sizing:border-box}html,body{margin:0;background:transparent;"
-    "font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}"
-    ".wrap{position:relative;background-color:#f4f4f5;"
-    "background-image:radial-gradient(circle,#cdcdd3 1px,transparent 1.5px);"
-    "background-size:22px 22px;background-position:-7px -7px;"
-    "border:1px solid #2a2a2a;border-radius:15px;overflow:hidden;box-shadow:0 18px 48px rgba(0,0,0,.32)}"
-    ".stage{position:relative}.edges{position:absolute;inset:0;pointer-events:none;z-index:1}"
-    ".node{position:absolute;z-index:2;border-radius:8px;display:flex;flex-direction:column;"
-    "align-items:center;justify-content:center;text-align:center;padding:6px 10px;"
-    "box-shadow:0 5px 14px rgba(20,30,60,.18);transition:transform .16s ease,box-shadow .16s ease}"
-    ".node:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(20,30,60,.30);z-index:40}"
-    ".node .nl{color:#fff;font-weight:600;font-size:12.5px;letter-spacing:-.2px;line-height:1.15}"
-    ".node .ns{color:rgba(255,255,255,.72);font-size:9.5px;margin-top:3px;line-height:1.25;max-width:97%}"
-    ".node.wide .nl{font-size:12px}.node.wide .ns{font-size:9px}"
-    ".tip{position:absolute;left:50%;bottom:calc(100% + 12px);"
-    "transform:translateX(-50%) translateY(6px);width:288px;"
-    "background:#161616;border:1px solid #2a2a2a;border-radius:15px;"
-    "box-shadow:0 24px 60px rgba(0,0,0,.6);padding:16px;"
-    "opacity:0;visibility:hidden;text-align:left;pointer-events:none;z-index:60;"
-    "transition:opacity .2s ease,transform .2s ease}"
-    ".node:hover .tip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}"
-    ".tip::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);"
-    "width:12px;height:12px;background:#161616;border-right:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a}"
-    ".tip.fl{left:0;transform:translateX(-12px) translateY(6px)}"
-    ".node:hover .tip.fl{transform:translateX(-12px) translateY(0)}.tip.fl::after{left:auto;right:40px}"
-    ".tip.fr{left:auto;right:0;transform:translateX(12px) translateY(6px)}"
-    ".node:hover .tip.fr{transform:translateX(12px) translateY(0)}.tip.fr::after{left:40px}"
-    ".tip.below{bottom:auto;top:calc(100% + 12px);transform:translateX(-50%) translateY(-6px)}"
-    ".node:hover .tip.below{transform:translateX(-50%) translateY(0)}"
-    ".tip.below::after{bottom:auto;top:-7px;border-right:none;border-bottom:none;"
-    "border-left:1px solid #2a2a2a;border-top:1px solid #2a2a2a}"
-    ".hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}"
-    ".ey{font-size:9.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#5a5a5a;margin:0 0 4px}"
-    ".ttl{font-size:15px;font-weight:700;letter-spacing:-.3px;margin:0;color:#fff}"
-    ".pills{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0}"
-    ".pill{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:600;"
-    "white-space:nowrap;padding:3px 9px 3px 7px;border-radius:100px;"
-    "background:#1e1e1e;border:1px solid #2a2a2a;color:#9a9a9a}"
-    ".pill::before{content:'';width:6px;height:6px;border-radius:50%;background:#8a8a90}"
-    ".pill.stream::before{background:#0099ff}.pill.batch::before{background:#d89030}"
-    ".lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5a5a5a;margin:13px 0 5px}"
-    ".why{font-size:11.5px;color:#9a9a9a;line-height:1.55;margin:0}"
-    ".src{font-size:11px;color:#cfcfcf;line-height:1.5;margin:0}"
-    ".cost{font-size:11px;color:#cdb88a;line-height:1.5;margin:0}"
-    ".hr{height:1px;background:#2a2a2a;margin:13px 0 0}"
-    ".chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}"
-    ".chip{font-size:9px;font-weight:600;padding:3px 9px;border-radius:100px;"
-    "background:#1e1e1e;border:1px solid #2a2a2a;color:#bdbdbd}"
-)
-
-_ARCH_TMPL = (
-    "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-    "<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'>"
-    "<style>" + _ARCH_CSS + "</style></head><body>"
-    "<div class='wrap' id='wrap'><div class='stage' id='stage'>"
-    "<svg class='edges' id='edges'></svg></div></div><script>"
-    "var NODES=__NODES__,EDGES=__EDGES__,CFG=__CFG__;"
-    "var SX=CFG.SX,SY=CFG.SY,PADX=CFG.PADX,PADTOP=CFG.PADTOP,MINX=CFG.MINX,MAXY=CFG.MAXY,W=CFG.W,H=CFG.H;"
-    "function px(x){return PADX+(x-MINX)*SX;}function py(y){return PADTOP+(MAXY-y)*SY;}"
-    "var stage=document.getElementById('stage');"
-    "stage.style.width=W+'px';stage.style.height=H+'px';"
-    "document.getElementById('wrap').style.width=W+'px';"
-    "var svg=document.getElementById('edges');"
-    "svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('width',W);svg.setAttribute('height',H);"
-    "EDGES.forEach(function(e){"
-    "var X1=px(e[0]),Y1=py(e[1]),X2=px(e[2]),Y2=py(e[3]),my=(Y1+Y2)/2;"
-    "var d='M '+X1+' '+Y1+' L '+X1+' '+my+' L '+X2+' '+my+' L '+X2+' '+Y2;"
-    "var p=document.createElementNS('http://www.w3.org/2000/svg','path');"
-    "p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke','#b4b4ba');"
-    "p.setAttribute('stroke-width','1.8');p.setAttribute('stroke-dasharray','6 6');"
-    "p.setAttribute('stroke-linecap','round');svg.appendChild(p);});"
-    "function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}"
-    "NODES.forEach(function(n){"
-    "var w=n.w*SX,h=n.h*SY,left=px(n.x)-w/2,top=py(n.y)-h/2;"
-    "var el=document.createElement('div');"
-    "el.className='node'+(n.w>=3?' wide':'');"
-    "el.style.cssText='left:'+left+'px;top:'+top+'px;width:'+w+'px;height:'+h"
-    "+'px;background:'+n.fill+';border:1.6px solid '+n.stroke;"
-    "var flip='',cx=px(n.x);"
-    "if(cx-150<8)flip+=' fl';else if(cx+150>W-8)flip+=' fr';"
-    "if(top<264)flip+=' below';"
-    "var pills=(n.tags||[]).map(function(t){"
-    "return '<span class=\"pill '+t[1]+'\">'+(esc(t[0]))+'</span>';}).join('');"
-    "var chips=(n.rfp||[]).map(function(r){"
-    "return '<span class=\"chip\">'+(esc(r))+'</span>';}).join('');"
-    "var cst=n.cost?'<p class=\"lbl\">Cost</p><p class=\"cost\">'+(esc(n.cost))+'</p>':'';"
-    "var chp=chips?'<div class=\"hr\"></div><div class=\"chips\">'+chips+'</div>':'';"
-    "el.innerHTML='<div class=\"nl\">'+(esc(n.label))+'</div>'"
-    "+(n.sub?'<div class=\"ns\">'+(esc(n.sub))+'</div>':'')"
-    "+'<div class=\"tip'+flip+'\">'+'<div class=\"hdr\"><div>'"
-    "+'<p class=\"ey\">'+(esc(n.eyebrow))+'</p>'"
-    "+'<p class=\"ttl\">'+(esc(n.ttl))+'</p></div>'"
-    "+'<div class=\"pills\">'+pills+'</div></div>'"
-    "+'<p class=\"lbl\">Why it\\'s here</p><p class=\"why\">'+(esc(n.why))+'</p>'"
-    "+(n.handled?'<p class=\"lbl\">Data handled</p><p class=\"src\">'+(esc(n.handled))+'</p>':'')"
-    "+cst+chp+'</div>';"
-    "stage.appendChild(el);});"
-    "</script></body></html>"
-)
+_ARCH_TMPL = r"""
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&display=swap');
+:root{--surf1:#161616;--surf2:#1e1e1e;--hair:#2a2a2a;--ink:#fff;--ink-m:#9a9a9a;--ink-f:#5a5a5a;
+  --stream:#0099ff;--batch:#d89030;--neutral:#8a8a90;--fd:'Mona Sans','Inter',sans-serif;--fb:'Inter',sans-serif;}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;font-family:var(--fb);-webkit-font-smoothing:antialiased}
+.wrap{position:relative;background-color:#f4f4f5;
+  background-image:radial-gradient(circle,#cdcdd3 1px,transparent 1.5px);
+  background-size:22px 22px;background-position:-7px -7px;
+  border:1px solid var(--hair);border-radius:15px;overflow:visible;box-shadow:0 18px 48px rgba(0,0,0,.32)}
+.stage{position:relative;overflow:visible}
+.edges{position:absolute;inset:0;pointer-events:none;z-index:1}
+.node{position:absolute;z-index:2;border-radius:8px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 5px 14px rgba(20,30,60,.18);
+  transition:transform .16s ease,box-shadow .16s ease}
+.node:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(20,30,60,.30);z-index:40}
+.node .nl{color:#fff;font-weight:600;font-size:12.5px;letter-spacing:-.2px;line-height:1.15}
+.node .ns{color:rgba(255,255,255,.72);font-size:9.5px;font-weight:400;margin-top:3px;line-height:1.25;max-width:97%}
+.node.wide .nl{font-size:12px;letter-spacing:.02em}
+.node.wide .ns{font-size:9px}
+.tip{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%) translateY(6px);width:288px;
+  background:var(--surf1);border:1px solid var(--hair);border-radius:15px;box-shadow:0 24px 60px rgba(0,0,0,.6);
+  padding:16px 16px 14px;opacity:0;visibility:hidden;text-align:left;pointer-events:none;z-index:60;
+  transition:opacity .2s cubic-bezier(.22,.61,.36,1),transform .2s cubic-bezier(.22,.61,.36,1)}
+.node:hover .tip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.tip::after{content:"";position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:12px;
+  height:12px;background:var(--surf1);border-right:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.tip.fl{left:0;transform:translateX(-12px) translateY(6px)}
+.node:hover .tip.fl{transform:translateX(-12px) translateY(0)}
+.tip.fl::after{left:auto;right:40px}
+.tip.fr{left:auto;right:0;transform:translateX(12px) translateY(6px)}
+.node:hover .tip.fr{transform:translateX(12px) translateY(0)}
+.tip.fr::after{left:40px}
+.tip.below{bottom:auto;top:calc(100% + 12px);transform:translateX(-50%) translateY(-6px)}
+.node:hover .tip.below{transform:translateX(-50%) translateY(0)}
+.tip.below.fl{transform:translateX(-12px) translateY(-6px)}
+.node:hover .tip.below.fl{transform:translateX(-12px) translateY(0)}
+.tip.below.fr{transform:translateX(12px) translateY(-6px)}
+.node:hover .tip.below.fr{transform:translateX(12px) translateY(0)}
+.tip.below::after{bottom:auto;top:-7px;border-right:none;border-bottom:none;border-left:1px solid var(--hair);border-top:1px solid var(--hair)}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.eyebrow{font-size:9.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-f);margin:0 0 4px}
+.ttl{font-family:var(--fd);font-size:15px;font-weight:600;letter-spacing:-.3px;margin:0;color:#fff}
+.pills{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:600;letter-spacing:.02em;
+  white-space:nowrap;padding:3px 9px 3px 7px;border-radius:100px;background:var(--surf2);border:1px solid var(--hair);color:var(--ink-m)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--neutral)}
+.pill.stream::before{background:var(--stream)}
+.pill.batch::before{background:var(--batch)}
+.lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-f);margin:13px 0 5px}
+.body{font-size:11.5px;color:var(--ink-m);line-height:1.55;margin:0}
+.src{font-size:11px;color:#cfcfcf;line-height:1.5;margin:0}
+.cost{font-size:11px;color:#cdb88a;line-height:1.5;margin:0}
+.hair{height:1px;background:var(--hair);margin:13px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
+.chip{font-size:9px;font-weight:600;padding:3px 9px;border-radius:100px;background:var(--surf2);border:1px solid var(--hair);color:#bdbdbd}
+</style></head><body>
+<div class="wrap" id="wrap"><div class="stage" id="stage"><svg class="edges" id="edges"></svg></div></div>
+<script>
+var NODES=__NODES__, EDGES=__EDGES__, CFG=__CFG__;
+var SX=CFG.SX,SY=CFG.SY,PADX=CFG.PADX,PADTOP=CFG.PADTOP,MINX=CFG.MINX,MAXY=CFG.MAXY,W=CFG.W,H=CFG.H;
+function px(x){return PADX+(x-MINX)*SX;}
+function py(y){return PADTOP+(MAXY-y)*SY;}
+var stage=document.getElementById('stage');
+stage.style.width=W+'px';stage.style.height=H+'px';
+document.getElementById('wrap').style.width=W+'px';
+var svg=document.getElementById('edges');
+svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('width',W);svg.setAttribute('height',H);
+EDGES.forEach(function(e){
+  var X1=px(e[0]),Y1=py(e[1]),X2=px(e[2]),Y2=py(e[3]),my=(Y1+Y2)/2;
+  var d='M '+X1+' '+Y1+' L '+X1+' '+my+' L '+X2+' '+my+' L '+X2+' '+Y2;
+  var p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke','#b4b4ba');
+  p.setAttribute('stroke-width','1.8');p.setAttribute('stroke-dasharray','6 6');p.setAttribute('stroke-linecap','round');
+  svg.appendChild(p);
+});
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+NODES.forEach(function(n){
+  var w=n.w*SX,h=n.h*SY,left=px(n.x)-w/2,top=py(n.y)-h/2;
+  var el=document.createElement('div');
+  el.className='node'+(n.w>=3?' wide':'');
+  el.style.cssText='left:'+left+'px;top:'+top+'px;width:'+w+'px;height:'+h+'px;background:'+n.fill+';border:1.6px solid '+n.stroke;
+  var flip='';var cx=px(n.x);
+  if(cx-150<8)flip+=' fl';else if(cx+150>W-8)flip+=' fr';
+  if(top<264)flip+=' below';
+  var pills=n.tags.map(function(t){return '<span class="pill '+t[1]+'">'+esc(t[0])+'</span>';}).join('');
+  var chips=(n.rfp||[]).map(function(r){return '<span class="chip">'+esc(r)+'</span>';}).join('');
+  var costHtml=n.cost?'<div class="lbl">Cost model</div><div class="cost">'+esc(n.cost)+'</div>':'';
+  var chipHtml=chips?'<div class="hair"></div><div class="chips">'+chips+'</div>':'';
+  el.innerHTML='<div class="nl">'+esc(n.label)+'</div>'+(n.sub?'<div class="ns">'+esc(n.sub)+'</div>':'')+
+    '<div class="tip'+flip+'"><div class="hdr"><div><div class="eyebrow">'+esc(n.eyebrow)+'</div>'+
+    '<div class="ttl">'+esc(n.ttl)+'</div></div><div class="pills">'+pills+'</div></div>'+
+    '<div class="lbl">Why it\'s here</div><div class="body">'+esc(n.why)+'</div>'+
+    (n.handled?'<div class="lbl">Data handled</div><div class="src">'+esc(n.handled)+'</div>':'')+
+    costHtml+chipHtml+'</div>';
+  stage.appendChild(el);
+});
+</script></body></html>
+"""
 
 # ── HLA DIAGRAM DATA ────────────────────────────────────────────────────────
 HLA_NODES = [
     # ── Data Sources row y=7.3
-    dict(x=1.0,y=7.3,w=1.5,h=0.65,c=C["src"],label="Streaming",sub="Real-time events",
+    dict(x=1.0,y=7.3,w=1.5,h=0.65,c="src",label="Streaming",sub="Real-time events",
          hover="<b>Streaming Sources</b><br><b>What:</b> Continuous high-frequency events — POS transactions, web clicks, reviews, add-to-cart.<br><b>Why:</b> Eliminates Manga's 24-hour lag. Enables sub-second inventory alerts and live sales dashboards impossible with batch.<br><b>RFP: R1, R3</b>"),
-    dict(x=2.8,y=7.3,w=1.5,h=0.65,c=C["src"],label="Batch",sub="Scheduled loads",
+    dict(x=2.8,y=7.3,w=1.5,h=0.65,c="src",label="Batch",sub="Scheduled loads",
          hover="<b>Batch Sources</b><br><b>What:</b> Scheduled large-volume data loads — nightly ERP, daily CRM sync, hourly inventory reconciliation.<br><b>Why:</b> Not all data needs real-time. Replaces fragile cron scripts with managed, monitored pipelines with retry and alerting.<br><b>RFP: R3, R6</b>"),
-    dict(x=4.6,y=7.3,w=1.5,h=0.65,c=C["src"],label="Structured",sub="Tables · schemas",
+    dict(x=4.6,y=7.3,w=1.5,h=0.65,c="src",label="Structured",sub="Tables · schemas",
          hover="<b>Structured Data</b><br><b>What:</b> Tabular, schema-defined records — sales, inventory, customers, shipping.<br><b>Why:</b> Columnar Parquet format enables fast BI queries. Schema enforcement at ingest prevents quality issues downstream.<br><b>RFP: R1, R5</b>"),
-    dict(x=6.4,y=7.3,w=1.5,h=0.65,c=C["src"],label="Unstructured",sub="Text · images · logs",
+    dict(x=6.4,y=7.3,w=1.5,h=0.65,c="src",label="Unstructured",sub="Text · images · logs",
          hover="<b>Unstructured Data</b><br><b>What:</b> Review text, product images, clickstream logs — no fixed schema.<br><b>Why:</b> Manga's Excel layer ignores this entirely. Capturing review text and images unlocks sentiment analysis, visual search, and brand monitoring.<br><b>RFP: R1, ML use cases</b>"),
     # ── Ingestion y=6.0
-    dict(x=3.7,y=6.0,w=4.6,h=0.7,c=C["ing"],label="INGESTION",sub="Unified entry point — streaming and batch — replaces all cron-job ETL scripts",
+    dict(x=3.7,y=6.0,w=4.6,h=0.7,c="ing",label="INGESTION",sub="Unified entry point — streaming and batch — replaces all cron-job ETL scripts",
          hover="<b>Ingestion Layer</b><br><b>What:</b> Single unified entry point for all source types. Handles streaming and batch with consistent retry logic, job bookmarks, failure alerting, and lineage tracking.<br><b>Why:</b> Replaces 6+ siloed cron scripts with one observable, reliable platform. One monitoring dashboard for all pipelines.<br><b>RFP: R1, R3, R4</b>"),
     # ── Cataloging y=4.8 (left)
-    dict(x=1.2,y=4.8,w=2.0,h=0.9,c=C["cat"],label="CATALOGING",sub="& SEARCH",
+    dict(x=1.2,y=4.8,w=2.0,h=0.9,c="cat",label="CATALOGING",sub="& SEARCH",
          hover="<b>Cataloging & Search</b><br><b>What:</b> Central metadata registry — schema, owner, lineage, freshness, tags. Bidirectionally connected to Processing — captures schema changes automatically.<br><b>Why:</b> Self-service discovery. Analysts find any dataset without emailing Engineering. Without this, Manga's analysts continue working with undocumented, untrustworthy data.<br><b>RFP: R4, R5, R7</b>"),
     # ── Processing y=4.8
-    dict(x=4.1,y=4.8,w=2.0,h=0.9,c=C["proc"],label="VALIDATE / CLEAN",sub="Standardize / Norm",
+    dict(x=4.1,y=4.8,w=2.0,h=0.9,c="proc",label="VALIDATE / CLEAN",sub="Standardize / Norm",
          hover="<b>Validate / Clean / Standardize / Norm</b><br><b>What:</b> Quality gate — null checks, range validation, deduplication, format standardization. Applied after raw ingestion.<br><b>Why:</b> Prevents bad data from reaching Redshift or SageMaker. All failures trigger alerts before propagating to downstream consumers.<br><b>RFP: R5, R4</b>"),
-    dict(x=6.3,y=4.8,w=2.0,h=0.9,c=C["proc"],label="TRANSFORM",sub="& Enrich",
+    dict(x=6.3,y=4.8,w=2.0,h=0.9,c="proc",label="TRANSFORM",sub="& Enrich",
          hover="<b>Transform & Enrich</b><br><b>What:</b> Joins datasets (sales↔customers↔products), calculates KPIs, enriches with external context — weather, campaigns, logistics.<br><b>Why:</b> Raw data alone cannot power forecasting or dynamic pricing. Joining with external_factors is what makes ML predictions accurate. This is where Manga's competitive advantage is built.<br><b>RFP: R1, R3</b>"),
     # ── Storage y=3.2
-    dict(x=2.4,y=3.2,w=1.8,h=0.75,c=C["raw"],label="Raw Zone",sub="Bronze · immutable",
+    dict(x=2.4,y=3.2,w=1.8,h=0.75,c="raw",label="Raw Zone",sub="Bronze · immutable",
          hover="<b>Raw Zone (Bronze)</b><br><b>What:</b> Immutable append-only storage. Data exactly as received — never modified after write.<br><b>Why:</b> Full reprocessing if business logic changes. Satisfies GDPR audit trail. S3 Intelligent-Tiering auto-archives cold data, cutting storage cost 60%+.<br><b>RFP: R1, R4, R6</b>"),
-    dict(x=4.5,y=3.2,w=1.8,h=0.75,c=C["sil"],label="Cleaned Zone",sub="Silver · PII-masked",
+    dict(x=4.5,y=3.2,w=1.8,h=0.75,c="sil",label="Cleaned Zone",sub="Silver · PII-masked",
          hover="<b>Cleaned Zone (Silver)</b><br><b>What:</b> Validated, deduplicated, PII-masked Parquet. Catalog entries created here.<br><b>Why:</b> Single source of truth. Dev/Pre-Prod environments never see real customer PII — directly addresses R2. Open Parquet format prevents vendor lock-in.<br><b>RFP: R2, R4, R5</b>"),
-    dict(x=6.6,y=3.2,w=1.8,h=0.75,c=C["gld"],label="Curated Zone",sub="Gold · BI & ML ready",
+    dict(x=6.6,y=3.2,w=1.8,h=0.75,c="gld",label="Curated Zone",sub="Gold · BI & ML ready",
          hover="<b>Curated / Consumption Zone (Gold)</b><br><b>What:</b> Pre-aggregated, query-optimized datasets for BI and ML feature serving. Updated continuously.<br><b>Why:</b> Replaces daily Excel dumps. Sub-second QuickSight dashboards. ML feature vectors served with low latency to SageMaker.<br><b>RFP: R1, R6, replaces Excel</b>"),
     # ── Consumption y=1.9
-    dict(x=3.7,y=1.9,w=4.6,h=0.7,c=C["con"],label="CONSUMPTION",sub="BI Dashboards · ML Platform · Partner APIs · AI Agents",
+    dict(x=3.7,y=1.9,w=4.6,h=0.7,c="con",label="CONSUMPTION",sub="BI Dashboards · ML Platform · Partner APIs · AI Agents",
          hover="<b>Consumption Layer</b><br><b>What:</b> Exposes curated data to all consumers — BI dashboards for business users, ML platform for data scientists, REST APIs for partners and AI agents.<br><b>Why:</b> Decoupled from storage so BI, data science, and external partners don't interfere. Self-service replaces the current 'email Engineering for a report' workflow.<br><b>RFP: R1, R7</b>"),
     # ── Security bar y=0.7
-    dict(x=4.0,y=0.7,w=7.8,h=0.65,c=C["sec"],label="SECURITY & GOVERNANCE — applied at every layer",sub="RBAC · KMS encryption at rest · TLS 1.3 in-transit · GDPR · CloudTrail Audit Logs · PII Masking",
+    dict(x=4.0,y=0.7,w=7.8,h=0.65,c="sec",label="SECURITY & GOVERNANCE — applied at every layer",sub="RBAC · KMS encryption at rest · TLS 1.3 in-transit · GDPR · CloudTrail Audit Logs · PII Masking",
          hover="<b>Security & Governance (Cross-cutting)</b><br><b>What:</b> Applied at every layer — RBAC at column/row level, KMS encryption at rest, TLS 1.3 in-transit, PII masking, threat monitoring, immutable GDPR audit logs.<br><b>TLS vs E2EE:</b> We use TLS termination at service boundaries (not E2EE) — this allows the platform to process and analyse data while keeping every service hop encrypted.<br><b>RFP: R4, GDPR, Laura's mandate</b>"),
 ]
 
@@ -530,78 +549,78 @@ HLA_EDGES = [
 # ── LLA DIAGRAM DATA ────────────────────────────────────────────────────────
 LLA_NODES = [
     # ── Security row y=9.5 (small h)
-    dict(x=0.8,y=9.5,w=1.3,h=0.55,c=C["sec"],label="Amazon VPC",sub="Network isolation",
+    dict(x=0.8,y=9.5,w=1.3,h=0.55,c="sec",label="Amazon VPC",sub="Network isolation",
          hover="<b>Amazon VPC</b><br><b>What:</b> Network isolation for all AWS services. Private subnets for Redshift, MWAA, SageMaker.<br><b>Why:</b> VPC endpoints for S3 and DynamoDB — traffic never leaves the AWS backbone. Security groups enforce least-privilege network access.<br><b>RFP: R4</b>"),
-    dict(x=2.3,y=9.5,w=1.3,h=0.55,c=C["sec"],label="IAM + KMS",sub="Auth · Encryption",
+    dict(x=2.3,y=9.5,w=1.3,h=0.55,c="sec",label="IAM + KMS",sub="Auth · Encryption",
          hover="<b>IAM + AWS KMS</b><br><b>What:</b> IAM enforces least-privilege for all service-to-service and user access. KMS manages encryption keys for S3, Redshift, DynamoDB.<br><b>Why:</b> KMS keys rotate automatically. TLS 1.3 in-transit between all services. We use TLS termination (not E2EE) so the platform can process and analyse data while keeping every hop encrypted.<br><b>RFP: R4</b>"),
-    dict(x=3.8,y=9.5,w=1.3,h=0.55,c=C["sec"],label="AWS CloudTrail",sub="GDPR audit logs",
+    dict(x=3.8,y=9.5,w=1.3,h=0.55,c="sec",label="AWS CloudTrail",sub="GDPR audit logs",
          hover="<b>AWS CloudTrail</b><br><b>What:</b> Immutable audit log of every API call across all AWS accounts — who accessed what data, when, from where.<br><b>Why:</b> Critical for GDPR compliance — Right of Access and Right to Erasure both require audit trails. Enables forensic investigation of security incidents. Directly addresses Laura's mandate.<br><b>RFP: R4, GDPR</b>"),
-    dict(x=5.3,y=9.5,w=1.3,h=0.55,c=C["sec"],label="CloudWatch",sub="Monitoring · Alerts",
+    dict(x=5.3,y=9.5,w=1.3,h=0.55,c="sec",label="CloudWatch",sub="Monitoring · Alerts",
          hover="<b>Amazon CloudWatch</b><br><b>What:</b> Unified monitoring across all services — pipeline latency, DQ failures, S3 growth, Redshift performance, Lambda errors.<br><b>Why:</b> SNS/PagerDuty alerts for on-call. Custom operational dashboards for the data engineering team. Logs Insights for ad-hoc log analysis.<br><b>RFP: R4, R5</b>"),
-    dict(x=6.8,y=9.5,w=1.3,h=0.55,c=C["sec"],label="AWS Organizations",sub="Dev·PreProd·Prod",
+    dict(x=6.8,y=9.5,w=1.3,h=0.55,c="sec",label="AWS Organizations",sub="Dev·PreProd·Prod",
          hover="<b>AWS Organizations</b><br><b>What:</b> Three separate AWS accounts (Dev, Pre-Prod, Prod) under one Organisation. Service Control Policies enforce guardrails.<br><b>Why:</b> Prod accounts protected from Dev mistakes. Cost limits enforced per account. Anonymised data samples flow from Prod to Dev via cross-account S3 replication.<br><b>RFP: R2, R3</b>"),
-    dict(x=8.3,y=9.5,w=1.3,h=0.55,c=C["sec"],label="Terraform/CDK",sub="IaC · 3 envs",
+    dict(x=8.3,y=9.5,w=1.3,h=0.55,c="sec",label="Terraform/CDK",sub="IaC · 3 envs",
          hover="<b>Terraform / AWS CDK</b><br><b>What:</b> All infrastructure defined as code, Git version-controlled. One set of templates provisions identical Dev, Pre-Prod, and Prod.<br><b>Why:</b> Peer review for infra changes. Rollbacks. Modular design lets Javier's team own specific modules. Addresses vendor lock-in concern directly.<br><b>RFP: R2, R3</b>"),
     # ── Sources row y=8.1
-    dict(x=0.8,y=8.1,w=1.3,h=0.65,c=C["src"],label="POS / ERP",sub="Sales · Inventory",
+    dict(x=0.8,y=8.1,w=1.3,h=0.65,c="src",label="POS / ERP",sub="Sales · Inventory",
          hover="<b>POS / ERP Systems</b><br><b>What:</b> Generates sales_sample.csv and inventory_sample.csv. High-frequency structured data.<br><b>Why:</b> Highest-value data source. Real-time POS feeds Kinesis for sub-second processing; inventory syncs hourly via Glue batch jobs with job bookmarks to prevent duplicates.<br><b>RFP: R1</b>"),
-    dict(x=2.3,y=8.1,w=1.3,h=0.65,c=C["src"],label="Web / App",sub="Events · Reviews",
+    dict(x=2.3,y=8.1,w=1.3,h=0.65,c="src",label="Web / App",sub="Events · Reviews",
          hover="<b>Web & Mobile App</b><br><b>What:</b> customer_reviews_sample.csv plus clickstream events. Semi-structured (text, images). Highest velocity source.<br><b>Why:</b> Streamed via Kinesis for sub-second capture. Review text routed to Comprehend for automated NLP sentiment scoring — zero manual effort.<br><b>RFP: R1</b>"),
-    dict(x=3.8,y=8.1,w=1.3,h=0.65,c=C["src"],label="CRM",sub="Customers · PII",
+    dict(x=3.8,y=8.1,w=1.3,h=0.65,c="src",label="CRM",sub="Customers · PII",
          hover="<b>CRM System</b><br><b>What:</b> customers_sample.csv — names, addresses, loyalty status. Contains PII.<br><b>Why:</b> Synced via AWS DMS with CDC (change data capture) — zero data loss at cutover. Lake Formation applies column-level masking before any Dev/Pre-Prod environment accesses this data.<br><b>RFP: R4, GDPR</b>"),
-    dict(x=5.3,y=8.1,w=1.3,h=0.65,c=C["src"],label="External APIs",sub="Weather · Logistics",
+    dict(x=5.3,y=8.1,w=1.3,h=0.65,c="src",label="External APIs",sub="Weather · Logistics",
          hover="<b>External APIs</b><br><b>What:</b> external_factors_sample.csv (weather, events, campaigns) and shipping_sample.csv. Lambda functions poll on EventBridge schedules.<br><b>Why:</b> New sources added as new Lambda functions — no impact on existing pipelines. Directly supports R7 Extensibility. Cost: near-zero (pay per invocation).<br><b>RFP: R7</b>"),
-    dict(x=6.8,y=8.1,w=1.3,h=0.65,c=C["src"],label="3rd-Party Data",sub="Market signals",
+    dict(x=6.8,y=8.1,w=1.3,h=0.65,c="src",label="3rd-Party Data",sub="Market signals",
          hover="<b>Third-Party Data (AWS Data Exchange)</b><br><b>What:</b> Licensed market, demographic, and competitive datasets from commercial providers via AWS marketplace.<br><b>Why:</b> Subscriptions deliver data directly to S3 with automatic license compliance tracking. Eliminates manual download/upload workflows. Supports R7 extensibility.<br><b>RFP: R7</b>"),
-    dict(x=8.3,y=8.1,w=1.3,h=0.65,c=C["src"],label="SaaS / Files",sub="SFTP partners",
+    dict(x=8.3,y=8.1,w=1.3,h=0.65,c="src",label="SaaS / Files",sub="SFTP partners",
          hover="<b>SaaS / File Sources (AWS Transfer Family)</b><br><b>What:</b> Partners and legacy systems delivering data via SFTP/FTPS protocols.<br><b>Why:</b> Not all partners can call APIs. Transfer Family provides a managed SFTP endpoint that lands files directly in S3 — no server to manage. Complements Lambda connectors.<br><b>RFP: R3, R7</b>"),
     # ── Ingestion row y=6.7
-    dict(x=0.9,y=6.7,w=1.4,h=0.65,c=C["ing"],label="Kinesis Streams",sub="Sub-second ingest",
+    dict(x=0.9,y=6.7,w=1.4,h=0.65,c="ing",label="Kinesis Streams",sub="Sub-second ingest",
          hover="<b>Amazon Kinesis Data Streams</b><br><b>What:</b> Managed real-time streaming. POS sales and web events flow through at sub-second latency.<br><b>Why:</b> Auto-scales to handle Fashion Week spikes without manual capacity planning. Directly replaces the daily cron job for real-time sources.<br><b>Cost:</b> Pay per shard-hour.<br><b>RFP: R1, R3</b>"),
-    dict(x=2.5,y=6.7,w=1.4,h=0.65,c=C["ing"],label="Kinesis Firehose",sub="Stream → S3 Parquet",
+    dict(x=2.5,y=6.7,w=1.4,h=0.65,c="ing",label="Kinesis Firehose",sub="Stream → S3 Parquet",
          hover="<b>Kinesis Data Firehose</b><br><b>What:</b> Reads from Kinesis Streams and delivers micro-batches to S3 Raw Zone. Auto-converts to Parquet on the way.<br><b>Why:</b> Zero-server Parquet conversion reduces downstream query cost by 70%+ vs JSON. Also supports direct delivery to Redshift for hot data.<br><b>Cost:</b> Pay per GB ingested.<br><b>RFP: R1, R6</b>"),
-    dict(x=4.1,y=6.7,w=1.4,h=0.65,c=C["ing"],label="AWS Glue ETL",sub="Batch pipelines",
+    dict(x=4.1,y=6.7,w=1.4,h=0.65,c="ing",label="AWS Glue ETL",sub="Batch pipelines",
          hover="<b>AWS Glue ETL</b><br><b>What:</b> Managed Spark replacing all cron-job scripts. Built-in job bookmarks prevent reprocessing. Visual Studio for non-Spark engineers.<br><b>Why:</b> Handles batch pipeline, Validate/Clean, and Normalize/Transform stages in one managed service. Cost: pay per DPU-hour (only when running).<br><b>RFP: R3, R5</b>"),
-    dict(x=5.7,y=6.7,w=1.4,h=0.65,c=C["ing"],label="AWS Lambda",sub="API connectors",
+    dict(x=5.7,y=6.7,w=1.4,h=0.65,c="ing",label="AWS Lambda",sub="API connectors",
          hover="<b>AWS Lambda</b><br><b>What:</b> Serverless functions triggered by EventBridge schedules to poll external APIs.<br><b>Why:</b> Each source is an independent function — adding a new data source means adding a new function with zero impact on existing pipelines. R7 extensibility by design.<br><b>Cost:</b> Essentially free at this scale.<br><b>RFP: R3, R7</b>"),
-    dict(x=7.1,y=6.7,w=1.3,h=0.65,c=C["ing"],label="AWS DMS",sub="DB migration · CDC",
+    dict(x=7.1,y=6.7,w=1.3,h=0.65,c="ing",label="AWS DMS",sub="DB migration · CDC",
          hover="<b>AWS Database Migration Service</b><br><b>What:</b> One-time historical migration + ongoing CDC replication from on-premises DBs to S3.<br><b>Why:</b> Zero-downtime cutover. CDC keeps source and target in sync during transition — critical for migrating CRM without disrupting operations.<br><b>RFP: R3</b>"),
-    dict(x=8.4,y=6.7,w=1.3,h=0.65,c=C["ing"],label="Data Exchange",sub="3rd-party licensed",
+    dict(x=8.4,y=6.7,w=1.3,h=0.65,c="ing",label="Data Exchange",sub="3rd-party licensed",
          hover="<b>AWS Data Exchange</b><br><b>What:</b> Managed marketplace for licensed third-party datasets — weather providers, market data, demographic enrichment.<br><b>Why:</b> Subscriptions deliver directly to S3 with automatic license compliance. Eliminates manual workflows. Supports R7 Interoperability.<br><b>RFP: R7</b>"),
-    dict(x=9.7,y=6.7,w=1.3,h=0.65,c=C["ing"],label="Transfer Family",sub="SFTP / FTPS",
+    dict(x=9.7,y=6.7,w=1.3,h=0.65,c="ing",label="Transfer Family",sub="SFTP / FTPS",
          hover="<b>AWS Transfer Family</b><br><b>What:</b> Fully managed SFTP/FTPS service providing a secure endpoint for partner file transfers, landing directly in S3.<br><b>Why:</b> Partners and legacy systems that cannot call APIs use this pathway. No file-transfer server to manage. Complements Lambda for non-API sources.<br><b>RFP: R3, R7</b>"),
     # ── Storage column (center)
-    dict(x=4.7,y=5.2,w=2.4,h=0.75,c=C["raw"],label="S3 Raw Zone",sub="Bronze · immutable · all formats",
+    dict(x=4.7,y=5.2,w=2.4,h=0.75,c="raw",label="S3 Raw Zone",sub="Bronze · immutable · all formats",
          hover="<b>S3 Raw Zone (Bronze)</b><br><b>What:</b> Immutable landing zone — data stored exactly as received from source. Never modified after write.<br><b>Why:</b> Full reprocessing possible if logic changes. Satisfies GDPR audit trail. Intelligent-Tiering auto-moves cold data to cheaper storage classes, cutting cost 60%+.<br><b>RFP: R1, R4, R6</b>"),
-    dict(x=4.7,y=3.9,w=2.4,h=0.75,c=C["sil"],label="S3 Curated Zone",sub="Silver · validated · PII-masked",
+    dict(x=4.7,y=3.9,w=2.4,h=0.75,c="sil",label="S3 Curated Zone",sub="Silver · validated · PII-masked",
          hover="<b>S3 Curated Zone (Silver)</b><br><b>What:</b> Cleaned, deduplicated, schema-validated Parquet. PII masked via Glue PII detection before Dev/Pre-Prod access.<br><b>Why:</b> Open Parquet format means Athena, Redshift Spectrum, and SageMaker all read it natively — no lock-in. PII masking ensures Dev never sees real customer data.<br><b>RFP: R2, R4, R5</b>"),
-    dict(x=3.3,y=2.6,w=2.2,h=0.75,c=C["gld"],label="Amazon Redshift",sub="Gold · columnar DWH",
+    dict(x=3.3,y=2.6,w=2.2,h=0.75,c="gld",label="Amazon Redshift",sub="Gold · columnar DWH",
          hover="<b>Amazon Redshift</b><br><b>What:</b> Columnar data warehouse for pre-aggregated serving layer. Replaces daily Excel aggregation entirely.<br><b>Why:</b> Columnar storage makes QuickSight dashboards sub-second on billions of rows. RA3 nodes decouple compute/storage — scale each independently. Spectrum queries S3 directly without loading.<br><b>RFP: R1, R6</b>"),
-    dict(x=6.1,y=2.6,w=2.0,h=0.75,c=C["dyn"],label="Amazon DynamoDB",sub="<10ms ML serving",
+    dict(x=6.1,y=2.6,w=2.0,h=0.75,c="dyn",label="Amazon DynamoDB",sub="<10ms ML serving",
          hover="<b>Amazon DynamoDB</b><br><b>What:</b> NoSQL store for <10ms lookups needed by ML inference and real-time features.<br><b>Why:</b> Recommendation results and live inventory flags need millisecond response — impossible with Redshift. Pay-per-request keeps cost proportional to actual usage. Serves the future virtual shopping assistant.<br><b>RFP: R1, R7</b>"),
     # ── Governance column (right side)
-    dict(x=8.5,y=5.0,w=1.8,h=0.65,c=C["gov"],label="Glue Data Catalog",sub="Metadata · Lineage",
+    dict(x=8.5,y=5.0,w=1.8,h=0.65,c="gov",label="Glue Data Catalog",sub="Metadata · Lineage",
          hover="<b>AWS Glue Data Catalog</b><br><b>What:</b> Central metadata store for all datasets. Integrates natively with Athena, Redshift Spectrum, SageMaker.<br><b>Why:</b> Self-service discovery — Alex's team finds any dataset without emailing Engineering. Schema evolution tracked automatically. This IS the 'Cataloging & Search' layer from the HLA.<br><b>RFP: R4, R5, R7</b>"),
-    dict(x=8.5,y=4.2,w=1.8,h=0.65,c=C["proc"],label="MWAA (Airflow)",sub="Orchestration · DAGs",
+    dict(x=8.5,y=4.2,w=1.8,h=0.65,c="proc",label="MWAA (Airflow)",sub="Orchestration · DAGs",
          hover="<b>Amazon MWAA (Managed Airflow)</b><br><b>What:</b> Fully managed Apache Airflow. Replaces all cron jobs with DAG-based pipelines with dependency management, retry logic, SLA alerts.<br><b>Why:</b> Open-source Airflow core directly addresses Javier's vendor lock-in concern. One dashboard for every pipeline's health. Cost: instance-based, no per-task fees.<br><b>RFP: R3</b>"),
-    dict(x=8.5,y=3.4,w=1.8,h=0.65,c=C["gov"],label="Glue Data Quality",sub="Validation · Alerts",
+    dict(x=8.5,y=3.4,w=1.8,h=0.65,c="gov",label="Glue Data Quality",sub="Validation · Alerts",
          hover="<b>AWS Glue Data Quality</b><br><b>What:</b> Automated validation rules after each pipeline — null checks, range validation, referential integrity, freshness thresholds.<br><b>Why:</b> Failures trigger CloudWatch alerts before bad data reaches Redshift or SageMaker. Quality scores tracked over time. Addresses R5 directly.<br><b>RFP: R5</b>"),
-    dict(x=8.5,y=2.6,w=1.8,h=0.65,c=C["gov"],label="Lake Formation",sub="RBAC · GDPR",
+    dict(x=8.5,y=2.6,w=1.8,h=0.65,c="gov",label="Lake Formation",sub="RBAC · GDPR",
          hover="<b>AWS Lake Formation</b><br><b>What:</b> Fine-grained RBAC at column and row level. Laura (InfoSec) defines centrally who sees what.<br><b>Why:</b> Junior analysts see masked customer data; data scientists get full access. Centralised GDPR compliance, data sharing agreements, and audit trails at query time.<br><b>RFP: R4, GDPR</b>"),
-    dict(x=8.5,y=1.8,w=1.8,h=0.65,c=C["gov"],label="Amazon Macie",sub="PII scanning",
+    dict(x=8.5,y=1.8,w=1.8,h=0.65,c="gov",label="Amazon Macie",sub="PII scanning",
          hover="<b>Amazon Macie</b><br><b>What:</b> ML-powered PII scanner continuously monitoring S3 buckets for sensitive data from customers_sample.csv and sales_sample.csv.<br><b>Why:</b> Automated PII detection catches sensitive data that lands in the wrong zone before any human sees it. Findings routed to CloudWatch and Security Hub. GDPR compliance automation.<br><b>RFP: R4, GDPR</b>"),
     # ── Consumption row y=1.0
-    dict(x=0.8,y=1.0,w=1.5,h=0.65,c=C["con"],label="Amazon Athena",sub="Serverless SQL",
+    dict(x=0.8,y=1.0,w=1.5,h=0.65,c="con",label="Amazon Athena",sub="Serverless SQL",
          hover="<b>Amazon Athena</b><br><b>What:</b> Serverless interactive SQL directly on S3 — no data loading required.<br><b>Why:</b> Analysts run ad-hoc queries on Raw/Curated zones instantly without Engineering. Reads Glue Catalog automatically. Pay per TB scanned (~$5/TB).<br><b>RFP: R7 self-service</b>"),
-    dict(x=2.6,y=1.0,w=1.5,h=0.65,c=C["con"],label="Amazon QuickSight",sub="BI dashboards",
+    dict(x=2.6,y=1.0,w=1.5,h=0.65,c="con",label="Amazon QuickSight",sub="BI dashboards",
          hover="<b>Amazon QuickSight</b><br><b>What:</b> Managed BI connected to Redshift and S3. Real-time interactive dashboards replacing daily Excel reports.<br><b>Why:</b> SPICE in-memory engine for sub-second queries. Pay-per-session vs traditional per-seat licensing cuts BI costs 60%+ at Manga's scale. ML anomaly detection built in.<br><b>RFP: R1, R6</b>"),
-    dict(x=4.4,y=1.0,w=1.5,h=0.65,c=C["con"],label="Amazon SageMaker",sub="ML · Forecasting",
+    dict(x=4.4,y=1.0,w=1.5,h=0.65,c="con",label="Amazon SageMaker",sub="ML · Forecasting",
          hover="<b>Amazon SageMaker</b><br><b>What:</b> End-to-end ML: feature engineering, training, deployment, monitoring.<br><b>Why:</b> Four priority use cases: (1) product recommendations, (2) demand forecasting (DeepAR), (3) dynamic pricing, (4) return prediction. Feature Store integrates directly with the Curated Zone. ML is architecturally impossible today.<br><b>RFP: R1</b>"),
-    dict(x=6.0,y=1.0,w=1.5,h=0.65,c=C["con"],label="Comprehend",sub="NLP sentiment",
+    dict(x=6.0,y=1.0,w=1.5,h=0.65,c="con",label="Comprehend",sub="NLP sentiment",
          hover="<b>Amazon Comprehend</b><br><b>What:</b> Managed NLP sentiment analysis on customer_reviews_sample.csv text automatically.<br><b>Why:</b> Zero ML expertise required — fully managed API call. Outputs positive/negative/neutral scores per review. Feeds QuickSight dashboards for the merchandising team.<br><b>RFP: R1, ML use cases</b>"),
-    dict(x=7.5,y=1.0,w=1.5,h=0.65,c=C["con"],label="API Gateway",sub="Partners · AI agents",
+    dict(x=7.5,y=1.0,w=1.5,h=0.65,c="con",label="API Gateway",sub="Partners · AI agents",
          hover="<b>API Gateway + Lambda</b><br><b>What:</b> Secure REST/GraphQL APIs exposing curated data to logistics partners, marketing platforms, and AI agents.<br><b>Why:</b> Explicitly required in RFP. Rate limiting, versioning, and API keys built in. Supports future data monetisation as a revenue stream. Backwards compatibility guaranteed via versioned contracts.<br><b>RFP: R7</b>"),
-    dict(x=8.9,y=1.0,w=1.5,h=0.65,c=C["sec"],label="Carbon Footprint",sub="Sustainability R8",
+    dict(x=8.9,y=1.0,w=1.5,h=0.65,c="sec",label="Carbon Footprint",sub="Sustainability R8",
          hover="<b>AWS Customer Carbon Footprint Tool</b><br><b>What:</b> Native tool tracking carbon emissions per service and region. Year-over-year comparison vs on-premises baseline.<br><b>Why:</b> Manga quantifies sustainability improvement for R8 compliance and ESG board reporting. Selecting EU (Ireland) / EU (Frankfurt) regions maximises renewable energy mix.<br><b>RFP: R8</b>"),
 ]
 
@@ -660,7 +679,6 @@ st.components.v1.html("""
   }
   #mn-rail:active, #mn-fs:active { transform:scale(0.93); }
   #mn-rail svg, #mn-fs svg { width:18px; height:18px; pointer-events:none; }
-  .fs-exit { display:none; }
 </style>
 
 <button id="mn-rail" title="Toggle sidebar">
@@ -672,15 +690,10 @@ st.components.v1.html("""
 </button>
 
 <button id="mn-fs" title="Toggle fullscreen">
-  <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
        stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
     <path d="M4 9V4h5"/><path d="M20 9V4h-5"/>
     <path d="M4 15v5h5"/><path d="M20 15v5h-5"/>
-  </svg>
-  <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M9 4v5H4"/><path d="M15 4v5h5"/>
-    <path d="M9 20v-5H4"/><path d="M15 20v-5h5"/>
   </svg>
 </button>
 
@@ -735,15 +748,7 @@ st.components.v1.html("""
     if(fs)   fs.style.left   = '22px';
   }
 
-  function syncFs(){
-    var fs = doc.getElementById('mn-fs');
-    if(!fs) return;
-    var on = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
-    var enter = fs.querySelector('.fs-enter');
-    var exit  = fs.querySelector('.fs-exit');
-    if(enter) enter.style.display = on ? 'none' : '';
-    if(exit)  exit.style.display  = on ? '' : 'none';
-  }
+  function syncFs(){ /* single static icon — no swap needed */ }
 
   function bindEvents(){
     var rail = doc.getElementById('mn-rail');
@@ -773,13 +778,19 @@ st.components.v1.html("""
   doc.addEventListener('fullscreenchange', syncFs);
   doc.addEventListener('webkitfullscreenchange', syncFs);
 
-  // Mount on load and re-sync periodically (Streamlit re-renders wipe DOM)
+  // Mount on load and re-assert periodically (Streamlit re-renders wipe DOM,
+  // and entering fullscreen can drop the cloned nodes). Rebuild whenever a
+  // button is missing OR has lost its icon, so the fullscreen icon can never
+  // stay hidden after toggling.
   mountButtons();
   setInterval(function(){
-    if(!doc.getElementById('mn-rail')) mountButtons();
+    var rail = doc.getElementById('mn-rail');
+    var fs   = doc.getElementById('mn-fs');
+    if(!rail || !fs || !rail.querySelector('svg') || !fs.querySelector('svg')){
+      mountButtons();
+    }
     syncPosition();
-    syncFs();
-  }, 600);
+  }, 500);
 })();
 </script>
 """, height=1)
@@ -895,7 +906,7 @@ elif PAGE == "hla":
     st.markdown('<div class="page-title">High-Level Architecture</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Technology-agnostic conceptual design — architectural process layers without vendor specifics (RFP Section 2)</div>', unsafe_allow_html=True)
 
-    st.info("**Hover** over any box to see why it's in the architecture, streaming vs batch, the data it touches, and which RFP requirements it covers.")
+    st.info("**Hover** over any box to see why it's in the architecture, whether it handles streaming or batch data, the data it touches, and which RFP requirements it covers.")
     _html, _h = arch_component(HLA_NODES, HLA_EDGES, sx=104, sy=80, padx=64, padtop=220, padbot=34)
     st.components.v1.html(_html, height=_h, scrolling=True)
 
@@ -919,14 +930,9 @@ elif PAGE == "lla":
     st.markdown('<div class="page-title">Low-Level AWS Architecture</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Specific AWS services mapped to every Manga data source and use case (RFP Section 3)</div>', unsafe_allow_html=True)
 
-    if not render_figma_architecture(LLA_IMAGE_CANDIDATES, "Manga Cloud Platform Low-Level AWS Architecture"):
-        st.info("**Hover** over any service node to see rationale, cost model, and which RFP requirement (R1–R8) it addresses.")
-        fig_lla = arch_fig(
-            "Low-Level AWS Architecture — Hover any node for details",
-            LLA_NODES, LLA_EDGES,
-            xr=[-0.3, 11.2], yr=[0.3, 10.2], h=700
-        )
-        st.plotly_chart(fig_lla, use_container_width=True)
+    st.info("**Hover** over any service to see why it's here, streaming vs batch, the data it handles, its cost model, and which RFP requirement (R1–R8) it addresses.")
+    _html, _h = arch_component(LLA_NODES, LLA_EDGES, sx=104, sy=74, padx=60, padtop=220, padbot=34)
+    st.components.v1.html(_html, height=_h, scrolling=True)
 
     # Layer legend
     st.markdown("---")
@@ -934,11 +940,11 @@ elif PAGE == "lla":
     for col, (lbl, (fc, bc)) in zip(cols, [
         ("Sources", C["src"]), ("Ingestion", C["ing"]),
         ("Raw Zone", C["raw"]), ("Curated Zone", C["sil"]),
-            ("Gold / DWH", C["gld"]), ("NoSQL", C["dyn"]),
-            ("Governance", C["gov"]), ("Consumption", C["con"]),
-            ("Security", C["sec"]),
-        ]):
-            col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
+        ("Gold / DWH", C["gld"]), ("NoSQL", C["dyn"]),
+        ("Governance", C["gov"]), ("Consumption", C["con"]),
+        ("Security", C["sec"]),
+    ]):
+        col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
