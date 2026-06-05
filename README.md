@@ -84,7 +84,7 @@ We designed a **two-tier architecture** aligned with the professor's reference:
 
 ### Interactive Streamlit App
 
-Built a fully interactive RFP response as a Streamlit app with **6 pages**:
+Built a fully interactive RFP response as a Streamlit app with **7 pages**:
 
 - **Overview** — executive summary, KPI metrics, stakeholder analysis (champions vs. skeptics), core value drivers
 - **High-Level Architecture** — technology-agnostic clickable diagram + Plotly interactive chart (hover any node for design rationale and RFP coverage)
@@ -195,6 +195,8 @@ streamlit run mango_cloud_platform.py
 ```
 
 All 6 sample CSV files are included in the repo. The app handles missing files gracefully with a warning.
+
+Once running, use the **panel icon** (top-left) to toggle the sidebar navigation and the **fullscreen icon** below it to present full-screen.
 
 ---
 

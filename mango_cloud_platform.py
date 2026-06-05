@@ -66,6 +66,36 @@ section[data-testid="stMain"]{{width:100%!important}}
   margin-left:auto!important;margin-right:auto!important;
 }}
 
+/* ── PAGE TRANSITION — soft fade + rise, replays on every nav (deck-enter) ── */
+@keyframes pageEnter{{
+  from{{opacity:0;transform:translateY(16px)}}
+  to{{opacity:1;transform:translateY(0)}}
+}}
+@keyframes pageFade{{from{{opacity:0}}to{{opacity:1}}}}
+section[data-testid="stMain"] .block-container{{
+  animation:pageFade .45s ease both;
+}}
+/* gentle stagger across the top-level blocks of the page */
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type
+  > [data-testid="stElementContainer"],
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type
+  > [data-testid="stVerticalBlock"],
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type
+  > [data-testid="stHorizontalBlock"]{{
+  animation:pageEnter .55s cubic-bezier(.22,.61,.36,1) both;
+  will-change:transform,opacity;
+}}
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type > *:nth-child(1){{animation-delay:.04s}}
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type > *:nth-child(2){{animation-delay:.10s}}
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type > *:nth-child(3){{animation-delay:.16s}}
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type > *:nth-child(4){{animation-delay:.22s}}
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type > *:nth-child(5){{animation-delay:.28s}}
+section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type > *:nth-child(n+6){{animation-delay:.34s}}
+@media (prefers-reduced-motion:reduce){{
+  section[data-testid="stMain"] .block-container,
+  section[data-testid="stMain"] [data-testid="stVerticalBlock"]:first-of-type > *{{animation:none!important}}
+}}
+
 [data-testid="stSidebar"]{{background:#0a0a0a!important;border-right:1px solid {HAIR};min-width:248px!important;width:248px!important}}
 [data-testid="stSidebarContent"]{{padding:24px 14px 18px!important}}
 [data-testid="stSidebar"] *{{color:{INK_M}!important}}
