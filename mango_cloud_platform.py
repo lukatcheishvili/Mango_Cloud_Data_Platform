@@ -572,8 +572,10 @@ st.components.v1.html("""
     var fs = doc.getElementById('mn-fs');
     if(!fs) return;
     var on = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
-    fs.querySelector('.fs-enter').style.display = on ? 'none' : '';
-    fs.querySelector('.fs-exit').style.display  = on ? '' : 'none';
+    var enter = fs.querySelector('.fs-enter');
+    var exit  = fs.querySelector('.fs-exit');
+    if(enter) enter.style.display = on ? 'none' : '';
+    if(exit)  exit.style.display  = on ? '' : 'none';
   }
 
   function bindEvents(){
