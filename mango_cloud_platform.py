@@ -7,7 +7,6 @@ import base64
 
 st.set_page_config(
     page_title="Manga · AWS Cloud Platform",
-    page_icon="🛍️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -22,6 +21,10 @@ INK       = "#ffffff"
 INK_M     = "#999999"
 INK_F     = "#444444"
 ACCENT    = "#0099ff"
+# Signature gradient-spotlight hues (Framer DESIGN.md)
+G_VIOLET  = "#6a4cf5"
+G_MAGENTA = "#d44df0"
+G_ORANGE  = "#ff7a3d"
 
 # Architecture node colors per layer
 C = {
@@ -38,70 +41,123 @@ C = {
     "gov":  ("#1a1a3a", "#5a5ab8"),
 }
 
-# ── GLOBAL CSS (Framer design system) ──────────────────────────────────────
+# ── GLOBAL CSS (Framer design system — per DESIGN.md) ───────────────────────
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-html,body,[data-testid="stAppViewContainer"]{{background:{CANVAS}!important;color:{INK};font-family:'Inter',-apple-system,sans-serif}}
+@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700;800&display=swap');
+
+:root{{
+  --font-display:'Mona Sans','Inter',-apple-system,sans-serif;
+  --font-body:'Inter',-apple-system,sans-serif;
+}}
+html,body,[data-testid="stAppViewContainer"]{{
+  background:{CANVAS}!important;color:{INK};
+  font-family:var(--font-body);
+  font-feature-settings:'cv01','cv05','cv09','cv11','ss03';
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}}
+
+/* ── CENTER MAIN CONTENT — symmetric margins, independent of sidebar ──────── */
+section[data-testid="stMain"]{{width:100%!important}}
+[data-testid="stMain"] .block-container{{
+  max-width:1240px!important;
+  padding:72px 48px 96px!important;
+  margin-left:auto!important;margin-right:auto!important;
+}}
+
 [data-testid="stSidebar"]{{background:#0a0a0a!important;border-right:1px solid {HAIR};min-width:248px!important;width:248px!important}}
 [data-testid="stSidebarContent"]{{padding:24px 14px 18px!important}}
 [data-testid="stSidebar"] *{{color:{INK_M}!important}}
-[data-testid="stSidebar"] .stButton>button{{
-    width:100%!important;justify-content:flex-start!important;text-align:left!important;
-    min-height:38px!important;padding:9px 12px!important;margin:0 0 4px!important;
+/* ── SIDEBAR NAV BUTTONS (robust across Streamlit versions) ── */
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"]{{gap:4px!important}}
+section[data-testid="stSidebar"] .stButton{{width:100%!important;margin:0!important}}
+section[data-testid="stSidebar"] .stButton>button{{
+    width:100%!important;display:flex!important;align-items:center!important;
+    justify-content:flex-start!important;text-align:left!important;
+    min-height:42px!important;padding:10px 14px!important;margin:0!important;
     background:transparent!important;border:1px solid transparent!important;
-    border-radius:10px!important;color:{INK_M}!important;font-size:13px!important;
-    font-weight:500!important;letter-spacing:-.01em!important;font-family:'Inter',sans-serif!important;
+    border-radius:10px!important;color:{INK_M}!important;
+    font-size:14px!important;font-weight:500!important;letter-spacing:-.14px!important;
+    font-family:var(--font-body)!important;
     transition:background 160ms ease,border-color 160ms ease,color 160ms ease!important;
 }}
-[data-testid="stSidebar"] .stButton>button:hover{{
+section[data-testid="stSidebar"] .stButton>button>div,
+section[data-testid="stSidebar"] .stButton>button [data-testid="stMarkdownContainer"],
+section[data-testid="stSidebar"] .stButton>button p{{
+    width:100%!important;text-align:left!important;margin:0!important;color:inherit!important;
+    justify-content:flex-start!important;
+}}
+section[data-testid="stSidebar"] .stButton>button:hover{{
     background:{SURF1}!important;border-color:{HAIR}!important;color:{INK}!important;
 }}
-[data-testid="stSidebar"] .stButton>button[data-testid="baseButton-primary"]{{
-    background:rgba(0,153,255,.13)!important;border-color:{ACCENT}!important;
-    color:{INK}!important;box-shadow:0 0 0 1px rgba(0,153,255,.12) inset!important;
+section[data-testid="stSidebar"] .stButton>button[kind="primary"],
+section[data-testid="stSidebar"] .stButton>button[data-testid="baseButton-primary"],
+section[data-testid="stSidebar"] .stButton>button[data-testid="stBaseButton-primary"]{{
+    background:{SURF2}!important;border-color:{HAIR}!important;
+    color:{INK}!important;font-weight:600!important;
 }}
-[data-testid="stSidebar"] .stButton>button p{{color:inherit!important}}
-[data-testid="collapsedControl"],[data-testid="stSidebarCollapseButton"]{{display:none!important}}
+/* collapsedControl kept visible so JS can click it */
 header[data-testid="stHeader"]{{display:none}}
-.card{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:18px 20px;margin-bottom:12px;transition:border-color .18s}}
-.card:hover{{border-color:{ACCENT}55}}
-.metric-card{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:18px;text-align:center}}
-.metric-value{{font-size:32px;font-weight:800;color:{INK};letter-spacing:-1.5px}}
-.metric-label{{font-size:11px;color:{INK_M};text-transform:uppercase;letter-spacing:.1em;margin-top:5px}}
-.figma-chart-frame{{background:#ffffff;border:1px solid #ececec;border-radius:8px;padding:18px;overflow:auto;box-shadow:0 18px 48px rgba(0,0,0,.32);margin:8px 0 18px}}
-.figma-chart-frame img{{display:block;width:100%;max-width:1500px;height:auto;margin:0 auto}}
-.figma-chart-missing{{background:{SURF1};border:1px solid {HAIR};border-radius:8px;padding:14px 16px;color:{INK_M};font-size:12px;margin-bottom:12px}}
-.section-title{{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:{INK_F};margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid {HAIR}}}
-.page-title{{font-size:38px;font-weight:800;color:{INK};letter-spacing:-2px;margin-bottom:6px;line-height:1.05}}
-.page-sub{{font-size:16px;color:{INK_M};margin-bottom:28px;font-weight:400;letter-spacing:-.01em}}
-.badge{{display:inline-block;font-size:10px;font-weight:600;padding:3px 10px;border-radius:100px;margin:2px;letter-spacing:.02em}}
-.badge-blue{{background:#0a1830;color:#60a8f0;border:1px solid #1a3860}}
-.badge-green{{background:#0a1e14;color:#50c880;border:1px solid #1a4828}}
-.badge-orange{{background:#2a1800;color:#f0a040;border:1px solid #5a3000}}
-.badge-purple{{background:#1a0a28;color:#b070f0;border:1px solid #3a1858}}
-.badge-red{{background:#1e0a0a;color:#f07070;border:1px solid #5a2020}}
-.stk-card{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:14px 16px;margin-bottom:10px}}
-.stk-name{{font-size:13px;font-weight:700;color:{INK}}}
+
+.card{{background:{SURF1};border:1px solid {HAIR};border-radius:15px;padding:18px 20px;margin-bottom:12px;transition:border-color .18s}}
+.card:hover{{border-color:#3a3a3a}}
+.metric-card{{background:{SURF1};border:1px solid {HAIR};border-radius:15px;padding:20px;text-align:center}}
+.metric-value{{font-family:var(--font-display);font-size:36px;font-weight:600;color:{INK};letter-spacing:-1.8px;line-height:1}}
+.metric-label{{font-size:11px;color:{INK_M};text-transform:uppercase;letter-spacing:.1em;margin-top:7px;font-weight:500}}
+
+/* Signature gradient spotlight card */
+.spotlight{{
+  border-radius:30px;padding:30px 34px;margin:4px 0 8px;color:#fff;
+  background:linear-gradient(120deg,{G_VIOLET} 0%,{G_MAGENTA} 52%,{G_ORANGE} 110%);
+  box-shadow:0 24px 60px rgba(106,76,245,.22);
+}}
+.spotlight .sl-eyebrow{{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;opacity:.82}}
+.spotlight .sl-pillars{{font-family:var(--font-display);font-size:34px;font-weight:600;letter-spacing:-1.6px;line-height:1.04;margin-top:10px}}
+.spotlight .sl-sub{{font-size:14px;line-height:1.5;opacity:.9;margin-top:12px;max-width:760px}}
+
+.figma-chart-frame{{
+  background-color:#f4f4f5;
+  background-image:radial-gradient(circle, #cdcdd3 1px, transparent 1.5px);
+  background-size:22px 22px;background-position:-7px -7px;
+  border:1px solid {HAIR};border-radius:15px;padding:26px;overflow:auto;
+  box-shadow:0 18px 48px rgba(0,0,0,.32);margin:8px 0 18px;
+}}
+.figma-chart-frame img{{display:block;width:100%;max-width:1500px;height:auto;margin:0 auto;mix-blend-mode:multiply}}
+.figma-chart-missing{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:14px 16px;color:{INK_M};font-size:12px;margin-bottom:12px}}
+.section-title{{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:{INK_F};margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid {HAIR}}}
+.page-title{{font-family:var(--font-display);font-size:46px;font-weight:600;color:{INK};letter-spacing:-2.4px;margin-bottom:8px;line-height:1.0}}
+.page-sub{{font-size:18px;color:{INK_M};margin-bottom:28px;font-weight:400;letter-spacing:-.18px;line-height:1.3}}
+.badge{{display:inline-block;font-size:10px;font-weight:500;padding:4px 11px;border-radius:100px;margin:2px;letter-spacing:.01em;background:{SURF2};color:{INK_M};border:1px solid {HAIR}}}
+.badge-blue{{background:{SURF2};color:#cfcfcf;border:1px solid {HAIR}}}
+.badge-green{{background:{SURF2};color:{INK_M};border:1px solid {HAIR}}}
+.badge-orange{{background:{SURF2};color:{INK_M};border:1px solid {HAIR}}}
+.badge-purple{{background:{SURF2};color:{INK_M};border:1px solid {HAIR}}}
+.badge-red{{background:{SURF2};color:{INK_M};border:1px solid {HAIR}}}
+.stk-card{{background:{SURF1};border:1px solid {HAIR};border-radius:15px;padding:14px 16px;margin-bottom:10px}}
+.stk-name{{font-size:14px;font-weight:600;color:{INK};letter-spacing:-.2px}}
 .stk-role{{font-size:10px;color:{INK_F};text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}}
-.stk-concern{{font-size:11px;color:{INK_M};line-height:1.55}}
-.stk-tag{{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;display:inline-block;margin-top:6px}}
-.stk-skeptic{{background:#2a1800;color:#f0a040}}.stk-champion{{background:#0a1e14;color:#50c880}}.stk-neutral{{background:#0a1830;color:#60a8f0}}
-[data-testid="stTabs"] button{{font-size:12px!important;font-weight:600!important;color:{INK_M}!important;font-family:'Inter',sans-serif!important}}
+.stk-concern{{font-size:11.5px;color:{INK_M};line-height:1.55}}
+.stk-tag{{font-size:9px;font-weight:500;padding:3px 9px 3px 8px;border-radius:100px;display:inline-flex;align-items:center;gap:6px;margin-left:8px;background:{SURF2};color:{INK_M};border:1px solid {HAIR};letter-spacing:.02em;vertical-align:middle}}
+.stk-tag::before{{content:"";width:6px;height:6px;border-radius:50%;display:inline-block}}
+.stk-skeptic::before{{background:#c8893a}}
+.stk-champion::before{{background:{ACCENT}}}
+.stk-neutral::before{{background:{INK_M}}}
+[data-testid="stTabs"] button{{font-size:12px!important;font-weight:500!important;color:{INK_M}!important;font-family:var(--font-body)!important}}
 [data-testid="stTabs"] button[aria-selected="true"]{{color:{INK}!important;border-bottom:2px solid {ACCENT}!important}}
-[data-testid="stDataFrame"]{{border:1px solid {HAIR};border-radius:8px}}
+[data-testid="stDataFrame"]{{border:1px solid {HAIR};border-radius:10px}}
 hr{{border-color:{HAIR}!important}}
-html.manga-rail-hidden section[data-testid="stSidebar"]{{display:none!important}}
+a,a:visited{{color:{ACCENT}!important;text-decoration:none}}
 /* Style horizontal Streamlit buttons outside the sidebar */
 div[data-testid="stHorizontalBlock"] .stButton>button{{
     background:transparent!important;border:1px solid {HAIR}!important;
     color:{INK_M}!important;border-radius:100px!important;
     padding:4px 0!important;font-size:11px!important;font-weight:500!important;
-    font-family:'Inter',sans-serif!important;transition:all .15s!important;
+    font-family:var(--font-body)!important;transition:all .15s!important;
     min-height:0!important;line-height:1.5!important;
 }}
 div[data-testid="stHorizontalBlock"] .stButton>button:hover{{
-    background:{SURF1}!important;border-color:{ACCENT}!important;color:{INK}!important;
+    background:{SURF1}!important;border-color:{HAIR}!important;color:{INK}!important;
 }}
 </style>""", unsafe_allow_html=True)
 
@@ -385,181 +441,180 @@ if "page" not in st.session_state:
 
 # ── RAIL TOGGLE + FULLSCREEN BUTTONS (injected into parent page) ────────────
 st.components.v1.html("""
+<style>
+  #mn-rail, #mn-fs {
+    position:fixed; left:16px; z-index:999999;
+    width:32px; height:32px;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:0; margin:0;
+    background:rgba(20,20,20,0.75); color:rgba(255,255,255,0.85);
+    border:1px solid rgba(255,255,255,0.12); border-radius:6px;
+    cursor:pointer; opacity:0.65;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    transition:opacity 160ms, background 160ms, border-color 160ms,
+               left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms;
+    font-family:inherit;
+  }
+  #mn-rail { top:16px; }
+  #mn-fs   { top:54px; }
+  #mn-rail:hover, #mn-fs:hover {
+    opacity:1; background:rgba(45,45,45,0.92);
+    border-color:rgba(255,255,255,0.24);
+  }
+  #mn-rail:active, #mn-fs:active { transform:scale(0.93); }
+  #mn-rail svg, #mn-fs svg { width:18px; height:18px; pointer-events:none; }
+  .fs-exit { display:none; }
+</style>
+
+<button id="mn-rail" title="Toggle sidebar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+       stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <line x1="9" y1="4" x2="9" y2="20"/>
+  </svg>
+</button>
+
+<button id="mn-fs" title="Toggle fullscreen">
+  <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 9V4h5"/><path d="M20 9V4h-5"/>
+    <path d="M4 15v5h5"/><path d="M20 15v5h-5"/>
+  </svg>
+  <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 4v5H4"/><path d="M15 4v5h5"/>
+    <path d="M9 20v-5H4"/><path d="M15 20v-5h5"/>
+  </svg>
+</button>
+
 <script>
 (function(){
-  var parentWin = window.parent;
   var doc = window.parent.document;
-  var root = doc.documentElement;
 
-  function ensureStyle(){
-    var style = doc.getElementById('manga-floating-controls-style');
-    if(style) return;
-    style = doc.createElement('style');
-    style.id = 'manga-floating-controls-style';
-    style.textContent = `
-      #manga-rail-toggle, #manga-fs-toggle {
-        position: fixed;
-        left: 16px;
-        z-index: 999999;
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        background: rgba(20, 20, 20, 0.72);
-        color: rgba(255, 255, 255, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.10);
-        border-radius: 6px;
-        cursor: pointer;
-        opacity: 0.62;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        transition: opacity 160ms ease, background 160ms ease, border-color 160ms ease,
-                    left 220ms cubic-bezier(.3,.7,.4,1), transform 120ms ease;
+  // ── Move buttons into the parent page so they render at root level ──
+  function mountButtons(){
+    ['mn-rail','mn-fs'].forEach(function(id){
+      var existing = doc.getElementById(id);
+      if(existing) existing.remove();
+      var el = document.getElementById(id);
+      if(el){
+        var clone = el.cloneNode(true);
+        doc.body.appendChild(clone);
+        // Copy styles too
+        var styleEl = document.querySelector('style');
+        if(styleEl && !doc.getElementById('mn-style')){
+          var s = doc.createElement('style');
+          s.id = 'mn-style';
+          s.textContent = styleEl.textContent;
+          doc.head.appendChild(s);
+        }
       }
-      #manga-rail-toggle { top: 16px; }
-      #manga-fs-toggle { top: 56px; }
-      #manga-rail-toggle:hover, #manga-fs-toggle:hover {
-        opacity: 1;
-        background: rgba(40, 40, 40, 0.88);
-        border-color: rgba(255, 255, 255, 0.22);
-      }
-      #manga-rail-toggle:active, #manga-fs-toggle:active { transform: scale(0.94); }
-      #manga-rail-toggle svg, #manga-fs-toggle svg { width: 18px; height: 18px; }
-      #manga-fs-toggle .fs-exit { display: none; }
-      #manga-fs-toggle[data-on="true"] .fs-enter { display: none; }
-      #manga-fs-toggle[data-on="true"] .fs-exit { display: inline; }
-      #manga-rail-toggle[data-on="true"],
-      #manga-fs-toggle[data-on-rail="true"] {
-        left: calc(var(--manga-rail-w, 248px) + 12px);
-      }
-      @media print { #manga-rail-toggle, #manga-fs-toggle { display: none; } }
-    `;
-    doc.head.appendChild(style);
+    });
+    bindEvents();
   }
 
-  function makeButton(id, title, html){
-    var btn = doc.getElementById(id);
-    if(!btn){
-      btn = doc.createElement('button');
-      btn.id = id;
-      btn.type = 'button';
-      doc.body.appendChild(btn);
-    }
-    btn.setAttribute('aria-label', title);
-    btn.title = title;
-    btn.innerHTML = html;
-    return btn;
+  function getSidebarBtn(){
+    // When sidebar is OPEN: collapse button inside the sidebar
+    return doc.querySelector('[data-testid="stSidebarCollapseButton"] button') ||
+           doc.querySelector('button[aria-label="Close sidebar"]') ||
+           doc.querySelector('[data-testid="stSidebar"] button[kind="header"]');
+  }
+  function getExpandBtn(){
+    // When sidebar is CLOSED: the expand arrow on the left edge
+    return doc.querySelector('[data-testid="collapsedControl"]') ||
+           doc.querySelector('button[aria-label="Open sidebar"]');
+  }
+  function isSidebarOpen(){
+    var sb = doc.querySelector('[data-testid="stSidebar"]');
+    if(!sb) return false;
+    return sb.getBoundingClientRect().width > 40;
   }
 
-  ensureStyle();
-  var rail = makeButton('manga-rail-toggle', 'Toggle page selection', `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
-      <line x1="9" y1="4" x2="9" y2="20"></line>
-    </svg>
-  `);
-  var fs = makeButton('manga-fs-toggle', 'Toggle fullscreen', `
-    <svg class="fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M4 9V4h5"></path><path d="M20 9V4h-5"></path>
-      <path d="M4 15v5h5"></path><path d="M20 15v5h-5"></path>
-    </svg>
-    <svg class="fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M9 4v5H4"></path><path d="M15 4v5h5"></path>
-      <path d="M9 20v-5H4"></path><path d="M15 20v-5h5"></path>
-    </svg>
-  `);
-
-  function railOn(){
-    try { return localStorage.getItem('manga-cloud.railVisible') !== '0'; } catch(e) {}
-    return true;
-  }
-
-  function setRail(on){
-    root.classList.toggle('manga-rail-hidden', !on);
-    try { localStorage.setItem('manga-cloud.railVisible', on ? '1' : '0'); } catch(e) {}
-    syncRail();
-  }
-
-  function syncRail(){
-    var on = railOn();
-    var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-    if(sidebar && on){
-      var width = Math.round(sidebar.getBoundingClientRect().width || 248);
-      root.style.setProperty('--manga-rail-w', width + 'px');
-    }
-    root.classList.toggle('manga-rail-hidden', !on);
-    rail.setAttribute('data-on', String(on));
-    fs.setAttribute('data-on-rail', String(on));
-  }
-
-  rail.onclick = function(){ setRail(!railOn()); };
-
-  function inFs(){
-    return !!(doc.fullscreenElement || doc.webkitFullscreenElement);
+  function syncPosition(){
+    // Pin both controls to the far-left top, regardless of sidebar state
+    var rail = doc.getElementById('mn-rail');
+    var fs   = doc.getElementById('mn-fs');
+    if(rail) rail.style.left = '16px';
+    if(fs)   fs.style.left   = '16px';
   }
 
   function syncFs(){
-    fs.setAttribute('data-on', String(inFs()));
+    var fs = doc.getElementById('mn-fs');
+    if(!fs) return;
+    var on = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
+    fs.querySelector('.fs-enter').style.display = on ? 'none' : '';
+    fs.querySelector('.fs-exit').style.display  = on ? '' : 'none';
   }
 
-  fs.onclick = function(){
-    var target = doc.documentElement;
-    if(inFs()){
-      (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
-    } else {
-      (target.requestFullscreen || target.webkitRequestFullscreen).call(target);
-    }
-  };
+  function bindEvents(){
+    var rail = doc.getElementById('mn-rail');
+    var fs   = doc.getElementById('mn-fs');
+    if(!rail || !fs) return;
 
-  if(parentWin.__mangaSyncFs){
-    doc.removeEventListener('fullscreenchange', parentWin.__mangaSyncFs);
-    doc.removeEventListener('webkitfullscreenchange', parentWin.__mangaSyncFs);
+    rail.onclick = function(){
+      if(isSidebarOpen()){
+        var btn = getSidebarBtn();
+        if(btn){ btn.click(); return; }
+      } else {
+        var btn = getExpandBtn();
+        if(btn){ btn.click(); return; }
+      }
+    };
+
+    fs.onclick = function(){
+      var el = doc.documentElement;
+      if(doc.fullscreenElement || doc.webkitFullscreenElement){
+        (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+      } else {
+        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      }
+    };
   }
-  parentWin.__mangaSyncFs = syncFs;
+
   doc.addEventListener('fullscreenchange', syncFs);
   doc.addEventListener('webkitfullscreenchange', syncFs);
 
-  syncRail();
-  syncFs();
-  setTimeout(syncRail, 150);
+  // Mount on load and re-sync periodically (Streamlit re-renders wipe DOM)
+  mountButtons();
+  setInterval(function(){
+    if(!doc.getElementById('mn-rail')) mountButtons();
+    syncPosition();
+    syncFs();
+  }, 600);
 })();
-</script>""", height=0)
+</script>
+""", height=1)
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 NAV_PAGES = [
-    ("🏠", "Overview",           "overview"),
-    ("📐", "High-Level Arch",    "hla"),
-    ("⚙️", "Low-Level Arch",     "lla"),
-    ("🗄️", "Data Sources",       "data"),
-    ("✅", "Requirements",        "reqs"),
-    ("💡", "Use Cases",           "usecases"),
+    ("Overview",           "overview"),
+    ("High-Level Arch",    "hla"),
+    ("Low-Level Arch",     "lla"),
+    ("Data Sources",       "data"),
+    ("Requirements",       "reqs"),
+    ("Use Cases",          "usecases"),
 ]
 
 with st.sidebar:
     st.markdown(f"""
-    <div style="padding:48px 0 24px;text-align:left;">
-      <div style="font-size:11px;font-weight:800;color:{INK};letter-spacing:.08em;
-                  text-transform:uppercase;margin-bottom:2px;">Manga Cloud</div>
-      <div style="font-size:10px;color:{INK_F};letter-spacing:.06em;text-transform:uppercase;">
+    <div style="padding:40px 8px 22px;text-align:left;">
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:600;color:{INK};
+                  letter-spacing:-.4px;margin-bottom:4px;">Manga Cloud</div>
+      <div style="font-size:11px;color:{INK_F};letter-spacing:.12em;text-transform:uppercase;font-weight:500;">
         RFP Response · AWS
       </div>
     </div>""", unsafe_allow_html=True)
 
-    for icon, label, key in NAV_PAGES:
+    for label, key in NAV_PAGES:
         active = st.session_state.page == key
-        if st.button(f"{icon}  {label}", key=f"nav_{key}",
+        if st.button(label, key=f"nav_{key}",
                      use_container_width=True, type="primary" if active else "secondary"):
             st.session_state.page = key
             st.rerun()
 
     st.markdown(f"""
-    <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 16px;
-                font-size:10px;color:{INK_F};line-height:1.7;">
+    <div style="margin-top:36px;padding-top:18px;border-top:1px solid {HAIR};
+                font-size:11.5px;color:{INK_F};line-height:1.75;letter-spacing:-.1px;">
       IE University · MBD-EN2025<br>
       Cloud Analytics · Group B<br>
       Due: June 19, 2026
@@ -574,6 +629,14 @@ if PAGE == "overview":
     st.markdown('<div class="page-title">Cloud Data Platform for Manga</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">AWS-powered modernisation proposal — replacing legacy cron-ETL with a real-time, scalable data lakehouse</div>', unsafe_allow_html=True)
 
+    st.markdown(f"""
+    <div class="spotlight">
+      <div class="sl-eyebrow">The proposal in three moves</div>
+      <div class="sl-pillars">Unify &nbsp;·&nbsp; Accelerate &nbsp;·&nbsp; Enable</div>
+      <div class="sl-sub">One governed AWS lakehouse for every data source · time-to-insight cut from 24 hours to sub-second · ML-powered recommendations, dynamic pricing and demand forecasting that are impossible today.</div>
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
     c1,c2,c3,c4 = st.columns(4)
     for col,(val,lbl) in zip([c1,c2,c3,c4],[("€280M","Annual Revenue"),("+3.5%","Growth vs market"),("100+","Physical Stores"),("2×","Cost vs Competitors")]):
         col.markdown(f'<div class="metric-card"><div class="metric-value">{val}</div><div class="metric-label">{lbl}</div></div>', unsafe_allow_html=True)
@@ -586,44 +649,44 @@ if PAGE == "overview":
         Manga's current architecture — independent ETL pipelines triggered by cron jobs, aggregating into daily Excel files — is incompatible with real-time, AI-driven retail.<br><br>
         Our proposal delivers a <strong style="color:{INK}">cloud-native AWS data lakehouse</strong> on three pillars:
         <strong style="color:{ACCENT}">Unify</strong> all data sources into a single governed platform,
-        <strong style="color:#50c880">Accelerate</strong> time-to-insight from 24 hours to sub-second, and
-        <strong style="color:#f0a040">Enable</strong> ML-powered features — recommendations, dynamic pricing, demand forecasting — impossible today.
+        <strong style="color:{INK}">Accelerate</strong> time-to-insight from 24 hours to sub-second, and
+        <strong style="color:{INK}">Enable</strong> ML-powered features — recommendations, dynamic pricing, demand forecasting — impossible today.
         </p></div>""", unsafe_allow_html=True)
 
         st.markdown('<div class="section-title" style="margin-top:16px">Problem: As-Is Architecture</div>', unsafe_allow_html=True)
-        for icon,title,desc in [
-            ("⏰","Daily batch cron jobs","No real-time capability. Managers make decisions on yesterday's data."),
-            ("🗂️","Siloed ETL pipelines","Each pipeline built by a different team. No shared standards or observability."),
-            ("📊","Excel as the BI layer","Manual aggregation into Excel files. No self-service, no drill-down."),
-            ("💸","2× competitor infrastructure cost","Colocation model costs twice as much for half the analytical output."),
-            ("🔒","GDPR exposure","Previous InfoSec Manager dismissed after a major security incident. Compliance status unclear."),
+        for title,desc in [
+            ("Daily batch cron jobs","No real-time capability. Managers make decisions on yesterday's data."),
+            ("Siloed ETL pipelines","Each pipeline built by a different team. No shared standards or observability."),
+            ("Excel as the BI layer","Manual aggregation into Excel files. No self-service, no drill-down."),
+            ("2× competitor infrastructure cost","Colocation model costs twice as much for half the analytical output."),
+            ("GDPR exposure","Previous InfoSec Manager dismissed after a major security incident. Compliance status unclear."),
         ]:
-            st.markdown(f'<div class="card" style="padding:12px 16px;margin-bottom:8px;border-left:3px solid #5a2020"><span style="font-size:16px">{icon}</span><strong style="color:#f07070;font-size:12px;margin-left:8px">{title}</strong><p style="font-size:11px;color:{INK_M};margin:4px 0 0 28px">{desc}</p></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card" style="padding:13px 18px;margin-bottom:8px;border-left:2px solid {HAIR}"><strong style="color:{INK};font-size:12.5px;letter-spacing:-.2px">{title}</strong><p style="font-size:11.5px;color:{INK_M};margin:5px 0 0">{desc}</p></div>', unsafe_allow_html=True)
 
     with right:
         st.markdown('<div class="section-title">Key Stakeholders</div>', unsafe_allow_html=True)
         for name,role,concern,stype,tag in [
-            ("Marta Ríos","COO · 25 yrs","Wants end-to-end solution with solid business case. Results over ideology.","champion","✅ Champion"),
-            ("Javier Medina","CTO · 15 yrs","Fears vendor lock-in. Champions open-source and modular systems.","skeptic","⚠️ Skeptic"),
-            ("Manuel Ortega","CFO · 25 yrs","Alarmed by 2× cost vs competitors. Open to change if ROI is clear.","neutral","💰 Cost-focused"),
-            ("Laura Smith","InfoSec Manager","New hire with GDPR mandate. Security non-negotiable after prior incident.","skeptic","🔐 Security-first"),
-            ("Alex Lee","Head of Data & AI","Joined from competitor. Knows the current architecture is broken.","champion","🚀 Champion"),
+            ("Marta Ríos","COO · 25 yrs","Wants end-to-end solution with solid business case. Results over ideology.","champion","Champion"),
+            ("Javier Medina","CTO · 15 yrs","Fears vendor lock-in. Champions open-source and modular systems.","skeptic","Skeptic"),
+            ("Manuel Ortega","CFO · 25 yrs","Alarmed by 2× cost vs competitors. Open to change if ROI is clear.","neutral","Cost-focused"),
+            ("Laura Smith","InfoSec Manager","New hire with GDPR mandate. Security non-negotiable after prior incident.","skeptic","Security-first"),
+            ("Alex Lee","Head of Data & AI","Joined from competitor. Knows the current architecture is broken.","champion","Champion"),
         ]:
             st.markdown(f'<div class="stk-card"><div class="stk-name">{name} <span class="stk-tag stk-{stype}">{tag}</span></div><div class="stk-role">{role}</div><div class="stk-concern">{concern}</div></div>', unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown('<div class="section-title">Core Value Drivers</div>', unsafe_allow_html=True)
     cols = st.columns(3)
-    for i,(icon,color,title,desc) in enumerate([
-        ("⚡",ACCENT,"Real-Time Everything","Replace all daily-batch pipelines with Kinesis streaming. Sub-second POS, web events, and inventory updates."),
-        ("🏗️","#50c880","Open & Modular","Apache Airflow (MWAA), open Parquet/Delta formats, Terraform IaC. No proprietary lock-in — directly addresses the CTO's concern."),
-        ("🔒","#f0a040","Security by Design","Lake Formation RBAC, Macie PII scanning, KMS at rest, TLS 1.3 in-transit, CloudTrail GDPR audit logs — built in from day one."),
-        ("🤖","#b070f0","ML-Ready Platform","SageMaker Feature Store connected to the Curated Zone. Recommendations, forecasting, and dynamic pricing from day one."),
-        ("💸","#50c880","Measurable Cost Savings","Pay-per-use vs fixed colocation. S3 Intelligent-Tiering, Spot Instances — projected 40–60% infrastructure cost reduction."),
-        ("🌱",ACCENT,"Sustainability Metrics","AWS Carbon Footprint Tool tracks emissions by service/region — quantifiable ESG improvement vs colocation for R8 compliance."),
+    for i,(title,desc) in enumerate([
+        ("Real-Time Everything","Replace all daily-batch pipelines with Kinesis streaming. Sub-second POS, web events, and inventory updates."),
+        ("Open & Modular","Apache Airflow (MWAA), open Parquet/Delta formats, Terraform IaC. No proprietary lock-in — directly addresses the CTO's concern."),
+        ("Security by Design","Lake Formation RBAC, Macie PII scanning, KMS at rest, TLS 1.3 in-transit, CloudTrail GDPR audit logs — built in from day one."),
+        ("ML-Ready Platform","SageMaker Feature Store connected to the Curated Zone. Recommendations, forecasting, and dynamic pricing from day one."),
+        ("Measurable Cost Savings","Pay-per-use vs fixed colocation. S3 Intelligent-Tiering, Spot Instances — projected 40–60% infrastructure cost reduction."),
+        ("Sustainability Metrics","AWS Carbon Footprint Tool tracks emissions by service/region — quantifiable ESG improvement vs colocation for R8 compliance."),
     ]):
         with cols[i % 3]:
-            st.markdown(f'<div class="card" style="border-top:3px solid {color}"><div style="font-size:22px;margin-bottom:8px">{icon}</div><div style="font-size:13px;font-weight:700;color:{INK};margin-bottom:6px;letter-spacing:-.3px">{title}</div><div style="font-size:11px;color:{INK_M};line-height:1.65">{desc}</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card" style="min-height:152px"><div style="font-family:var(--font-display);font-size:13px;font-weight:600;color:{INK_F};letter-spacing:.04em;margin-bottom:12px">0{i+1}</div><div style="font-size:14px;font-weight:600;color:{INK};margin-bottom:7px;letter-spacing:-.3px">{title}</div><div style="font-size:11.5px;color:{INK_M};line-height:1.65">{desc}</div></div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -634,7 +697,7 @@ elif PAGE == "hla":
     st.markdown('<div class="page-sub">Technology-agnostic conceptual design — architectural process layers without vendor specifics (RFP Section 2)</div>', unsafe_allow_html=True)
 
     if not render_figma_architecture(HLA_IMAGE_CANDIDATES, "Manga Cloud Platform High-Level Architecture"):
-        st.info("💡 **Hover** over any node to see its role, design rationale, and which RFP requirements it covers.")
+        st.info("**Hover** over any node to see its role, design rationale, and which RFP requirements it covers.")
         fig_hla = arch_fig(
             "High-Level Architecture — Hover any node for details",
             HLA_NODES, HLA_EDGES,
@@ -663,7 +726,7 @@ elif PAGE == "lla":
     st.markdown('<div class="page-sub">Specific AWS services mapped to every Manga data source and use case (RFP Section 3)</div>', unsafe_allow_html=True)
 
     if not render_figma_architecture(LLA_IMAGE_CANDIDATES, "Manga Cloud Platform Low-Level AWS Architecture"):
-        st.info("💡 **Hover** over any service node to see rationale, cost model, and which RFP requirement (R1–R8) it addresses.")
+        st.info("**Hover** over any service node to see rationale, cost model, and which RFP requirement (R1–R8) it addresses.")
         fig_lla = arch_fig(
             "Low-Level AWS Architecture — Hover any node for details",
             LLA_NODES, LLA_EDGES,
@@ -692,22 +755,22 @@ elif PAGE == "data":
     st.markdown('<div class="page-sub">Manga\'s 6 sample datasets — schema, quality profile, and ingestion strategy (RFP Appendix III)</div>', unsafe_allow_html=True)
 
     meta = {
-        "Sales":{"icon":"💳","source":"POS System & E-commerce","ingestion":"Kinesis → Firehose → S3","pattern":"Streaming (real-time)","pii":False,"use_cases":["Revenue tracking","Dynamic pricing","Customer behaviour modelling"],"desc":"Transactional records: datetime, customer/product/store IDs, payment method, purchase price, and applied discount."},
-        "Customers":{"icon":"👥","source":"CRM & Loyalty Program","ingestion":"AWS DMS → Glue → S3","pattern":"Batch (daily sync)","pii":True,"use_cases":["Segmentation","Personalisation","Lifecycle analysis"],"desc":"Demographic data: full name, age, gender, address, zip, loyalty status. Contains PII — column masking applied in Curated zone."},
-        "Inventory":{"icon":"📦","source":"ERP / WMS","ingestion":"Glue ETL → S3","pattern":"Batch (hourly)","pii":False,"use_cases":["Supply chain optimisation","Stock alerts","Pricing strategy"],"desc":"Current stock levels per product per store, current price, and product description."},
-        "Customer Reviews":{"icon":"⭐","source":"Website / Mobile App","ingestion":"Kinesis → Firehose → S3 + Comprehend","pattern":"Streaming (event-driven)","pii":True,"use_cases":["Sentiment analysis","Product improvement","Trust metrics"],"desc":"Review text, star rating, image binaries, customer and product IDs, timestamp."},
-        "External Factors":{"icon":"🌤️","source":"Weather API + Internal","ingestion":"Lambda → S3","pattern":"Batch (daily pull)","pii":False,"use_cases":["Demand forecasting","Campaign evaluation","Pricing context"],"desc":"Daily context: weather, fuel price, bank holiday, local event, campaign ID, aggregated sales/volume."},
-        "Shipping":{"icon":"🚚","source":"Logistics Partner API","ingestion":"Lambda → Glue → S3","pattern":"Batch (daily)","pii":True,"use_cases":["Delivery performance","Return analysis","Cost efficiency"],"desc":"Order ID, delivery address, estimated/actual delivery time, delivery price, actual cost, return status."},
+        "Sales":{"source":"POS System & E-commerce","ingestion":"Kinesis → Firehose → S3","pattern":"Streaming (real-time)","pii":False,"use_cases":["Revenue tracking","Dynamic pricing","Customer behaviour modelling"],"desc":"Transactional records: datetime, customer/product/store IDs, payment method, purchase price, and applied discount."},
+        "Customers":{"source":"CRM & Loyalty Program","ingestion":"AWS DMS → Glue → S3","pattern":"Batch (daily sync)","pii":True,"use_cases":["Segmentation","Personalisation","Lifecycle analysis"],"desc":"Demographic data: full name, age, gender, address, zip, loyalty status. Contains PII — column masking applied in Curated zone."},
+        "Inventory":{"source":"ERP / WMS","ingestion":"Glue ETL → S3","pattern":"Batch (hourly)","pii":False,"use_cases":["Supply chain optimisation","Stock alerts","Pricing strategy"],"desc":"Current stock levels per product per store, current price, and product description."},
+        "Customer Reviews":{"source":"Website / Mobile App","ingestion":"Kinesis → Firehose → S3 + Comprehend","pattern":"Streaming (event-driven)","pii":True,"use_cases":["Sentiment analysis","Product improvement","Trust metrics"],"desc":"Review text, star rating, image binaries, customer and product IDs, timestamp."},
+        "External Factors":{"source":"Weather API + Internal","ingestion":"Lambda → S3","pattern":"Batch (daily pull)","pii":False,"use_cases":["Demand forecasting","Campaign evaluation","Pricing context"],"desc":"Daily context: weather, fuel price, bank holiday, local event, campaign ID, aggregated sales/volume."},
+        "Shipping":{"source":"Logistics Partner API","ingestion":"Lambda → Glue → S3","pattern":"Batch (daily)","pii":True,"use_cases":["Delivery performance","Return analysis","Cost efficiency"],"desc":"Order ID, delivery address, estimated/actual delivery time, delivery price, actual cost, return status."},
     }
     for ds_name, ds in meta.items():
         df = DATA.get(ds_name)
-        with st.expander(f"{ds['icon']}  **{ds_name}**  —  {ds['desc'][:70]}...", expanded=False):
+        with st.expander(f"**{ds_name}**  —  {ds['desc'][:70]}...", expanded=False):
             c1,c2,c3 = st.columns(3)
-            c1.markdown(f'<div class="metric-card"><div class="metric-value" style="font-size:20px">{ds["icon"]}</div><div class="metric-label">{ds["source"]}</div></div>', unsafe_allow_html=True)
-            c2.markdown(f'<div class="metric-card"><div class="metric-value" style="font-size:13px;padding-top:4px">{ds["pattern"]}</div><div class="metric-label">Ingestion Pattern</div></div>', unsafe_allow_html=True)
-            pii_c = "#f07070" if ds['pii'] else "#50c880"
-            pii_t = "⚠️ Contains PII" if ds['pii'] else "✅ No PII"
-            c3.markdown(f'<div class="metric-card"><div class="metric-value" style="font-size:13px;color:{pii_c};padding-top:4px">{pii_t}</div><div class="metric-label">Data Sensitivity</div></div>', unsafe_allow_html=True)
+            c1.markdown(f'<div class="metric-card"><div class="metric-value" style="font-size:14px;padding-top:6px;letter-spacing:-.3px">{ds["source"]}</div><div class="metric-label">Source System</div></div>', unsafe_allow_html=True)
+            c2.markdown(f'<div class="metric-card"><div class="metric-value" style="font-size:14px;padding-top:6px;letter-spacing:-.3px">{ds["pattern"]}</div><div class="metric-label">Ingestion Pattern</div></div>', unsafe_allow_html=True)
+            pii_c = "#c8893a" if ds['pii'] else INK_M
+            pii_t = "Contains PII" if ds['pii'] else "No PII"
+            c3.markdown(f'<div class="metric-card"><div class="metric-value" style="font-size:14px;color:{pii_c};padding-top:6px;letter-spacing:-.3px">{pii_t}</div><div class="metric-label">Data Sensitivity</div></div>', unsafe_allow_html=True)
             st.markdown(f"<div style='font-size:11px;color:{INK_M};margin:8px 0 4px'><b>AWS Path:</b> <code>{ds['ingestion']}</code></div>", unsafe_allow_html=True)
             st.markdown(f"<div style='font-size:11px;color:{INK_M};margin-bottom:10px'>{ds['desc']}</div>", unsafe_allow_html=True)
             st.markdown("".join([f'<span class="badge badge-blue">{uc}</span>' for uc in ds['use_cases']]), unsafe_allow_html=True)
@@ -753,25 +816,26 @@ elif PAGE == "reqs":
     ]
     for rid,title,desc,svcs in reqs:
         st.markdown(f"""
-        <div class="card" style="background:#0a2010;border-left:4px solid #1a6030;border-color:#1a6030;margin-bottom:10px">
+        <div class="card" style="margin-bottom:10px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <div>
-              <span style="font-size:13px;font-weight:800;color:#50d090">{rid}</span>
-              <span style="font-size:13px;font-weight:700;color:{INK};margin-left:8px;letter-spacing:-.3px">{title}</span>
+              <span style="font-family:var(--font-display);font-size:14px;font-weight:600;color:{INK_F}">{rid}</span>
+              <span style="font-size:14px;font-weight:600;color:{INK};margin-left:10px;letter-spacing:-.3px">{title}</span>
             </div>
-            <span style="font-size:10px;font-weight:700;color:#50d090;background:#0a2010;border:1px solid #1a6030;padding:3px 10px;border-radius:100px">✅ Fully Covered</span>
+            <span style="font-size:10px;font-weight:500;color:{INK_M};background:{SURF2};border:1px solid {HAIR};padding:4px 11px 4px 9px;border-radius:100px;display:inline-flex;align-items:center;gap:7px">
+              <span style="width:6px;height:6px;border-radius:50%;background:{ACCENT};display:inline-block"></span>Fully Covered</span>
           </div>
           <p style="font-size:11.5px;color:{INK_M};line-height:1.65;margin-bottom:10px">{desc}</p>
-          <div>{"".join([f'<span class="badge badge-blue">{s}</span>' for s in svcs])}</div>
+          <div>{"".join([f'<span class="badge">{s}</span>' for s in svcs])}</div>
         </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown('<div class="section-title">Coverage Summary</div>', unsafe_allow_html=True)
     fig = go.Figure(go.Bar(
         x=[r[0] for r in reqs], y=[100]*8,
-        marker_color="#0a2010", marker_line_color="#50d090", marker_line_width=1.5,
+        marker_color=SURF2, marker_line_color=ACCENT, marker_line_width=1.5,
         text=["100%"]*8, textposition="inside",
-        textfont=dict(color="#50d090", size=12, family="Inter"),
+        textfont=dict(color=INK, size=12, family="Inter"),
     ))
     fig.update_layout(
         plot_bgcolor=CANVAS, paper_bgcolor=CANVAS,
@@ -791,51 +855,51 @@ elif PAGE == "usecases":
     st.markdown('<div class="page-sub">Five end-to-end use cases showing the architecture in action with Manga\'s actual data sources (RFP Section 5)</div>', unsafe_allow_html=True)
 
     ucs = [
-        {"id":"UC1","icon":"🤖","title":"Product Recommendation Engine",
+        {"id":"UC1","title":"Product Recommendation Engine",
          "datasets":["Sales","Customers","Inventory"],
          "aws":["SageMaker (collaborative filtering)","DynamoDB (serving)","API Gateway","Kinesis (real-time signals)"],
          "desc":"Collaborative filtering model trained on purchase history and customer profiles. Real-time inference via SageMaker endpoint, results cached in DynamoDB for <10ms response. Exposed via API Gateway to the e-commerce front-end and virtual shopping assistant.",
          "impact":"+12–18% avg order value","pipeline":"sales + customers → S3 Curated → SageMaker training → DynamoDB → API Gateway → Website"},
-        {"id":"UC2","icon":"📈","title":"Demand Forecasting",
+        {"id":"UC2","title":"Demand Forecasting",
          "datasets":["Sales","External Factors","Inventory"],
          "aws":["SageMaker DeepAR","AWS Glue (feature engineering)","QuickSight (dashboard)","MWAA (weekly retrain DAG)"],
          "desc":"Time-series forecasting using SageMaker DeepAR on sales history enriched with external context — weather, bank holidays, local events, fuel prices. Model retrains weekly via MWAA DAG. Forecasts feed inventory replenishment decisions.",
          "impact":"−30% stockouts, −20% overstock write-offs","pipeline":"sales + external_factors → Glue feature engineering → SageMaker DeepAR → QuickSight"},
-        {"id":"UC3","icon":"💬","title":"Sentiment-Driven Merchandising",
+        {"id":"UC3","title":"Sentiment-Driven Merchandising",
          "datasets":["Customer Reviews"],
          "aws":["Amazon Comprehend (NLP)","AWS Glue (aggregation)","Amazon QuickSight","SNS (alerts on score drops)"],
          "desc":"Comprehend processes review text in near real-time, assigning sentiment scores per review. Glue aggregates scores by product, store, and week. QuickSight surfaces products with declining sentiment, alerting the buying team before damage compounds.",
          "impact":"2–3 weeks earlier product decisions","pipeline":"customer_reviews → Kinesis → Comprehend → S3 Curated → Glue aggregation → QuickSight + SNS"},
-        {"id":"UC4","icon":"💰","title":"Dynamic Pricing Engine",
+        {"id":"UC4","title":"Dynamic Pricing Engine",
          "datasets":["Sales","Inventory","External Factors"],
          "aws":["SageMaker (regression model)","Kinesis (real-time inventory)","Lambda (pricing guardrails)","DynamoDB (price store)"],
          "desc":"ML model trained on price elasticity, current inventory, competitor signals, and contextual factors. Lambda function compares model output against pricing guardrails before writing to DynamoDB, which feeds the POS and e-commerce pricing layer.",
          "impact":"+3–7% gross margin improvement","pipeline":"sales + inventory + external_factors → SageMaker → Lambda (guardrails) → DynamoDB → POS / E-commerce"},
-        {"id":"UC5","icon":"🚚","title":"Return Rate & Logistics Optimisation",
+        {"id":"UC5","title":"Return Rate & Logistics Optimisation",
          "datasets":["Shipping","Sales","Customers"],
          "aws":["SageMaker (binary classification)","Glue (join pipeline)","QuickSight (ops dashboard)","SNS (high-return alerts)"],
          "desc":"Binary classifier predicts return likelihood at purchase time using delivery history, customer return-rate profile, and product attributes. High-risk orders trigger proactive interventions. Logistics cost variance tracked in QuickSight.",
          "impact":"−10–15% return processing costs","pipeline":"shipping + sales + customers → Glue join → SageMaker classifier → SNS alerts + QuickSight ops dashboard"},
     ]
     for uc in ucs:
-        with st.expander(f"**{uc['id']}** {uc['icon']} {uc['title']}", expanded=False):
+        with st.expander(f"**{uc['id']}**  —  {uc['title']}", expanded=False):
             col1, col2 = st.columns([3,2])
             with col1:
                 st.markdown(f"""
                 <div style="font-size:12px;color:{INK_M};line-height:1.75;margin-bottom:12px">{uc['desc']}</div>
-                <div style="background:{SURF1};border:1px solid {HAIR};border-radius:8px;padding:10px 14px;font-size:10.5px;color:{ACCENT};font-family:monospace;line-height:1.8">
-                  🔀 <strong style="color:{INK_M}">Pipeline:</strong><br>{uc['pipeline']}
+                <div style="background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:11px 14px;font-size:10.5px;color:{ACCENT};font-family:monospace;line-height:1.8">
+                  <strong style="color:{INK_M};font-family:var(--font-body)">Pipeline</strong><br>{uc['pipeline']}
                 </div>
-                <div style="margin-top:10px;padding:10px 14px;background:#0a1e14;border:1px solid #1a4828;border-radius:8px;font-size:11.5px;color:#50d090">
-                  📊 <strong>Business Impact:</strong> {uc['impact']}
+                <div style="margin-top:10px;padding:11px 14px;background:{SURF2};border:1px solid {HAIR};border-radius:10px;font-size:11.5px;color:{INK}">
+                  <strong style="color:{INK_M}">Business Impact:</strong> {uc['impact']}
                 </div>""", unsafe_allow_html=True)
             with col2:
                 st.markdown('<div class="section-title">Data Sources</div>', unsafe_allow_html=True)
                 for ds in uc['datasets']:
-                    st.markdown(f'<span class="badge badge-blue">📁 {ds}</span>', unsafe_allow_html=True)
+                    st.markdown(f'<span class="badge">{ds}</span>', unsafe_allow_html=True)
                 st.markdown('<div class="section-title" style="margin-top:14px">AWS Services</div>', unsafe_allow_html=True)
                 for svc in uc['aws']:
-                    st.markdown(f'<span class="badge badge-green" style="display:block;margin:3px 0;text-align:left">⚙️ {svc}</span>', unsafe_allow_html=True)
+                    st.markdown(f'<span class="badge" style="display:block;margin:3px 0;text-align:left">{svc}</span>', unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown('<div class="section-title">Dataset Usage Matrix</div>', unsafe_allow_html=True)
@@ -845,10 +909,10 @@ elif PAGE == "usecases":
         "Customer Reviews":[0,0,1,0,0],"External Factors":[0,1,0,1,0],"Shipping":[0,0,0,0,1],
     }
     hm = pd.DataFrame(matrix).set_index("Use Case")
-    fig2 = px.imshow(hm, color_continuous_scale=[[0,SURF1],[1,"#1a6040"]], aspect="auto")
+    fig2 = px.imshow(hm, color_continuous_scale=[[0,SURF1],[1,"#13335a"]], aspect="auto")
     fig2.update_traces(
         text=hm.map(lambda v:"✓" if v else ""),
-        texttemplate="%{text}", textfont=dict(size=16,color="#50d090"),
+        texttemplate="%{text}", textfont=dict(size=16,color=ACCENT),
     )
     fig2.update_layout(
         plot_bgcolor=CANVAS, paper_bgcolor=CANVAS,
@@ -856,3 +920,4 @@ elif PAGE == "usecases":
         coloraxis_showscale=False, height=260,
         margin=dict(l=160,r=20,t=20,b=60), xaxis=dict(side="bottom"),
     )
+    st.plotly_chart(fig2, use_container_width=True)
