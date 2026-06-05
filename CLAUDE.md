@@ -252,6 +252,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Sidebar nav button CSS hardened — section-scoped selectors, gap:4px on stVerticalBlock, flex layout, works across Streamlit versions (kind=primary, baseButton-primary, stBaseButton-primary all covered)
 - [x] Overview page now includes the full project team member list
 - [x] README now includes the full project team member list
+- [x] Page entrance animations now follow the Risk Fraud HTML deck pattern: scoped fade-up keyframes, deck-style block targeting, staggered delays, reduced-motion/print support, and MutationObserver replay on Streamlit page changes
 
 ---
 

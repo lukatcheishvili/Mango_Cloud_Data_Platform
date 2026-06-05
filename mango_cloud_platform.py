@@ -121,15 +121,20 @@ header[data-testid="stHeader"]{{display:none}}
   from{{opacity:0;transform:translateY(16px)}}
   to{{opacity:1;transform:translateY(0)}}
 }}
-.manga-anim-target{{
+.manga-page-anim .manga-anim-target{{
   opacity:0;will-change:opacity,transform;
 }}
-.manga-anim-playing .manga-anim-target{{
+.manga-page-anim.manga-anim-playing .manga-anim-target{{
   animation:manga-page-enter .55s cubic-bezier(.22,.61,.36,1) both;
   animation-delay:calc(80ms + var(--manga-anim-i, 0) * 60ms);
 }}
 @media (prefers-reduced-motion: reduce){{
-  .manga-anim-target,.manga-anim-playing .manga-anim-target{{
+  .manga-page-anim .manga-anim-target,.manga-page-anim.manga-anim-playing .manga-anim-target{{
+    opacity:1!important;transform:none!important;animation:none!important;
+  }}
+}}
+@media print{{
+  .manga-page-anim .manga-anim-target{{
     opacity:1!important;transform:none!important;animation:none!important;
   }}
 }}
@@ -713,7 +718,8 @@ st.components.v1.html("""
   var doc = window.parent.document;
   var root = doc.documentElement;
   var lastLeft = Number(window.parent.__mangaControlsLeft || 22);
-  var lastSignature = "";
+  var lastSignature = window.parent.__mangaAnimSignature || "";
+  var animTimer = null;
 
   function ensureControlStyle(){
     var style = doc.getElementById('mn-style');
@@ -877,6 +883,10 @@ st.components.v1.html("""
                doc.querySelector('main');
     if(!main) return [];
     var selector = [
+      '.pill',
+      '.eyebrow',
+      '.lead',
+      '.body-lg',
       '.page-title',
       '.page-sub',
       '.spotlight',
@@ -884,7 +894,15 @@ st.components.v1.html("""
       '.section-title',
       '.card',
       '.stk-card',
+      '.title-members',
+      '.flow-box',
+      '.flow-arrow',
+      '.step-card',
+      '.warning',
+      '.takeaway-row',
       '.figma-chart-frame',
+      '.slide-bottom',
+      '.src',
       '[data-testid="stExpander"]',
       '[data-testid="stDataFrame"]',
       '[data-testid="stPlotlyChart"]'
@@ -903,17 +921,54 @@ st.components.v1.html("""
     var blocks = animationBlocks();
     if(!blocks.length) return;
     var pageTitle = doc.querySelector('.page-title');
-    var signature = (pageTitle ? pageTitle.textContent : '') + '|' + blocks.length;
+    var signature = [
+      pageTitle ? pageTitle.textContent.trim() : '',
+      blocks.length,
+      blocks.slice(0, 10).map(function(el){
+        return (el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 32);
+      }).join('|')
+    ].join('|');
     if(!force && signature === lastSignature) return;
     lastSignature = signature;
+    window.parent.__mangaAnimSignature = signature;
+    root.classList.add('manga-page-anim');
+    Array.prototype.slice.call(doc.querySelectorAll('.manga-anim-target')).forEach(function(el){
+      if(blocks.indexOf(el) === -1){
+        el.classList.remove('manga-anim-target');
+        el.style.removeProperty('--manga-anim-i');
+      }
+    });
     blocks.forEach(function(el, i){
       el.classList.add('manga-anim-target');
-      el.style.setProperty('--manga-anim-i', String(Math.min(i, 12)));
+      el.style.setProperty('--manga-anim-i', String(i));
     });
     root.classList.remove('manga-anim-playing');
     void root.offsetWidth;
     root.classList.add('manga-anim-playing');
   }
+
+  function schedulePageAnimation(force){
+    if(animTimer) clearTimeout(animTimer);
+    animTimer = setTimeout(function(){ playPageAnimation(!!force); }, force ? 120 : 70);
+  }
+
+  if(window.parent.__mangaAnimObserver){
+    try{ window.parent.__mangaAnimObserver.disconnect(); }catch(e){}
+  }
+  window.parent.__mangaAnimObserver = new MutationObserver(function(mutations){
+    var changed = mutations.some(function(m){
+      return Array.prototype.slice.call(m.addedNodes || []).some(function(node){
+        return node.nodeType === 1;
+      });
+    });
+    if(changed) schedulePageAnimation(false);
+  });
+  window.parent.__mangaAnimObserver.observe(
+    doc.querySelector('[data-testid="stAppViewContainer"] main') ||
+    doc.querySelector('main') ||
+    doc.body,
+    {childList:true, subtree:true}
+  );
 
   if(window.parent.__mangaSyncFs){
     doc.removeEventListener('fullscreenchange', window.parent.__mangaSyncFs);
@@ -931,12 +986,12 @@ st.components.v1.html("""
   mountButtons();
   syncPosition();
   syncFs();
-  setTimeout(function(){ playPageAnimation(true); }, 120);
+  schedulePageAnimation(true);
   setInterval(function(){
     if(!doc.getElementById('mn-rail') || !doc.getElementById('mn-fs')) mountButtons();
     syncPosition();
     syncFs();
-    playPageAnimation(false);
+    schedulePageAnimation(false);
   }, 600);
 })();
 </script>
@@ -1009,7 +1064,7 @@ if PAGE == "overview":
     )
     st.markdown(f"""
     <div class="section-title" style="margin-top:18px">Project Team</div>
-    <div class="card" style="padding:16px 18px">
+    <div class="card title-members" style="padding:16px 18px">
       <div style="display:flex;flex-wrap:wrap;gap:8px 9px">{member_tags}</div>
     </div>""", unsafe_allow_html=True)
 
