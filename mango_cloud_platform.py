@@ -97,7 +97,6 @@ section[data-testid="stSidebar"] .stButton>button[data-testid="stBaseButton-prim
     background:{SURF2}!important;border-color:{HAIR}!important;
     color:{INK}!important;font-weight:600!important;
 }}
-section[data-testid="stSidebar"] .stButton>button p{{color:inherit!important}}
 /* collapsedControl kept visible so JS can click it */
 header[data-testid="stHeader"]{{display:none}}
 
@@ -117,8 +116,14 @@ header[data-testid="stHeader"]{{display:none}}
 .spotlight .sl-pillars{{font-family:var(--font-display);font-size:34px;font-weight:600;letter-spacing:-1.6px;line-height:1.04;margin-top:10px}}
 .spotlight .sl-sub{{font-size:14px;line-height:1.5;opacity:.9;margin-top:12px;max-width:760px}}
 
-.figma-chart-frame{{background:#ffffff;border:1px solid #ececec;border-radius:15px;padding:18px;overflow:auto;box-shadow:0 18px 48px rgba(0,0,0,.32);margin:8px 0 18px}}
-.figma-chart-frame img{{display:block;width:100%;max-width:1500px;height:auto;margin:0 auto}}
+.figma-chart-frame{{
+  background-color:#f4f4f5;
+  background-image:radial-gradient(circle, #cdcdd3 1px, transparent 1.5px);
+  background-size:22px 22px;background-position:-7px -7px;
+  border:1px solid {HAIR};border-radius:15px;padding:26px;overflow:auto;
+  box-shadow:0 18px 48px rgba(0,0,0,.32);margin:8px 0 18px;
+}}
+.figma-chart-frame img{{display:block;width:100%;max-width:1500px;height:auto;margin:0 auto;mix-blend-mode:multiply}}
 .figma-chart-missing{{background:{SURF1};border:1px solid {HAIR};border-radius:10px;padding:14px 16px;color:{INK_M};font-size:12px;margin-bottom:12px}}
 .section-title{{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:{INK_F};margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid {HAIR}}}
 .page-title{{font-family:var(--font-display);font-size:46px;font-weight:600;color:{INK};letter-spacing:-2.4px;margin-bottom:8px;line-height:1.0}}
@@ -592,10 +597,10 @@ NAV_PAGES = [
 
 with st.sidebar:
     st.markdown(f"""
-    <div style="padding:48px 0 24px;text-align:left;">
-      <div style="font-size:11px;font-weight:800;color:{INK};letter-spacing:.08em;
-                  text-transform:uppercase;margin-bottom:2px;">Manga Cloud</div>
-      <div style="font-size:10px;color:{INK_F};letter-spacing:.06em;text-transform:uppercase;">
+    <div style="padding:40px 8px 22px;text-align:left;">
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:600;color:{INK};
+                  letter-spacing:-.4px;margin-bottom:4px;">Manga Cloud</div>
+      <div style="font-size:11px;color:{INK_F};letter-spacing:.12em;text-transform:uppercase;font-weight:500;">
         RFP Response · AWS
       </div>
     </div>""", unsafe_allow_html=True)
@@ -608,8 +613,8 @@ with st.sidebar:
             st.rerun()
 
     st.markdown(f"""
-    <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 16px;
-                font-size:10px;color:{INK_F};line-height:1.7;">
+    <div style="margin-top:36px;padding-top:18px;border-top:1px solid {HAIR};
+                font-size:11.5px;color:{INK_F};line-height:1.75;letter-spacing:-.1px;">
       IE University · MBD-EN2025<br>
       Cloud Analytics · Group B<br>
       Due: June 19, 2026
