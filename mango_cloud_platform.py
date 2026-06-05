@@ -4,6 +4,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 from pathlib import Path
 import base64
+import json
+import re
 
 st.set_page_config(
     page_title="Manga · AWS Cloud Platform",
@@ -300,6 +302,171 @@ def arch_fig(title, nodes, edges, xr, yr, h=600):
     )
     return fig
 
+
+# ── INTERACTIVE HTML ARCHITECTURE (hover cards) ───────────────────────────────
+_LAYER_EYEBROW = {
+    "src":"Data Source","ing":"Ingestion Layer","proc":"Processing","cat":"Governance",
+    "raw":"Storage · Bronze","sil":"Storage · Silver","gld":"Storage · Gold",
+    "dyn":"Serving · NoSQL","con":"Consumption","sec":"Security & Governance","gov":"Governance",
+}
+_NEUTRAL_TAG = {
+    "raw":"Bronze","sil":"Silver","gld":"Gold","dyn":"Low-latency","con":"Serving",
+    "proc":"Processing","cat":"Governance","gov":"Governance","sec":"Cross-cutting",
+    "ing":"Ingestion","src":"Source",
+}
+
+def _parse_hover(h):
+    title, fields = "", {}
+    for part in re.split(r"<br>", h):
+        part = part.strip()
+        m = re.match(r"<b>(.*?)</b>\s*(.*)", part, re.S)
+        if not m: continue
+        lab, val = m.group(1).strip(), m.group(2).strip()
+        if lab.endswith(":"): fields[lab[:-1].strip().lower()] = val
+        elif ":" in lab and not val:
+            k,v = lab.split(":",1); fields[k.strip().lower()] = v.strip()
+        elif ":" in lab:
+            k,v = lab.split(":",1); fields[k.strip().lower()] = (v.strip()+" "+val).strip()
+        elif not title: title = (lab+(" "+val if val else "")).strip()
+    rfp = [x.strip() for x in re.split(r"[,\xb7]", fields.get("rfp","")) if x.strip()]
+    return title, fields.get("why",""), fields.get("what",""), fields.get("cost",""), rfp
+
+def _datatype_tags(text, c, label):
+    t = text.lower()
+    stream = bool(re.search(r"stream|real-?time|sub-second|kinesis|event|cdc|<10ms", t))
+    batch  = bool(re.search(r"batch|cron|nightly|daily|hourly|glue|schedul|\bdms\b|sftp|firehose", t))
+    if stream and batch: return [["Streaming","stream"],["Batch","batch"]]
+    if stream: return [["Streaming","stream"]]
+    if batch:  return [["Batch","batch"]]
+    return [[label if c=="src" else _NEUTRAL_TAG.get(c,"Cross-cutting"),"neutral"]]
+
+def _build_nodes(nodes):
+    out = []
+    for n in nodes:
+        fill,stroke = C[n["c"]]
+        title,why,what,cost,rfp = _parse_hover(n.get("hover",""))
+        text = " ".join([n["label"],n.get("sub",""),what,why])
+        out.append({"x":n["x"],"y":n["y"],"w":n["w"],"h":n["h"],
+            "fill":fill,"stroke":stroke,"label":n["label"],"sub":n.get("sub",""),
+            "eyebrow":_LAYER_EYEBROW.get(n["c"],""),
+            "ttl":(title or n["label"]).split(" — ")[0],
+            "tags":_datatype_tags(text,n["c"],n["label"]),
+            "why":why or what,"handled":n.get("sub",""),"cost":cost,"rfp":rfp})
+    return out
+
+def arch_component(nodes, edges, sx=100, sy=78, padx=60, padtop=220, padbot=34):
+    data = _build_nodes(nodes)
+    xs=[n["x"]-n["w"]/2 for n in nodes]+[n["x"]+n["w"]/2 for n in nodes]
+    ys=[n["y"]-n["h"]/2 for n in nodes]+[n["y"]+n["h"]/2 for n in nodes]
+    minx,maxx,miny,maxy=min(xs),max(xs),min(ys),max(ys)
+    W=(maxx-minx)*sx+padx*2; H=(maxy-miny)*sy+padtop+padbot
+    cfg=dict(SX=sx,SY=sy,PADX=padx,PADTOP=padtop,MINX=minx,MAXY=maxy,W=W,H=H)
+    html=(_ARCH_TMPL.replace("__NODES__",json.dumps(data))
+                    .replace("__EDGES__",json.dumps(edges))
+                    .replace("__CFG__",json.dumps(cfg)))
+    return html,int(H)+8
+
+_ARCH_CSS = (
+    "*{box-sizing:border-box}html,body{margin:0;background:transparent;"
+    "font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}"
+    ".wrap{position:relative;background-color:#f4f4f5;"
+    "background-image:radial-gradient(circle,#cdcdd3 1px,transparent 1.5px);"
+    "background-size:22px 22px;background-position:-7px -7px;"
+    "border:1px solid #2a2a2a;border-radius:15px;overflow:hidden;box-shadow:0 18px 48px rgba(0,0,0,.32)}"
+    ".stage{position:relative}.edges{position:absolute;inset:0;pointer-events:none;z-index:1}"
+    ".node{position:absolute;z-index:2;border-radius:8px;display:flex;flex-direction:column;"
+    "align-items:center;justify-content:center;text-align:center;padding:6px 10px;"
+    "box-shadow:0 5px 14px rgba(20,30,60,.18);transition:transform .16s ease,box-shadow .16s ease}"
+    ".node:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(20,30,60,.30);z-index:40}"
+    ".node .nl{color:#fff;font-weight:600;font-size:12.5px;letter-spacing:-.2px;line-height:1.15}"
+    ".node .ns{color:rgba(255,255,255,.72);font-size:9.5px;margin-top:3px;line-height:1.25;max-width:97%}"
+    ".node.wide .nl{font-size:12px}.node.wide .ns{font-size:9px}"
+    ".tip{position:absolute;left:50%;bottom:calc(100% + 12px);"
+    "transform:translateX(-50%) translateY(6px);width:288px;"
+    "background:#161616;border:1px solid #2a2a2a;border-radius:15px;"
+    "box-shadow:0 24px 60px rgba(0,0,0,.6);padding:16px;"
+    "opacity:0;visibility:hidden;text-align:left;pointer-events:none;z-index:60;"
+    "transition:opacity .2s ease,transform .2s ease}"
+    ".node:hover .tip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}"
+    ".tip::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);"
+    "width:12px;height:12px;background:#161616;border-right:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a}"
+    ".tip.fl{left:0;transform:translateX(-12px) translateY(6px)}"
+    ".node:hover .tip.fl{transform:translateX(-12px) translateY(0)}.tip.fl::after{left:auto;right:40px}"
+    ".tip.fr{left:auto;right:0;transform:translateX(12px) translateY(6px)}"
+    ".node:hover .tip.fr{transform:translateX(12px) translateY(0)}.tip.fr::after{left:40px}"
+    ".tip.below{bottom:auto;top:calc(100% + 12px);transform:translateX(-50%) translateY(-6px)}"
+    ".node:hover .tip.below{transform:translateX(-50%) translateY(0)}"
+    ".tip.below::after{bottom:auto;top:-7px;border-right:none;border-bottom:none;"
+    "border-left:1px solid #2a2a2a;border-top:1px solid #2a2a2a}"
+    ".hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}"
+    ".ey{font-size:9.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#5a5a5a;margin:0 0 4px}"
+    ".ttl{font-size:15px;font-weight:700;letter-spacing:-.3px;margin:0;color:#fff}"
+    ".pills{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0}"
+    ".pill{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:600;"
+    "white-space:nowrap;padding:3px 9px 3px 7px;border-radius:100px;"
+    "background:#1e1e1e;border:1px solid #2a2a2a;color:#9a9a9a}"
+    ".pill::before{content:'';width:6px;height:6px;border-radius:50%;background:#8a8a90}"
+    ".pill.stream::before{background:#0099ff}.pill.batch::before{background:#d89030}"
+    ".lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5a5a5a;margin:13px 0 5px}"
+    ".why{font-size:11.5px;color:#9a9a9a;line-height:1.55;margin:0}"
+    ".src{font-size:11px;color:#cfcfcf;line-height:1.5;margin:0}"
+    ".cost{font-size:11px;color:#cdb88a;line-height:1.5;margin:0}"
+    ".hr{height:1px;background:#2a2a2a;margin:13px 0 0}"
+    ".chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}"
+    ".chip{font-size:9px;font-weight:600;padding:3px 9px;border-radius:100px;"
+    "background:#1e1e1e;border:1px solid #2a2a2a;color:#bdbdbd}"
+)
+
+_ARCH_TMPL = (
+    "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+    "<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'>"
+    "<style>" + _ARCH_CSS + "</style></head><body>"
+    "<div class='wrap' id='wrap'><div class='stage' id='stage'>"
+    "<svg class='edges' id='edges'></svg></div></div><script>"
+    "var NODES=__NODES__,EDGES=__EDGES__,CFG=__CFG__;"
+    "var SX=CFG.SX,SY=CFG.SY,PADX=CFG.PADX,PADTOP=CFG.PADTOP,MINX=CFG.MINX,MAXY=CFG.MAXY,W=CFG.W,H=CFG.H;"
+    "function px(x){return PADX+(x-MINX)*SX;}function py(y){return PADTOP+(MAXY-y)*SY;}"
+    "var stage=document.getElementById('stage');"
+    "stage.style.width=W+'px';stage.style.height=H+'px';"
+    "document.getElementById('wrap').style.width=W+'px';"
+    "var svg=document.getElementById('edges');"
+    "svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('width',W);svg.setAttribute('height',H);"
+    "EDGES.forEach(function(e){"
+    "var X1=px(e[0]),Y1=py(e[1]),X2=px(e[2]),Y2=py(e[3]),my=(Y1+Y2)/2;"
+    "var d='M '+X1+' '+Y1+' L '+X1+' '+my+' L '+X2+' '+my+' L '+X2+' '+Y2;"
+    "var p=document.createElementNS('http://www.w3.org/2000/svg','path');"
+    "p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke','#b4b4ba');"
+    "p.setAttribute('stroke-width','1.8');p.setAttribute('stroke-dasharray','6 6');"
+    "p.setAttribute('stroke-linecap','round');svg.appendChild(p);});"
+    "function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}"
+    "NODES.forEach(function(n){"
+    "var w=n.w*SX,h=n.h*SY,left=px(n.x)-w/2,top=py(n.y)-h/2;"
+    "var el=document.createElement('div');"
+    "el.className='node'+(n.w>=3?' wide':'');"
+    "el.style.cssText='left:'+left+'px;top:'+top+'px;width:'+w+'px;height:'+h"
+    "+'px;background:'+n.fill+';border:1.6px solid '+n.stroke;"
+    "var flip='',cx=px(n.x);"
+    "if(cx-150<8)flip+=' fl';else if(cx+150>W-8)flip+=' fr';"
+    "if(top<264)flip+=' below';"
+    "var pills=(n.tags||[]).map(function(t){"
+    "return '<span class=\"pill '+t[1]+'\">'+(esc(t[0]))+'</span>';}).join('');"
+    "var chips=(n.rfp||[]).map(function(r){"
+    "return '<span class=\"chip\">'+(esc(r))+'</span>';}).join('');"
+    "var cst=n.cost?'<p class=\"lbl\">Cost</p><p class=\"cost\">'+(esc(n.cost))+'</p>':'';"
+    "var chp=chips?'<div class=\"hr\"></div><div class=\"chips\">'+chips+'</div>':'';"
+    "el.innerHTML='<div class=\"nl\">'+(esc(n.label))+'</div>'"
+    "+(n.sub?'<div class=\"ns\">'+(esc(n.sub))+'</div>':'')"
+    "+'<div class=\"tip'+flip+'\">'+'<div class=\"hdr\"><div>'"
+    "+'<p class=\"ey\">'+(esc(n.eyebrow))+'</p>'"
+    "+'<p class=\"ttl\">'+(esc(n.ttl))+'</p></div>'"
+    "+'<div class=\"pills\">'+pills+'</div></div>'"
+    "+'<p class=\"lbl\">Why it\\'s here</p><p class=\"why\">'+(esc(n.why))+'</p>'"
+    "+(n.handled?'<p class=\"lbl\">Data handled</p><p class=\"src\">'+(esc(n.handled))+'</p>':'')"
+    "+cst+chp+'</div>';"
+    "stage.appendChild(el);});"
+    "</script></body></html>"
+)
+
 # ── HLA DIAGRAM DATA ────────────────────────────────────────────────────────
 HLA_NODES = [
     # ── Data Sources row y=7.3
@@ -473,7 +640,7 @@ if "page" not in st.session_state:
 st.components.v1.html("""
 <style>
   #mn-rail, #mn-fs {
-    position:fixed; left:16px; z-index:999999;
+    position:fixed; left:22px; z-index:999999;
     width:32px; height:32px;
     display:inline-flex; align-items:center; justify-content:center;
     padding:0; margin:0;
@@ -561,11 +728,11 @@ st.components.v1.html("""
   }
 
   function syncPosition(){
-    // Pin both controls to the far-left top, regardless of sidebar state
+    // Pin both controls to the far-left top, aligned with the Manga Cloud header
     var rail = doc.getElementById('mn-rail');
     var fs   = doc.getElementById('mn-fs');
-    if(rail) rail.style.left = '16px';
-    if(fs)   fs.style.left   = '16px';
+    if(rail) rail.style.left = '22px';
+    if(fs)   fs.style.left   = '22px';
   }
 
   function syncFs(){
@@ -728,26 +895,21 @@ elif PAGE == "hla":
     st.markdown('<div class="page-title">High-Level Architecture</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">Technology-agnostic conceptual design — architectural process layers without vendor specifics (RFP Section 2)</div>', unsafe_allow_html=True)
 
-    if not render_figma_architecture(HLA_IMAGE_CANDIDATES, "Manga Cloud Platform High-Level Architecture"):
-        st.info("**Hover** over any node to see its role, design rationale, and which RFP requirements it covers.")
-        fig_hla = arch_fig(
-            "High-Level Architecture — Hover any node for details",
-            HLA_NODES, HLA_EDGES,
-            xr=[-0.2, 9.0], yr=[0.2, 8.0], h=620
-        )
-        st.plotly_chart(fig_hla, use_container_width=True)
+    st.info("**Hover** over any box to see why it's in the architecture, streaming vs batch, the data it touches, and which RFP requirements it covers.")
+    _html, _h = arch_component(HLA_NODES, HLA_EDGES, sx=104, sy=80, padx=64, padtop=220, padbot=34)
+    st.components.v1.html(_html, height=_h, scrolling=True)
 
-        # Layer legend
-        st.markdown("---")
-        cols = st.columns(9)
-        for col, (lbl, (fc, bc)) in zip(cols, [
-            ("Data Sources", C["src"]), ("Ingestion", C["ing"]),
-            ("Cataloging", C["cat"]), ("Processing", C["proc"]),
-            ("Raw Zone", C["raw"]), ("Cleaned Zone", C["sil"]),
-            ("Curated Zone", C["gld"]), ("Consumption", C["con"]),
-            ("Security", C["sec"]),
-        ]):
-            col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
+    # Layer legend
+    st.markdown("---")
+    cols = st.columns(9)
+    for col, (lbl, (fc, bc)) in zip(cols, [
+        ("Data Sources", C["src"]), ("Ingestion", C["ing"]),
+        ("Cataloging", C["cat"]), ("Processing", C["proc"]),
+        ("Raw Zone", C["raw"]), ("Cleaned Zone", C["sil"]),
+        ("Curated Zone", C["gld"]), ("Consumption", C["con"]),
+        ("Security", C["sec"]),
+    ]):
+        col.markdown(f'<div style="background:{fc};border:1px solid {bc};border-radius:6px;padding:6px 8px;text-align:center;font-size:9px;font-weight:600;color:#c8d8f0;letter-spacing:.03em">{lbl}</div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -766,12 +928,12 @@ elif PAGE == "lla":
         )
         st.plotly_chart(fig_lla, use_container_width=True)
 
-        # Layer legend
-        st.markdown("---")
-        cols = st.columns(9)
-        for col, (lbl, (fc, bc)) in zip(cols, [
-            ("Sources", C["src"]), ("Ingestion", C["ing"]),
-            ("Raw Zone", C["raw"]), ("Curated Zone", C["sil"]),
+    # Layer legend
+    st.markdown("---")
+    cols = st.columns(9)
+    for col, (lbl, (fc, bc)) in zip(cols, [
+        ("Sources", C["src"]), ("Ingestion", C["ing"]),
+        ("Raw Zone", C["raw"]), ("Curated Zone", C["sil"]),
             ("Gold / DWH", C["gld"]), ("NoSQL", C["dyn"]),
             ("Governance", C["gov"]), ("Consumption", C["con"]),
             ("Security", C["sec"]),
