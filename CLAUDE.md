@@ -197,7 +197,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - Images: `assets/manga-cloud-platform-high-level-architecture.jpg` and `assets/manga-cloud-platform-low-level-aws-architecture.jpg`
 
 **Key implementation notes:**
-- A one-time branded `show_manga_loader()` / `hide_manga_loader()` overlay appears before the app opens in each Streamlit session, using a MANGA wordmark, capsule progress bar, and fade-out animation from the provided loader reference.
+- A one-time branded `show_manga_loader()` / `hide_manga_loader()` overlay appears before the app opens in each Streamlit session, using parent-page component injection, a MANGA wordmark, capsule progress bar, fade-out animation, and fail-safe removal so the loader cannot remain frozen over the app.
 - Both HLA and LLA pages use `st.tabs()` with two tabs: Interactive HTML diagram + Plotly chart
 - Plotly charts use `go.Scatter` with square markers and rich `hovertext` per node
 - HTML diagrams use `st.components.v1.html()` with embedded JS for click interactions
@@ -255,6 +255,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] README now includes the full project team member list
 - [x] Page entrance animations now follow the Risk Fraud HTML deck pattern: scoped fade-up keyframes, deck-style block targeting, staggered delays, reduced-motion/print support, and MutationObserver replay on Streamlit page changes
 - [x] One-time branded loading screen added before the app opens, based on the provided `mango_loader_streamlit.py` reference
+- [x] Loading screen freeze fixed by moving overlay control to executable Streamlit component JS with stale-overlay cleanup and automatic fail-safe completion
 
 ---
 

@@ -15,68 +15,128 @@ st.set_page_config(
 def show_manga_loader():
     """Render the branded loading overlay once per Streamlit session."""
     if st.session_state.get("_manga_loader_done"):
+        st.components.v1.html(
+            """
+            <script>
+            (function(){
+              var doc = window.parent.document;
+              var stale = doc.getElementById('manga-loader');
+              if(stale) stale.remove();
+            })();
+            </script>
+            """,
+            height=0,
+        )
         return
 
-    st.markdown("""
-    <style>
-      #manga-loader{
-        position:fixed;inset:0;z-index:999999;
-        background:#090909;display:flex;flex-direction:column;
-        align-items:center;justify-content:center;
-        -webkit-font-smoothing:antialiased;
-        animation:manga-loader-rise .7s cubic-bezier(.22,.61,.36,1) both;
-      }
-      #manga-loader.done{animation:manga-loader-fade .5s ease forwards}
-      #manga-loader .manga-loader-wordmark{
-        font-family:'Mona Sans','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-        font-size:72px;font-weight:500;color:#fff;
-        letter-spacing:-2.5px;line-height:1;margin-bottom:42px;user-select:none;
-      }
-      #manga-loader .manga-loader-bar{
-        position:relative;width:260px;height:6px;border-radius:100px;
-        border:1px solid #2a2a2a;overflow:hidden;background:transparent;
-      }
-      #manga-loader .manga-loader-fill{
-        position:absolute;top:0;left:0;height:100%;width:0%;
-        background:#fff;border-radius:100px;
-        transition:width .35s cubic-bezier(.4,0,.2,1);
-      }
-      @keyframes manga-loader-rise{
-        from{opacity:0;transform:translateY(10px)}
-        to{opacity:1;transform:translateY(0)}
-      }
-      @keyframes manga-loader-fade{to{opacity:0;visibility:hidden}}
-      @media (prefers-reduced-motion:reduce){
-        #manga-loader{animation:none}
-        #manga-loader .manga-loader-fill{transition:width .2s linear}
-      }
-    </style>
-    <div id="manga-loader" aria-label="Loading Manga Cloud Platform">
-      <div class="manga-loader-wordmark">MANGA</div>
-      <div class="manga-loader-bar"><div class="manga-loader-fill" id="manga-loader-fill"></div></div>
-    </div>
-    <script>
-    (function(){
-      var fill = document.getElementById('manga-loader-fill');
-      var pct = 0, target = 90, done = false;
-      var tick = setInterval(function(){
-        if(done || !fill) return;
-        pct += Math.max(0.4, (target - pct) * 0.08);
-        if(pct >= target){ pct = target; clearInterval(tick); }
-        fill.style.width = pct.toFixed(1) + '%';
-      }, 110);
-      window.mangaLoaderComplete = function(){
-        if(done) return;
-        done = true;
-        clearInterval(tick);
-        if(fill) fill.style.width = '100%';
-        var el = document.getElementById('manga-loader');
-        setTimeout(function(){ if(el) el.classList.add('done'); }, 360);
-        setTimeout(function(){ if(el) el.remove(); }, 900);
-      };
-    })();
-    </script>
-    """, unsafe_allow_html=True)
+    st.components.v1.html(
+        """
+        <script>
+        (function(){
+          var parentWindow = window.parent;
+          var doc = parentWindow.document;
+          var existing = doc.getElementById('manga-loader');
+          if(existing) existing.remove();
+
+          var oldStyle = doc.getElementById('manga-loader-style');
+          if(oldStyle) oldStyle.remove();
+
+          if(parentWindow.__mangaLoaderTick){
+            parentWindow.clearInterval(parentWindow.__mangaLoaderTick);
+            parentWindow.__mangaLoaderTick = null;
+          }
+          if(parentWindow.__mangaLoaderSafety){
+            parentWindow.clearTimeout(parentWindow.__mangaLoaderSafety);
+            parentWindow.__mangaLoaderSafety = null;
+          }
+
+          var style = doc.createElement('style');
+          style.id = 'manga-loader-style';
+          style.textContent = `
+            #manga-loader{
+              position:fixed;inset:0;z-index:999999;
+              background:#090909;display:flex;flex-direction:column;
+              align-items:center;justify-content:center;
+              -webkit-font-smoothing:antialiased;
+              animation:manga-loader-rise .7s cubic-bezier(.22,.61,.36,1) both;
+            }
+            #manga-loader.done{animation:manga-loader-fade .5s ease forwards}
+            #manga-loader .manga-loader-wordmark{
+              font-family:'Mona Sans','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+              font-size:72px;font-weight:500;color:#fff;
+              letter-spacing:-2.5px;line-height:1;margin-bottom:42px;user-select:none;
+            }
+            #manga-loader .manga-loader-bar{
+              position:relative;width:260px;height:6px;border-radius:100px;
+              border:1px solid #2a2a2a;overflow:hidden;background:transparent;
+            }
+            #manga-loader .manga-loader-fill{
+              position:absolute;top:0;left:0;height:100%;width:0%;
+              background:#fff;border-radius:100px;
+              transition:width .35s cubic-bezier(.4,0,.2,1);
+            }
+            @keyframes manga-loader-rise{
+              from{opacity:0;transform:translateY(10px)}
+              to{opacity:1;transform:translateY(0)}
+            }
+            @keyframes manga-loader-fade{to{opacity:0;visibility:hidden}}
+            @media (prefers-reduced-motion:reduce){
+              #manga-loader{animation:none}
+              #manga-loader .manga-loader-fill{transition:width .2s linear}
+            }
+          `;
+          doc.head.appendChild(style);
+
+          var loader = doc.createElement('div');
+          loader.id = 'manga-loader';
+          loader.setAttribute('aria-label', 'Loading Manga Cloud Platform');
+          loader.innerHTML = `
+            <div class="manga-loader-wordmark">MANGA</div>
+            <div class="manga-loader-bar"><div class="manga-loader-fill"></div></div>
+          `;
+          doc.body.appendChild(loader);
+
+          var fill = loader.querySelector('.manga-loader-fill');
+          var startedAt = Date.now();
+          var pct = 0;
+          var target = 90;
+          var done = false;
+
+          parentWindow.__mangaLoaderTick = parentWindow.setInterval(function(){
+            if(done || !fill) return;
+            pct += Math.max(0.4, (target - pct) * 0.08);
+            if(pct >= target){
+              pct = target;
+              parentWindow.clearInterval(parentWindow.__mangaLoaderTick);
+              parentWindow.__mangaLoaderTick = null;
+            }
+            fill.style.width = pct.toFixed(1) + '%';
+          }, 110);
+
+          parentWindow.mangaLoaderComplete = function(){
+            if(done) return;
+            done = true;
+            if(parentWindow.__mangaLoaderTick){
+              parentWindow.clearInterval(parentWindow.__mangaLoaderTick);
+              parentWindow.__mangaLoaderTick = null;
+            }
+            var wait = Math.max(0, 950 - (Date.now() - startedAt));
+            parentWindow.setTimeout(function(){
+              var current = doc.getElementById('manga-loader');
+              if(fill) fill.style.width = '100%';
+              parentWindow.setTimeout(function(){ if(current) current.classList.add('done'); }, 360);
+              parentWindow.setTimeout(function(){ if(current) current.remove(); }, 900);
+            }, wait);
+          };
+
+          parentWindow.__mangaLoaderSafety = parentWindow.setTimeout(function(){
+            if(parentWindow.mangaLoaderComplete) parentWindow.mangaLoaderComplete();
+          }, 4200);
+        })();
+        </script>
+        """,
+        height=0,
+    )
 
 
 def hide_manga_loader():
@@ -86,9 +146,16 @@ def hide_manga_loader():
     st.components.v1.html(
         """
         <script>
-        if(window.parent && window.parent.mangaLoaderComplete){
-          window.parent.mangaLoaderComplete();
-        }
+        (function(){
+          var parentWindow = window.parent;
+          if(parentWindow && typeof parentWindow.mangaLoaderComplete === 'function'){
+            parentWindow.mangaLoaderComplete();
+            return;
+          }
+          var doc = parentWindow.document;
+          var stale = doc.getElementById('manga-loader');
+          if(stale) stale.remove();
+        })();
         </script>
         """,
         height=0,

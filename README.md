@@ -97,7 +97,7 @@ We designed a **two-tier architecture** aligned with the professor's reference:
 
 Built a fully interactive RFP response as a Streamlit app with **6 pages**:
 
-- **Branded loading screen** — one-time MANGA launch overlay with Framer-style wordmark, capsule progress bar, and smooth fade-out before the app opens
+- **Branded loading screen** — one-time MANGA launch overlay with Framer-style wordmark, capsule progress bar, smooth fade-out, and fail-safe removal before the app opens
 - **Overview** — executive summary, KPI metrics, stakeholder analysis (champions vs. skeptics), core value drivers
 - **High-Level Architecture** — technology-agnostic clickable diagram + Plotly interactive chart (hover any node for design rationale and RFP coverage)
 - **Low-Level Architecture** — AWS service map + Plotly interactive chart (hover any node for service rationale, cost model, and RFP requirement)
