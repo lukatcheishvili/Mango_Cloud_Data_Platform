@@ -12,6 +12,92 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+def show_manga_loader():
+    """Render the branded loading overlay once per Streamlit session."""
+    if st.session_state.get("_manga_loader_done"):
+        return
+
+    st.markdown("""
+    <style>
+      #manga-loader{
+        position:fixed;inset:0;z-index:999999;
+        background:#090909;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;
+        -webkit-font-smoothing:antialiased;
+        animation:manga-loader-rise .7s cubic-bezier(.22,.61,.36,1) both;
+      }
+      #manga-loader.done{animation:manga-loader-fade .5s ease forwards}
+      #manga-loader .manga-loader-wordmark{
+        font-family:'Mona Sans','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+        font-size:72px;font-weight:500;color:#fff;
+        letter-spacing:-2.5px;line-height:1;margin-bottom:42px;user-select:none;
+      }
+      #manga-loader .manga-loader-bar{
+        position:relative;width:260px;height:6px;border-radius:100px;
+        border:1px solid #2a2a2a;overflow:hidden;background:transparent;
+      }
+      #manga-loader .manga-loader-fill{
+        position:absolute;top:0;left:0;height:100%;width:0%;
+        background:#fff;border-radius:100px;
+        transition:width .35s cubic-bezier(.4,0,.2,1);
+      }
+      @keyframes manga-loader-rise{
+        from{opacity:0;transform:translateY(10px)}
+        to{opacity:1;transform:translateY(0)}
+      }
+      @keyframes manga-loader-fade{to{opacity:0;visibility:hidden}}
+      @media (prefers-reduced-motion:reduce){
+        #manga-loader{animation:none}
+        #manga-loader .manga-loader-fill{transition:width .2s linear}
+      }
+    </style>
+    <div id="manga-loader" aria-label="Loading Manga Cloud Platform">
+      <div class="manga-loader-wordmark">MANGA</div>
+      <div class="manga-loader-bar"><div class="manga-loader-fill" id="manga-loader-fill"></div></div>
+    </div>
+    <script>
+    (function(){
+      var fill = document.getElementById('manga-loader-fill');
+      var pct = 0, target = 90, done = false;
+      var tick = setInterval(function(){
+        if(done || !fill) return;
+        pct += Math.max(0.4, (target - pct) * 0.08);
+        if(pct >= target){ pct = target; clearInterval(tick); }
+        fill.style.width = pct.toFixed(1) + '%';
+      }, 110);
+      window.mangaLoaderComplete = function(){
+        if(done) return;
+        done = true;
+        clearInterval(tick);
+        if(fill) fill.style.width = '100%';
+        var el = document.getElementById('manga-loader');
+        setTimeout(function(){ if(el) el.classList.add('done'); }, 360);
+        setTimeout(function(){ if(el) el.remove(); }, 900);
+      };
+    })();
+    </script>
+    """, unsafe_allow_html=True)
+
+
+def hide_manga_loader():
+    """Finish and fade the loading overlay after the first full app render."""
+    if st.session_state.get("_manga_loader_done"):
+        return
+    st.components.v1.html(
+        """
+        <script>
+        if(window.parent && window.parent.mangaLoaderComplete){
+          window.parent.mangaLoaderComplete();
+        }
+        </script>
+        """,
+        height=0,
+    )
+    st.session_state["_manga_loader_done"] = True
+
+
+show_manga_loader()
+
 # ── DESIGN SYSTEM TOKENS (Framer-based, per DESIGN.md) ─────────────────────
 CANVAS    = "#090909"
 SURF1     = "#141414"
@@ -1353,3 +1439,5 @@ elif PAGE == "usecases":
         margin=dict(l=160,r=20,t=20,b=60), xaxis=dict(side="bottom"),
     )
     st.plotly_chart(fig2, use_container_width=True)
+
+hide_manga_loader()
