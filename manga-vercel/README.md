@@ -43,5 +43,5 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 ```
 
 ## Notes
-- After deploying, update the proposal/README links from the Streamlit URL to the new Vercel URL.
+- Live at https://mangacloud-khaki.vercel.app/ (auto-deploys on every push to `main`; root directory `manga-vercel`).
 - The Streamlit version remains the fallback; both render identical content.

@@ -1,9 +1,9 @@
 # 🛍️ Manga Cloud Platform — RFP Response
 
 > **IE University · MBD-EN2025 · Cloud Analytics · Group Work B**
-> Interactive proposal for migrating a retail data architecture to AWS — built with Streamlit.
+> Interactive proposal for migrating a retail data architecture to AWS — live on Vercel.
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://manga-cloud-platform.streamlit.app/)
+[![Live on Vercel](https://img.shields.io/badge/Live-Vercel-000000?logo=vercel&logoColor=white)](https://mangacloud-khaki.vercel.app/)
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
 ![AWS](https://img.shields.io/badge/Cloud-AWS-FF9900?logo=amazonaws&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -12,7 +12,7 @@
 
 ## 🚀 Live App
 
-**[https://manga-cloud-platform.streamlit.app/](https://manga-cloud-platform.streamlit.app/)**
+**[https://mangacloud-khaki.vercel.app/](https://mangacloud-khaki.vercel.app/)**
 
 ---
 
@@ -210,12 +210,17 @@ All 6 sample CSV files are included in the repo. The app handles missing files g
 
 ---
 
-## ☁️ Deploy to Streamlit Cloud
+## ☁️ Deployment (Vercel)
 
-1. Fork or push this repo to GitHub
-2. Go to [share.streamlit.io](https://share.streamlit.io) → **New app**
-3. Select repo · branch `main` · file `mango_cloud_platform.py`
-4. Click **Deploy** — live in ~2 minutes, no config needed
+The live site is the static build in [`manga-vercel/`](./manga-vercel), hosted on **Vercel** and auto-deployed on every push to `main`:
+
+1. On [vercel.com](https://vercel.com) → **Add New → Project** → import this repo
+2. Set **Root Directory** to `manga-vercel` · Framework preset **Other** · leave build/output empty
+3. **Deploy** — live in ~1 minute
+
+> Live URL: https://mangacloud-khaki.vercel.app/
+>
+> The Streamlit app (`mango_cloud_platform.py`) remains as a local/fallback version — see **Run Locally** above.
 
 ---
 

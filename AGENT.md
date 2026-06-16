@@ -17,7 +17,8 @@
 | **Deliverable** | RFP response document + interactive Streamlit presentation + video walkthrough |
 | **Deadline** | June 19, 2026 |
 | **GitHub repo** | https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform |
-| **Live Streamlit app** | https://manga-cloud-platform.streamlit.app/ |
+| **Live website (Vercel)** | https://mangacloud-khaki.vercel.app/ |
+| **Streamlit app (fallback)** | https://manga-cloud-platform.streamlit.app/ |
 | **Figma HLA diagram** | https://www.figma.com/board/UtHLPjygSysLe43cpzNCAp |
 | **Figma LLA diagram** | https://www.figma.com/board/mvaVaoJErDBqNXt114FPqU |
 
@@ -166,6 +167,8 @@ Use this repository as an additional engineering skills source, while keeping th
    - The git history must show only human team members.
 3. AI assistants may *prepare* changes, but the commit/PR is always made **in the name of the user**.
 4. Keep commit messages short and descriptive of the change (e.g. `Move sample CSVs into Data/`, `Rename CLAUDE.md to AGENT.md`).
+5. **Update the Log every 5 prompts.** After every 5 prompts in an agent/LLM session, append a dated entry to the **Log** section at the bottom of this file summarising what was done, and keep the **What Has To Be Done** section current at the same time.
+6. **Never commit secrets.** API keys and tokens go in a local `.env` (gitignored) — never in tracked files or commit history.
 
 ---
 
@@ -175,6 +178,8 @@ Use this repository as an additional engineering skills source, while keeping th
 Mango_Cloud_Data_Platform/
 ├── mango_cloud_platform.py        # Main Streamlit app (all 6 pages)
 ├── requirements.txt               # Python dependencies (streamlit, pandas, plotly)
+├── .gitignore                     # Ignores .env, __pycache__, local scratch images, etc.
+├── .env.example                   # Template for local secrets (copy to .env — .env is gitignored)
 ├── README.md                      # Project overview and documentation
 ├── AGENT.md                      # ← THIS FILE — AI context and project state
 ├── DESIGN.md                      # Design system — colors, typography, spacing, components
@@ -359,15 +364,23 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 - [ ] **Presentation / video** — build the slide deck + per-speaker script (~10–15 min); all team members must present.
 - [ ] **Document polish** — fix the Table of Contents in `Manga_DataHub_RFP_Response.pdf`, trim the body to ≤15 pages, add a cost-comparison figure with euro numbers behind the 40–60% claim.
 - [ ] **Quantified cost & ROI model** — defensible colocation-vs-AWS monthly cost breakdown (for the CFO persona).
-- [ ] **Deploy the Vercel build** — push `manga-vercel/` live and swap the proposal/README links from Streamlit to the Vercel URL.
+- [ ] **Official AWS logos** in the low-level popups (Lambda, Firehose, etc.) where they can be sourced; keep a fallback icon otherwise.
 - [ ] **Proofread** — consistent terminology (Manga, not Mango), correct R1–R8 references across app, PDF, and README.
-- [ ] **Revoke & rotate the GitHub token** that was shared in chat; never commit tokens to the repo.
+- [ ] **Revoke & rotate the GitHub token** that was shared in chat (do this on GitHub → Settings → Developer settings → Personal access tokens), then put the new token in the local gitignored `.env`.
 
 ---
 
 ## 🧾 Log
 
 > Newest entries first. Record what was actually done, by whom, and when.
+
+### 2026-06-16 (later) — Luka Tcheishvili
+- Re-exported the low-level architecture diagram from Figma with vertically-centered labels; replaced the image (web-optimized) and fixed the "Bronze" label typo.
+- Stood up **Vercel** hosting (project `manga_cloud`, root `manga-vercel/`, auto-deploy on push to `main`); live at https://mangacloud-khaki.vercel.app/.
+- Fixed asset caching (`must-revalidate` + cache-busted image URLs) so updated diagrams appear without stale caching.
+- Switched the README live-app links from Streamlit to the Vercel URL.
+- Added `.gitignore` and `.env.example`; created a local gitignored `.env` for the GitHub token (old shared token to be revoked/rotated).
+- Added the "update the Log every 5 prompts" and "never commit secrets" rules.
 
 ### 2026-06-16 — Luka Tcheishvili
 - Renamed `CLAUDE.md` → `AGENT.md` and updated all internal references (incl. `DESIGN.md`).

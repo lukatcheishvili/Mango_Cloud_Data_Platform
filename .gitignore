@@ -1,0 +1,20 @@
+# Secrets / environment — never commit
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+
+# Local scratch & stray exports (not part of the repo)
+_crop_check.png
+HLA.png
+LLA.png
+Manga Cloud Platform — *.jpg
