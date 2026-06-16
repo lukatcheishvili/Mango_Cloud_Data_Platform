@@ -1,0 +1,31 @@
+date,weather,fuel_price,bank_holiday,event,campaign_id,total_sales,total_sold_items
+2025-05-05,sunny,1.46,False,Concert,CAM03,11577.65,440
+2025-05-04,cloudy,1.65,False,Concert,CAM01,5976.75,362
+2025-05-03,sunny,1.52,False,Fashion Week,CAM01,7974.88,85
+2025-05-02,rainy,1.6,True,None,CAM02,8150.63,222
+2025-05-01,rainy,1.75,True,Concert,CAM03,11822.98,69
+2025-04-30,rainy,1.74,False,Concert,CAM03,3678.12,370
+2025-04-29,cloudy,1.57,False,Concert,CAM02,5751.27,313
+2025-04-28,cloudy,1.67,True,None,CAM01,4718.2,449
+2025-04-27,sunny,1.65,True,Fashion Week,CAM02,5416.27,191
+2025-04-26,cloudy,1.7,False,Concert,CAM01,7367.52,420
+2025-04-25,cloudy,1.55,True,Fashion Week,CAM02,6354.18,192
+2025-04-24,cloudy,1.69,True,None,CAM01,6552.22,141
+2025-04-23,sunny,1.84,False,Fashion Week,CAM01,10597.92,403
+2025-04-22,rainy,1.64,False,Concert,CAM02,11370.15,371
+2025-04-21,rainy,1.81,True,None,CAM03,3633.75,337
+2025-04-20,cloudy,1.62,False,None,CAM02,4880.27,264
+2025-04-19,cloudy,1.59,False,Fashion Week,CAM01,9040.29,496
+2025-04-18,rainy,1.71,True,Concert,CAM01,6227.82,391
+2025-04-17,sunny,1.72,True,Fashion Week,CAM01,5287.47,100
+2025-04-16,sunny,1.8,True,Local Sale,CAM01,5657.62,202
+2025-04-15,sunny,1.54,True,None,CAM03,5902.96,235
+2025-04-14,rainy,1.65,False,Concert,CAM01,10638.03,112
+2025-04-13,cloudy,1.68,False,None,CAM03,4229.59,239
+2025-04-12,cloudy,1.76,True,Concert,CAM03,9380.2,174
+2025-04-11,rainy,1.47,False,Fashion Week,CAM01,7975.38,199
+2025-04-10,cloudy,1.85,True,Fashion Week,CAM02,5668.59,363
+2025-04-09,rainy,1.64,True,Fashion Week,CAM02,6778.03,107
+2025-04-08,rainy,1.56,False,Fashion Week,CAM02,5305.86,391
+2025-04-07,sunny,1.8,True,Local Sale,CAM02,8503.62,354
+2025-04-06,sunny,1.75,False,Fashion Week,CAM01,3734.35,229

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manga · AWS Cloud Platform</title>
+<meta name="description" content="CloudCore Solutions — RFP response: AWS data lakehouse modernisation for Manga retail.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Mona+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js" charset="utf-8"></script>
+<style>
+:root{
+  --canvas:#090909; --surf1:#141414; --surf2:#1c1c1c; --hair:#262626; --hair-s:#1a1a1a;
+  --ink:#ffffff; --ink-m:#999999; --ink-f:#444444; --accent:#0099ff;
+  --g-violet:#6a4cf5; --g-magenta:#d44df0; --g-orange:#ff7a3d;
+  --font-display:'Mona Sans','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-body:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--canvas);color:var(--ink);
+  font-family:var(--font-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-feature-settings:'cv01','cv05','cv09','cv11','ss03';}
+a,a:visited{color:var(--accent);text-decoration:none}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* ── LAYOUT ── */
+#app{display:flex;min-height:100vh}
+#sidebar{width:248px;flex:0 0 248px;background:#0a0a0a;border-right:1px solid var(--hair);
+  position:sticky;top:0;height:100vh;padding:24px 14px 18px;display:flex;flex-direction:column}
+#main-wrap{flex:1;min-width:0;display:flex;justify-content:center}
+#main{width:100%;max-width:1240px;padding:56px 48px 96px}
+.sb-title{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--ink);letter-spacing:-.4px;margin-bottom:4px}
+.sb-eyebrow{font-size:11px;color:var(--ink-f);letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+.sb-head{padding:16px 8px 22px}
+.nav-btn{width:100%;display:flex;align-items:center;justify-content:flex-start;text-align:left;
+  min-height:42px;padding:10px 14px;margin:2px 0;background:transparent;border:1px solid transparent;
+  border-radius:10px;color:var(--ink-m);font-size:14px;font-weight:500;letter-spacing:-.14px;
+  font-family:var(--font-body);cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+.nav-btn:hover{background:var(--surf1);border-color:var(--hair);color:var(--ink)}
+.nav-btn.active{background:var(--surf2);border-color:var(--hair);color:var(--ink);font-weight:600}
+.sb-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--hair);
+  font-size:11.5px;color:var(--ink-f);line-height:1.75;letter-spacing:-.1px}
+
+/* ── TYPE / PRIMITIVES ── */
+.page-title{font-family:var(--font-display);font-size:46px;font-weight:600;color:var(--ink);letter-spacing:-2.4px;margin-bottom:8px;line-height:1.0}
+.page-sub{font-size:18px;color:var(--ink-m);margin-bottom:28px;font-weight:400;letter-spacing:-.18px;line-height:1.3}
+.section-title{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-f);margin:0 0 14px;padding-bottom:6px;border-bottom:1px solid var(--hair)}
+.card{background:var(--surf1);border:1px solid var(--hair);border-radius:15px;padding:18px 20px;margin-bottom:12px;transition:border-color .18s}
+.card:hover{border-color:#3a3a3a}
+.metric-card{background:var(--surf1);border:1px solid var(--hair);border-radius:15px;padding:20px;text-align:center}
+.metric-value{font-family:var(--font-display);font-size:36px;font-weight:600;color:var(--ink);letter-spacing:-1.8px;line-height:1}
+.metric-label{font-size:11px;color:var(--ink-m);text-transform:uppercase;letter-spacing:.1em;margin-top:7px;font-weight:500}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.two-col{display:grid;grid-template-columns:3fr 2fr;gap:22px}
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:4px 11px;border-radius:100px;margin:2px;letter-spacing:.01em;background:var(--surf2);color:var(--ink-m);border:1px solid var(--hair)}
+hr{border:none;border-top:1px solid var(--hair);margin:26px 0}
+
+/* ── SPOTLIGHT ── */
+.spotlight{border-radius:30px;padding:30px 34px;margin:4px 0 18px;color:#fff;
+  background:linear-gradient(120deg,var(--g-violet) 0%,var(--g-magenta) 52%,var(--g-orange) 110%);
+  box-shadow:0 24px 60px rgba(106,76,245,.22)}
+.spotlight .sl-eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;opacity:.82}
+.spotlight .sl-pillars{font-family:var(--font-display);font-size:34px;font-weight:600;letter-spacing:-1.6px;line-height:1.04;margin-top:10px}
+.spotlight .sl-sub{font-size:14px;line-height:1.5;opacity:.9;margin-top:12px;max-width:760px}
+
+/* ── STAKEHOLDERS ── */
+.stk-card{background:var(--surf1);border:1px solid var(--hair);border-radius:15px;padding:14px 16px;margin-bottom:10px}
+.stk-name{font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.2px}
+.stk-role{font-size:10px;color:var(--ink-f);text-transform:uppercase;letter-spacing:.1em;margin:4px 0 6px}
+.stk-concern{font-size:11.5px;color:var(--ink-m);line-height:1.55}
+.stk-tag{font-size:9px;font-weight:500;padding:3px 9px 3px 8px;border-radius:100px;display:inline-flex;align-items:center;gap:6px;margin-left:8px;background:var(--surf2);color:var(--ink-m);border:1px solid var(--hair);letter-spacing:.02em;vertical-align:middle}
+.stk-tag::before{content:"";width:6px;height:6px;border-radius:50%;display:inline-block}
+.stk-skeptic::before{background:#c8893a}
+.stk-champion::before{background:var(--accent)}
+.stk-neutral::before{background:var(--ink-m)}
+
+/* ── PROBLEM CARDS ── */
+.prob{padding:13px 18px;margin-bottom:8px;border-left:2px solid var(--hair)}
+.prob strong{color:var(--ink);font-size:12.5px;letter-spacing:-.2px}
+.prob p{font-size:11.5px;color:var(--ink-m);margin:5px 0 0}
+
+/* ── VALUE DRIVERS ── */
+.vd{min-height:152px}
+.vd .num{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--ink-f);letter-spacing:.04em;margin-bottom:12px}
+.vd .h{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:7px;letter-spacing:-.3px}
+.vd .d{font-size:11.5px;color:var(--ink-m);line-height:1.65}
+
+/* ── FIGMA CHART FRAME + HOTSPOTS ── */
+.figma-chart-frame{background-color:#f4f4f5;background-image:radial-gradient(circle,#cdcdd3 1px,transparent 1.5px);
+  background-size:22px 22px;background-position:-7px -7px;border:1px solid var(--hair);border-radius:15px;
+  padding:26px;overflow:auto;box-shadow:0 18px 48px rgba(0,0,0,.32);margin:8px 0 18px}
+.arch-hover-stage{position:relative;width:100%;max-width:1500px;margin:0 auto;line-height:0}
+.arch-hover-stage img{display:block;width:100%;max-width:none;height:auto;mix-blend-mode:multiply}
+.arch-hotspot{position:absolute;display:block;padding:0;margin:0;border:0;border-radius:10px;
+  background:rgba(0,153,255,0);cursor:help;appearance:none;z-index:2}
+.arch-hotspot:hover,.arch-hotspot:focus-visible{outline:none;
+  box-shadow:0 0 0 2px rgba(0,153,255,.72),0 10px 28px rgba(0,0,0,.22);background:rgba(0,153,255,.035)}
+.arch-tooltip{position:absolute;left:50%;top:calc(100% + 12px);width:min(340px,42vw);
+  transform:translate(-50%,8px);opacity:0;pointer-events:none;z-index:20;
+  background:rgba(20,20,20,.97);border:1px solid rgba(255,255,255,.09);border-radius:18px;
+  padding:18px 20px 17px;text-align:left;line-height:1.45;box-shadow:0 24px 70px rgba(0,0,0,.44);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:opacity .14s,transform .14s}
+.arch-hotspot:hover .arch-tooltip,.arch-hotspot:focus-visible .arch-tooltip{opacity:1;transform:translate(-50%,0)}
+.arch-hotspot[data-placement="above"] .arch-tooltip{top:auto;bottom:calc(100% + 12px);transform:translate(-50%,-8px)}
+.arch-hotspot[data-placement="above"]:hover .arch-tooltip,.arch-hotspot[data-placement="above"]:focus-visible .arch-tooltip{transform:translate(-50%,0)}
+.arch-hotspot[data-align="left"] .arch-tooltip{left:0;transform:translate(0,8px)}
+.arch-hotspot[data-align="left"]:hover .arch-tooltip,.arch-hotspot[data-align="left"]:focus-visible .arch-tooltip{transform:translate(0,0)}
+.arch-hotspot[data-align="right"] .arch-tooltip{left:auto;right:0;transform:translate(0,8px)}
+.arch-hotspot[data-align="right"]:hover .arch-tooltip,.arch-hotspot[data-align="right"]:focus-visible .arch-tooltip{transform:translate(0,0)}
+.arch-hotspot[data-placement="above"][data-align="left"] .arch-tooltip,.arch-hotspot[data-placement="above"][data-align="right"] .arch-tooltip{transform:translate(0,-8px)}
+.arch-hotspot[data-placement="above"][data-align="left"]:hover .arch-tooltip,.arch-hotspot[data-placement="above"][data-align="right"]:hover .arch-tooltip{transform:translate(0,0)}
+.arch-tip-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
+.arch-tip-layer{display:block;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-f);margin-bottom:5px}
+.arch-tip-title{display:block;font-size:18px;font-weight:650;color:var(--ink);letter-spacing:-.45px;line-height:1.08}
+.arch-tip-mode{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hair);border-radius:999px;background:var(--surf2);color:var(--ink-m);font-size:11px;font-weight:550;padding:4px 9px;white-space:nowrap}
+.arch-tip-mode::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(0,153,255,.55)}
+.arch-tip-section{display:block;font-size:10px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-f);margin:13px 0 6px}
+.arch-tip-copy{display:block;font-size:13px;color:#d6d6d6;line-height:1.55;margin:0}
+.arch-tip-data{display:block;font-size:13px;color:var(--ink-m);line-height:1.55;margin:0}
+.arch-tip-rule{display:block;height:1px;background:var(--hair);margin:14px 0 12px}
+.arch-tip-tags{display:flex;flex-wrap:wrap;gap:6px}
+.arch-tip-tag{display:inline-flex;border:1px solid var(--hair);border-radius:999px;background:var(--surf2);color:var(--ink-m);font-size:10px;font-weight:550;padding:4px 9px;line-height:1}
+.hint{font-size:12px;color:var(--ink-m);background:var(--surf1);border:1px solid var(--hair);border-left:3px solid var(--accent);border-radius:8px;padding:10px 14px;margin-bottom:14px}
+
+/* ── EXPANDERS / DETAILS ── */
+details{background:var(--surf1);border:1px solid var(--hair);border-radius:12px;margin-bottom:10px;overflow:hidden}
+details>summary{cursor:pointer;list-style:none;padding:14px 18px;font-size:13px;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:10px}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"+";color:var(--ink-f);font-size:16px;width:14px;display:inline-block}
+details[open]>summary::before{content:"–"}
+details>summary:hover{background:var(--surf2)}
+.det-body{padding:4px 18px 18px}
+.tag-strong{color:var(--ink-m)}
+
+/* ── REQUIREMENTS ── */
+.req-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.req-id{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--ink-f)}
+.req-title{font-size:14px;font-weight:600;color:var(--ink);margin-left:10px;letter-spacing:-.3px}
+.req-cov{font-size:10px;font-weight:500;color:var(--ink-m);background:var(--surf2);border:1px solid var(--hair);padding:4px 11px 4px 9px;border-radius:100px;display:inline-flex;align-items:center;gap:7px}
+.req-cov .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
+.req-desc{font-size:11.5px;color:var(--ink-m);line-height:1.65;margin:0 0 10px}
+
+/* ── DATA TABLE ── */
+.dtable{width:100%;border-collapse:collapse;font-size:11px;border:1px solid var(--hair);border-radius:10px;overflow:hidden;display:block;overflow-x:auto;white-space:nowrap}
+.dtable th{background:var(--surf2);color:var(--ink-m);text-align:left;padding:7px 10px;font-weight:600;border-bottom:1px solid var(--hair);position:sticky;top:0}
+.dtable td{padding:6px 10px;color:#cfcfcf;border-bottom:1px solid var(--hair-s)}
+.dtable tr:last-child td{border-bottom:none}
+.row-meta{font-size:10px;color:var(--ink-f);margin-top:4px}
+.uc-pipe{background:var(--surf1);border:1px solid var(--hair);border-radius:10px;padding:11px 14px;font-size:10.5px;color:var(--accent);font-family:ui-monospace,monospace;line-height:1.8;margin-top:6px}
+.uc-impact{margin-top:10px;padding:11px 14px;background:var(--surf2);border:1px solid var(--hair);border-radius:10px;font-size:11.5px;color:var(--ink)}
+
+/* ── LOADER ── */
+#manga-loader{position:fixed;inset:0;z-index:999999;background:#090909;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;
+  animation:ml-rise .7s cubic-bezier(.22,.61,.36,1) both}
+#manga-loader.done{animation:ml-fade .5s ease forwards}
+#manga-loader .wm{font-family:var(--font-display);font-size:72px;font-weight:500;color:#fff;letter-spacing:-2.5px;line-height:1;margin-bottom:42px;user-select:none}
+#manga-loader .bar{position:relative;width:260px;height:6px;border-radius:100px;border:1px solid #2a2a2a;overflow:hidden;background:transparent}
+#manga-loader .fill{position:absolute;top:0;left:0;height:100%;width:0%;background:#fff;border-radius:100px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+@keyframes ml-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ml-fade{to{opacity:0;visibility:hidden}}
+
+/* ── PAGE ANIM ── */
+.page{display:none}
+.page.active{display:block}
+.anim>*{opacity:0;transform:translateY(16px);animation:pg-enter .55s cubic-bezier(.22,.61,.36,1) both}
+@keyframes pg-enter{to{opacity:1;transform:translateY(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  #manga-loader,.anim>*{animation:none!important;opacity:1!important;transform:none!important}
+}
+@media (max-width:900px){
+  #app{flex-direction:column}
+  #sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;gap:4px;align-items:center}
+  .sb-head,.sb-foot{display:none}
+  #main{padding:32px 20px 80px}
+  .two-col,.g4,.g3{grid-template-columns:1fr}
+  .arch-tooltip{width:min(300px,76vw)}
+}
+</style>
+</head>
+<body>
+
+<div id="manga-loader" aria-label="Loading Manga Cloud Platform">
+  <div class="wm">MANGA</div>
+  <div class="bar"><div class="fill"></div></div>
+</div>
+
+<div id="app">
+  <nav id="sidebar">
+    <div class="sb-head">
+      <div class="sb-title">Manga Cloud</div>
+      <div class="sb-eyebrow">RFP Response · AWS</div>
+    </div>
+    <button class="nav-btn active" data-page="overview">Overview</button>
+    <button class="nav-btn" data-page="hla">High-Level Arch</button>
+    <button class="nav-btn" data-page="lla">Low-Level Arch</button>
+    <button class="nav-btn" data-page="data">Data Sources</button>
+    <button class="nav-btn" data-page="reqs">Requirements</button>
+    <button class="nav-btn" data-page="usecases">Use Cases</button>
+    <div class="sb-foot">
+      IE University · MBD-EN2025<br>
+      Cloud Analytics · Group B<br>
+      Due: June 19, 2026
+    </div>
+  </nav>
+
+  <div id="main-wrap"><main id="main">
+
+  <!-- OVERVIEW -->
+  <section class="page active" id="page-overview">
+    <div class="page-title">Cloud Data Platform for Manga</div>
+    <div class="page-sub">AWS-powered modernisation proposal — replacing legacy cron-ETL with a real-time, scalable data lakehouse</div>
+    <div class="spotlight">
+      <div class="sl-eyebrow">The proposal in three moves</div>
+      <div class="sl-pillars">Unify &nbsp;·&nbsp; Accelerate &nbsp;·&nbsp; Enable</div>
+      <div class="sl-sub">One governed AWS lakehouse for every data source · time-to-insight cut from 24 hours to sub-second · ML-powered recommendations, dynamic pricing and demand forecasting that are impossible today.</div>
+    </div>
+    <div class="section-title" style="margin-top:18px">Project Team</div>
+    <div class="card" style="padding:16px 18px">
+      <div id="team-tags" style="display:flex;flex-wrap:wrap;gap:8px 9px"></div>
+    </div>
+    <div class="grid g4" style="margin:18px 0">
+      <div class="metric-card"><div class="metric-value">€280M</div><div class="metric-label">Annual Revenue</div></div>
+      <div class="metric-card"><div class="metric-value">+3.5%</div><div class="metric-label">Growth vs market</div></div>
+      <div class="metric-card"><div class="metric-value">100+</div><div class="metric-label">Physical Stores</div></div>
+      <div class="metric-card"><div class="metric-value">2×</div><div class="metric-label">Cost vs Competitors</div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="section-title">Executive Summary</div>
+        <div class="card"><p style="font-size:13px;color:var(--ink-m);line-height:1.8;margin:0">
+        Manga's current architecture — independent ETL pipelines triggered by cron jobs, aggregating into daily Excel files — is incompatible with real-time, AI-driven retail.<br><br>
+        Our proposal delivers a <strong style="color:var(--ink)">cloud-native AWS data lakehouse</strong> on three pillars:
+        <strong style="color:var(--accent)">Unify</strong> all data sources into a single governed platform,
+        <strong style="color:var(--ink)">Accelerate</strong> time-to-insight from 24 hours to sub-second, and
+        <strong style="color:var(--ink)">Enable</strong> ML-powered features — recommendations, dynamic pricing, demand forecasting — impossible today.
+        </p></div>
+        <div class="section-title" style="margin-top:16px">Problem: As-Is Architecture</div>
+        <div id="problem-list"></div>
+      </div>
+      <div>
+        <div class="section-title">Key Stakeholders</div>
+        <div id="stakeholder-list"></div>
+      </div>
+    </div>
+    <hr>
+    <div class="section-title">Core Value Drivers</div>
+    <div class="grid g3" id="value-drivers"></div>
+  </section>
+
+  <!-- HLA -->
+  <section class="page" id="page-hla">
+    <div class="page-title">High-Level Architecture</div>
+    <div class="page-sub">Technology-agnostic conceptual design — architectural process layers without vendor specifics (RFP Section 2)</div>
+    <div class="hint"><strong>Hover</strong> over any node to see its role, design rationale, and which RFP requirements it covers.</div>
+    <div class="figma-chart-frame">
+      <div class="arch-hover-stage" id="hla-stage">
+        <img src="assets/manga-cloud-platform-high-level-architecture.jpg" alt="Manga Cloud Platform High-Level Architecture">
+      </div>
+    </div>
+  </section>
+
+  <!-- LLA -->
+  <section class="page" id="page-lla">
+    <div class="page-title">Low-Level AWS Architecture</div>
+    <div class="page-sub">Specific AWS services mapped to every Manga data source and use case (RFP Section 3)</div>
+    <div class="hint"><strong>Hover</strong> over any service node to see rationale, cost model, and which RFP requirement (R1–R8) it addresses.</div>
+    <div class="figma-chart-frame">
+      <div class="arch-hover-stage" id="lla-stage">
+        <img src="assets/manga-cloud-platform-low-level-aws-architecture.jpg" alt="Manga Cloud Platform Low-Level AWS Architecture">
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA -->
+  <section class="page" id="page-data">
+    <div class="page-title">Data Sources</div>
+    <div class="page-sub">Manga's 6 sample datasets — schema, quality profile, and ingestion strategy (RFP Appendix III)</div>
+    <div id="data-list"></div>
+  </section>
+
+  <!-- REQS -->
+  <section class="page" id="page-reqs">
+    <div class="page-title">Requirements Coverage</div>
+    <div class="page-sub">How each of the 8 RFP requirements (R1–R8) is addressed by the proposed AWS architecture</div>
+    <div id="req-list"></div>
+    <hr>
+    <div class="section-title">Coverage Summary</div>
+    <div id="req-chart" style="height:260px"></div>
+  </section>
+
+  <!-- USE CASES -->
+  <section class="page" id="page-usecases">
+    <div class="page-title">ML Use Cases</div>
+    <div class="page-sub">Five end-to-end use cases showing the architecture in action with Manga's actual data sources (RFP Section 5)</div>
+    <div id="uc-list"></div>
+    <hr>
+    <div class="section-title">Dataset Usage Matrix</div>
+    <div id="uc-chart" style="height:280px"></div>
+  </section>
+
+  </main></div>
+</div>
+
+<script>
+/* ============================ DATA ============================ */
+const T = {canvas:'#090909',surf1:'#141414',surf2:'#1c1c1c',hair:'#262626',ink:'#ffffff',inkM:'#999999',inkF:'#444444',accent:'#0099ff'};
+
+const TEAM = ["ANDREA ALARCÓN VALLES","MATEUS CARNEIRO","TINA JANNASCH","RICARDO LIÉVANO PEDROZA","LUKA TCHEISHVILI","NICKLAS URBAN"];
+
+const PROBLEMS = [
+  ["Daily batch cron jobs","No real-time capability. Managers make decisions on yesterday's data."],
+  ["Siloed ETL pipelines","Each pipeline built by a different team. No shared standards or observability."],
+  ["Excel as the BI layer","Manual aggregation into Excel files. No self-service, no drill-down."],
+  ["2× competitor infrastructure cost","Colocation model costs twice as much for half the analytical output."],
+  ["GDPR exposure","Previous InfoSec Manager dismissed after a major security incident. Compliance status unclear."]
+];
+
+const STAKEHOLDERS = [
+  ["Marta Ríos","COO · 25 yrs","Wants end-to-end solution with solid business case. Results over ideology.","champion","Champion"],
+  ["Javier Medina","CTO · 15 yrs","Fears vendor lock-in. Champions open-source and modular systems.","skeptic","Skeptic"],
+  ["Manuel Ortega","CFO · 25 yrs","Alarmed by 2× cost vs competitors. Open to change if ROI is clear.","neutral","Cost-focused"],
+  ["Laura Smith","InfoSec Manager","New hire with GDPR mandate. Security non-negotiable after prior incident.","skeptic","Security-first"],
+  ["Alex Lee","Head of Data & AI","Joined from competitor. Knows the current architecture is broken.","champion","Champion"]
+];
+
+const VALUE = [
+  ["Real-Time Everything","Replace all daily-batch pipelines with Kinesis streaming. Sub-second POS, web events, and inventory updates."],
+  ["Open & Modular","Apache Airflow (MWAA), open Parquet/Delta formats, Terraform IaC. No proprietary lock-in — directly addresses the CTO's concern."],
+  ["Security by Design","Lake Formation RBAC, Macie PII scanning, KMS at rest, TLS 1.3 in-transit, CloudTrail GDPR audit logs — built in from day one."],
+  ["ML-Ready Platform","SageMaker Feature Store connected to the Curated Zone. Recommendations, forecasting, and dynamic pricing from day one."],
+  ["Measurable Cost Savings","Pay-per-use vs fixed colocation. S3 Intelligent-Tiering, Spot Instances — projected 40–60% infrastructure cost reduction."],
+  ["Sustainability Metrics","AWS Carbon Footprint Tool tracks emissions by service/region — quantifiable ESG improvement vs colocation for R8 compliance."]
+];
+
+const DATASETS = [
+  {name:"Sales",file:"sales_sample.csv",source:"POS System & E-commerce",ingestion:"Kinesis → Firehose → S3",pattern:"Streaming (real-time)",pii:false,use_cases:["Revenue tracking","Dynamic pricing","Customer behaviour modelling"],desc:"Transactional records: datetime, customer/product/store IDs, payment method, purchase price, and applied discount."},
+  {name:"Customers",file:"customers_sample.csv",source:"CRM & Loyalty Program",ingestion:"AWS DMS → Glue → S3",pattern:"Batch (daily sync)",pii:true,use_cases:["Segmentation","Personalisation","Lifecycle analysis"],desc:"Demographic data: full name, age, gender, address, zip, loyalty status. Contains PII — column masking applied in Curated zone."},
+  {name:"Inventory",file:"inventory_sample.csv",source:"ERP / WMS",ingestion:"Glue ETL → S3",pattern:"Batch (hourly)",pii:false,use_cases:["Supply chain optimisation","Stock alerts","Pricing strategy"],desc:"Current stock levels per product per store, current price, and product description."},
+  {name:"Customer Reviews",file:"customer_reviews_sample.csv",source:"Website / Mobile App",ingestion:"Kinesis → Firehose → S3 + Comprehend",pattern:"Streaming (event-driven)",pii:true,use_cases:["Sentiment analysis","Product improvement","Trust metrics"],desc:"Review text, star rating, image binaries, customer and product IDs, timestamp."},
+  {name:"External Factors",file:"external_factors_sample.csv",source:"Weather API + Internal",ingestion:"Lambda → S3",pattern:"Batch (daily pull)",pii:false,use_cases:["Demand forecasting","Campaign evaluation","Pricing context"],desc:"Daily context: weather, fuel price, bank holiday, local event, campaign ID, aggregated sales/volume."},
+  {name:"Shipping",file:"shipping_sample.csv",source:"Logistics Partner API",ingestion:"Lambda → Glue → S3",pattern:"Batch (daily)",pii:true,use_cases:["Delivery performance","Return analysis","Cost efficiency"],desc:"Order ID, delivery address, estimated/actual delivery time, delivery price, actual cost, return status."}
+];
+
+const REQS = [
+  ["R1","Unified Multi-modal Data Platform","Streaming (Kinesis) + batch (Glue) pipelines. S3 Lakehouse stores structured (Parquet), semi-structured (JSON), and unstructured (images). Single Glue Catalog provides unified access. Athena enables serverless SQL directly on S3.",["Kinesis Streams","Kinesis Firehose","AWS Glue ETL","S3 Lakehouse","Amazon Redshift","Amazon Athena"]],
+  ["R2","Multi-Environment Setup","AWS Organizations provisions Dev / Pre-Prod / Prod from identical Terraform templates. Anonymised production samples (via Glue PII masking + Lake Formation) automatically replicated to non-prod. Dev engineers never see real PII.",["AWS Organizations","Terraform/CDK","Lake Formation (PII masking)","S3 Cross-Account Replication"]],
+  ["R3","Automation & IaC","Infrastructure-as-Code via Terraform/CDK. MWAA (Managed Airflow) replaces all cron jobs with DAG-based orchestration. Glue job bookmarks, EventBridge schedules, and S3 lifecycle policies automate the full data lifecycle.",["Terraform / AWS CDK","Amazon MWAA (Airflow)","AWS Glue (job bookmarks)","EventBridge schedules"]],
+  ["R4","Security & High Availability","IAM least-privilege + KMS encryption at rest. TLS 1.3 enforced in-transit (TLS termination at service boundaries — allows platform-side analytics while keeping every hop encrypted). Lake Formation column/row RBAC. Macie PII scanning. CloudTrail GDPR audit logs. VPC network isolation. Multi-AZ deployments. Target: 99.9% uptime.",["IAM + AWS KMS (at rest)","TLS 1.3 in-transit","AWS Lake Formation","Amazon Macie","AWS CloudTrail (GDPR audit)","Amazon VPC","Multi-AZ deployments"]],
+  ["R5","Data Quality","AWS Glue Data Quality rules after each pipeline: null constraints, range validation, referential integrity (sales ↔ inventory ↔ customers), freshness thresholds. Failures trigger CloudWatch/SNS alerts before bad data reaches downstream consumers.",["AWS Glue Data Quality","CloudWatch Alerts","Glue Data Catalog (schema)","SNS Notifications"]],
+  ["R6","Cost Optimisation","Pay-per-use vs fixed colocation. S3 Intelligent-Tiering auto-archives cold data. Spot Instances for non-critical Glue jobs. Redshift Reserved Instances. QuickSight pay-per-session. Athena pay-per-query. Projected 40–60% infrastructure cost reduction.",["S3 Intelligent-Tiering","Spot Instances (Glue)","Redshift Reserved Instances","QuickSight pay-per-session","Athena pay-per-query"]],
+  ["R7","Extensibility & Interoperability","Decoupled Lambda connectors add new sources without touching existing pipelines. AWS Data Exchange for licensed 3rd-party data. Transfer Family for SFTP partners. API Gateway exposes curated data to partners and AI agents. Open Parquet format prevents lock-in.",["API Gateway + Lambda","AWS Data Exchange","AWS Transfer Family","Open Parquet / Delta","Glue Catalog (schema registry)"]],
+  ["R8","Sustainability","AWS data centres operate with high renewable energy usage. EU (Ireland) / EU (Frankfurt) regions maximise green energy mix. AWS Customer Carbon Footprint Tool provides quantitative emissions dashboard vs on-premises colocation baseline for ESG board reporting.",["AWS Carbon Footprint Tool","Green regions (EU-WEST-1)","Serverless (Lambda, Firehose, Athena)","Auto-scaling (no idle resources)"]]
+];
+
+const USECASES = [
+  {id:"UC1",title:"Product Recommendation Engine",datasets:["Sales","Customers","Inventory"],aws:["SageMaker (collaborative filtering)","DynamoDB (serving)","API Gateway","Kinesis (real-time signals)"],desc:"Collaborative filtering model trained on purchase history and customer profiles. Real-time inference via SageMaker endpoint, results cached in DynamoDB for <10ms response. Exposed via API Gateway to the e-commerce front-end and virtual shopping assistant.",impact:"+12–18% avg order value",pipeline:"sales + customers → S3 Curated → SageMaker training → DynamoDB → API Gateway → Website"},
+  {id:"UC2",title:"Demand Forecasting",datasets:["Sales","External Factors","Inventory"],aws:["SageMaker DeepAR","AWS Glue (feature engineering)","QuickSight (dashboard)","MWAA (weekly retrain DAG)"],desc:"Time-series forecasting using SageMaker DeepAR on sales history enriched with external context — weather, bank holidays, local events, fuel prices. Model retrains weekly via MWAA DAG. Forecasts feed inventory replenishment decisions.",impact:"−30% stockouts, −20% overstock write-offs",pipeline:"sales + external_factors → Glue feature engineering → SageMaker DeepAR → QuickSight"},
+  {id:"UC3",title:"Sentiment-Driven Merchandising",datasets:["Customer Reviews"],aws:["Amazon Comprehend (NLP)","AWS Glue (aggregation)","Amazon QuickSight","SNS (alerts on score drops)"],desc:"Comprehend processes review text in near real-time, assigning sentiment scores per review. Glue aggregates scores by product, store, and week. QuickSight surfaces products with declining sentiment, alerting the buying team before damage compounds.",impact:"2–3 weeks earlier product decisions",pipeline:"customer_reviews → Kinesis → Comprehend → S3 Curated → Glue aggregation → QuickSight + SNS"},
+  {id:"UC4",title:"Dynamic Pricing Engine",datasets:["Sales","Inventory","External Factors"],aws:["SageMaker (regression model)","Kinesis (real-time inventory)","Lambda (pricing guardrails)","DynamoDB (price store)"],desc:"ML model trained on price elasticity, current inventory, competitor signals, and contextual factors. Lambda function compares model output against pricing guardrails before writing to DynamoDB, which feeds the POS and e-commerce pricing layer.",impact:"+3–7% gross margin improvement",pipeline:"sales + inventory + external_factors → SageMaker → Lambda (guardrails) → DynamoDB → POS / E-commerce"},
+  {id:"UC5",title:"Return Rate & Logistics Optimisation",datasets:["Shipping","Sales","Customers"],aws:["SageMaker (binary classification)","Glue (join pipeline)","QuickSight (ops dashboard)","SNS (high-return alerts)"],desc:"Binary classifier predicts return likelihood at purchase time using delivery history, customer return-rate profile, and product attributes. High-risk orders trigger proactive interventions. Logistics cost variance tracked in QuickSight.",impact:"−10–15% return processing costs",pipeline:"shipping + sales + customers → Glue join → SageMaker classifier → SNS alerts + QuickSight ops dashboard"}
+];
+
+/* ---- HOTSPOTS: [x,y,w,h,layer,title,mode,why,data,[tags],align,placement] ---- */
+const HLA_HOTSPOTS = [
+[16.39,3.74,20.08,3.68,"Security and governance","Security & Governance","Cross-cutting","Applies access control, encryption, auditability and privacy rules across every layer so the lakehouse can support regulated retail analytics.","All data paths, user access, audit logs, PII masking",["R4 Security","GDPR","All layers"],"left",null],
+[34.14,17.20,10.48,3.45,"Data sources","Structured","Batch","Keeps schema-defined operational records easy to validate and query before they enter the platform.","Sales, customers, inventory, shipping tables",["R1 Unified","R5 Quality"],null,null],
+[48.11,17.20,10.48,3.45,"Data sources","Streaming","Streaming","Captures high-frequency events immediately so managers can act on live signals instead of yesterday's Excel export.","POS transactions, web clicks, reviews, add-to-cart events",["R1 Real-time","R3 Automation"],null,null],
+[62.08,17.20,10.48,3.45,"Data sources","Batch","Batch","Supports scheduled large-volume loads where real-time delivery is unnecessary or the source system is legacy.","ERP extracts, CRM syncs, daily inventory reconciliations",["R3 Batch","R6 Cost"],null,null],
+[76.04,17.20,10.48,3.45,"Data sources","Unstructured","Streaming + batch","Brings text, image and log data into the same governed platform so sentiment and AI use cases are possible.","Review text, product images, clickstream logs",["R1 Multimodal","ML ready"],"right",null],
+[11.15,29.57,10.57,3.57,"Cataloging and search","Cataloging & Search","Governance","Makes datasets discoverable with ownership, schema, lineage and freshness metadata instead of analyst guesswork.","Metadata, lineage, schema versions, dataset tags",["R4 Lineage","R7 Self-service"],"left",null],
+[33.17,29.57,16.78,3.57,"Ingestion","Ingestion","Streaming + batch","Creates one controlled entry point for all source types, replacing disconnected cron scripts with monitored pipelines.","Streaming feeds, scheduled files, CDC, API pulls",["R1 Unified","R3 Automation"],null,null],
+[20.95,41.94,11.93,3.62,"Processing","Validate / Clean / Standardize","Streaming + batch","Stops bad records before storage by checking nulls, ranges, duplicates and formats.","Raw records, validation failures, standardized fields",["R5 Quality","R4 Alerts"],"left",null],
+[20.95,49.37,11.93,3.57,"Processing","Transform & Enrich","Streaming + batch","Turns clean records into business context by joining sources and calculating reusable KPIs.","Joined sales, customer, product, campaign and logistics features",["R1 Analytics","ML features"],"left",null],
+[44.71,64.10,10.67,3.57,"Storage","Raw Zone","Streaming + batch","Stores every source exactly as received so the company can replay pipelines and keep a complete audit trail.","Immutable source data in original formats",["Bronze","R4 Audit"],null,null],
+[44.71,71.46,10.67,3.57,"Storage","Cleaned Zone","Streaming + batch","Keeps the trusted, validated and PII-masked version that analysts and non-production environments can safely use.","Deduplicated, validated, PII-masked Parquet",["Silver","R5 Quality"],null,null],
+[41.13,79.75,14.26,3.57,"Storage","Curated Zone","Serving","Publishes BI and ML-ready datasets so dashboards, models and APIs do not rebuild the same logic repeatedly.","Aggregated KPIs, ML features, BI-ready tables",["Gold","R1 BI/ML"],null,"above"],
+[19.88,92.64,13.09,3.57,"Consumption","Consumption","Serving","Exposes the platform to business users, ML teams, partners and AI agents without coupling them to raw storage.","BI dashboards, model outputs, partner APIs, AI-agent responses",["R7 APIs","Self-service"],"left","above"]
+];
+
+const LLA_HOTSPOTS = [
+[23.38,4.68,6.19,3.26,"Security and monitoring","AWS CloudTrail","Cross-cutting","Records every AWS API call so access to customer data can be audited for security reviews and GDPR evidence.","Audit events, user actions, API calls",["R4 Security","GDPR"],null,null],
+[31.42,4.68,6.19,3.26,"Security and monitoring","Amazon VPC","Cross-cutting","Isolates platform services in private networking so data traffic stays controlled and least-privilege rules can be enforced.","Private service traffic, security groups, VPC endpoints",["R4 Network","Isolation"],null,null],
+[39.45,4.68,6.19,3.26,"Security and monitoring","Terraform / CDK","Cross-cutting","Defines infrastructure as code so Dev, Pre-Prod and Prod are repeatable, reviewed and rollback-friendly.","Infrastructure definitions, environment parameters",["R2 Environments","R3 IaC"],null,null],
+[47.49,4.68,6.19,3.26,"Security and monitoring","IAM & KMS","Cross-cutting","Controls who can access services and encrypts sensitive data at rest and in transit.","Service roles, keys, encrypted S3, Redshift and DynamoDB data",["R4 Auth","Encryption"],null,null],
+[55.52,4.68,6.19,3.26,"Security and monitoring","CloudWatch","Cross-cutting","Centralizes logs, metrics and alerts so pipeline failures and quality issues are visible immediately.","Pipeline metrics, logs, alarms, operational dashboards",["R4 Monitoring","R5 Alerts"],null,null],
+[63.56,4.68,6.19,3.26,"Security and monitoring","AWS Organizations","Cross-cutting","Separates Dev, Pre-Prod and Prod accounts with guardrails so experiments cannot accidentally affect production.","Account structure, service control policies, cost boundaries",["R2 Multi-env","Governance"],null,null],
+[56.75,12.99,6.14,3.26,"Processing and governance","Amazon MWAA","Streaming + batch","Replaces cron with managed Airflow DAGs, dependencies, retries and SLA alerts for every pipeline.","Pipeline schedules, orchestration metadata, task status",["R3 Automation","Open Airflow"],null,null],
+[64.79,12.99,6.14,3.26,"Processing and governance","Amazon Macie","Batch scan","Finds sensitive data in S3 automatically so PII is caught before it appears in the wrong zone or environment.","S3 objects, PII findings, security alerts",["R4 GDPR","PII scanning"],null,null],
+[72.82,12.99,6.14,3.26,"Processing and governance","Glue Data Catalog","Governance","Registers every dataset with schema and metadata so Athena, Redshift, SageMaker and analysts use one catalog.","Table metadata, schemas, partitions, lineage context",["R4 Metadata","R7 Discovery"],null,null],
+[80.86,12.99,6.14,3.26,"Processing and governance","Glue Data Quality","Streaming + batch","Runs automated checks after ingestion and transformation so bad data triggers alerts before consumers see it.","Validation rules, freshness checks, quality scores",["R5 Quality","CloudWatch alerts"],"right",null],
+[88.90,12.99,6.14,3.26,"Processing and governance","Lake Formation","Governance","Applies column and row-level permissions centrally so analysts see only the data they are allowed to see.","Access policies, masking rules, governed table permissions",["R4 RBAC","GDPR"],"right",null],
+[5.02,13.04,6.03,3.15,"Data sources","External APIs","Batch","Brings in scheduled context such as weather and logistics signals without maintaining servers.","Weather, campaigns, logistics updates",["R7 Extensible","Lambda"],"left",null],
+[13.06,13.04,6.03,3.15,"Data sources","CRM System","Batch + CDC","Feeds customer and loyalty data into the lakehouse while preserving change history for migration and sync.","Customer profiles, loyalty status, PII fields",["R4 PII","DMS CDC"],"left",null],
+[21.09,13.04,6.03,3.15,"Data sources","3rd-Party Data","Batch","Adds market and demographic signals through managed subscriptions instead of manual file exchange.","Market signals, licensed enrichment datasets",["R7 Interoperability","Data Exchange"],null,null],
+[29.13,13.04,6.03,3.15,"Data sources","Web and App Events","Streaming","Captures user behavior and reviews as they happen so personalization and sentiment analysis stay current.","Clickstream, reviews, add-to-cart, app events",["R1 Real-time","NLP"],null,null],
+[37.17,13.04,6.03,3.15,"Data sources","POS and ERP","Streaming + batch","Combines real-time sales movement with scheduled inventory and product master data.","POS transactions, inventory, product and store records",["R1 Sales","R3 Batch"],null,null],
+[45.20,13.04,6.03,3.15,"Data sources","SaaS and Files","Batch","Supports partners and legacy systems that can only send SFTP/FTPS files.","Partner files, SaaS exports, SFTP drops",["R7 Partners","File transfer"],null,null],
+[6.03,26.45,6.08,3.26,"Ingestion layer","AWS Lambda","Batch","Runs lightweight API connectors on schedules so new sources can be added independently.","API responses, weather and logistics pulls, connector logs",["R3 Serverless","R7 Extensible"],"left",null],
+[14.06,26.45,6.08,3.26,"Ingestion layer","AWS DMS","Batch + CDC","Migrates and replicates database changes without downtime, especially for CRM and operational stores.","Database snapshots, CDC records, migration state",["R3 Migration","CDC"],"left",null],
+[22.10,26.45,6.08,3.26,"Ingestion layer","AWS Data Exchange","Batch","Automates licensed third-party data delivery directly into the platform.","Subscribed datasets, provider updates, license metadata",["R7 Third-party","Batch"],null,null],
+[30.13,26.45,6.08,3.26,"Ingestion layer","Kinesis Data Streams","Streaming","Captures POS and web events with sub-second latency for live dashboards and real-time features.","Sales events, clickstream, review events",["R1 Real-time","Scalable"],null,null],
+[38.17,26.45,6.08,3.26,"Ingestion layer","Transfer Family","Batch","Provides managed SFTP/FTPS so partners can land files in S3 without custom servers.","Partner file drops, legacy exports, transfer logs",["R7 SFTP","Managed"],null,null],
+[46.21,26.45,6.08,3.26,"Ingestion layer","AWS Glue ETL","Batch","Runs managed Spark jobs for batch ingestion, cleaning and transformation with bookmarks and retries.","Batch files, source tables, transformed records",["R3 ETL","R5 Quality"],null,null],
+[30.13,33.18,6.08,3.26,"Ingestion layer","Kinesis Firehose","Streaming","Turns streaming records into reliable S3 micro-batches and columnar files with almost no operations burden.","Kinesis records, micro-batches, Parquet files",["R1 Streaming","S3 landing"],null,null],
+[40.68,52.52,6.14,3.26,"S3 data lakehouse","S3 Raw Zone","Streaming + batch","Keeps immutable source data for replay, audit and future reprocessing when business rules change.","As-received events, files, snapshots, raw API payloads",["Bronze","R4 Audit"],null,null],
+[43.92,61.78,6.14,3.26,"S3 data lakehouse","S3 Curated Zone","Streaming + batch","Stores validated and PII-masked Parquet so analytics tools can share a trusted version.","Cleaned records, masked PII, validated Parquet tables",["Silver","R5 Trusted"],null,null],
+[45.98,71.03,6.19,3.26,"Serving layer","Amazon DynamoDB","Serving","Serves low-latency recommendations and real-time feature lookups that would be too slow from the warehouse.","ML serving records, live feature lookups, cached recommendations",["<10ms","ML serving"],null,"above"],
+[53.01,71.03,6.19,3.26,"Serving layer","Amazon Redshift","Batch + BI","Provides a columnar warehouse for fast dashboards and governed analytical queries.","Gold tables, BI aggregates, warehouse query results",["Gold","BI dashboards"],null,"above"],
+[24.89,84.49,6.14,3.26,"Consumption layer","Amazon SageMaker","Batch + real-time","Trains and serves forecasting, recommendation and pricing models from curated features.","Training datasets, feature vectors, model predictions",["ML platform","R1 Use cases"],"left","above"],
+[32.92,84.49,6.14,3.26,"Consumption layer","Amazon Athena","Batch / ad hoc","Lets analysts run serverless SQL directly on S3 without loading data into another system.","Ad-hoc SQL over raw and curated S3 tables",["Self-service","Pay per query"],null,"above"],
+[40.96,84.49,6.14,3.26,"Consumption layer","Amazon Comprehend","Streaming + batch","Extracts sentiment and NLP signals from customer review text without building a custom NLP model.","Review text, sentiment scores, entities",["NLP","Customer reviews"],null,"above"],
+[51.84,84.49,6.14,3.26,"Consumption layer","Amazon QuickSight","Serving","Gives business teams interactive BI dashboards that replace the daily Excel reporting layer.","Dashboard queries, KPIs, Redshift/Athena results",["BI","Pay per session"],"right","above"],
+[40.23,92.17,6.14,3.26,"Consumption layer","API Gateway","Serving","Publishes curated data and ML outputs to partner systems, internal apps and future AI agents.","REST/GraphQL responses, partner API traffic, AI-agent requests",["R7 APIs","Serve results"],null,"above"]
+];
+
+/* ============================ HELPERS ============================ */
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function renderHotspot(h){
+  const [x,y,w,ht,layer,title,mode,why,data,tags,align,placement] = h;
+  let al = align, pl = placement;
+  if(al===null){const cx=x+w/2; al = cx<24?'left':cx>76?'right':'center';}
+  if(pl===null){pl = y>78?'above':'below';}
+  const tagHtml = tags.map(t=>`<span class="arch-tip-tag">${esc(t)}</span>`).join('');
+  return `<button class="arch-hotspot" type="button" aria-label="${esc(title+': '+why)}" data-placement="${pl}" data-align="${al}" style="left:${x}%;top:${y}%;width:${w}%;height:${ht}%;">
+    <span class="arch-tooltip" role="tooltip">
+      <span class="arch-tip-head"><span><span class="arch-tip-layer">${esc(layer)}</span><span class="arch-tip-title">${esc(title)}</span></span><span class="arch-tip-mode">${esc(mode)}</span></span>
+      <span class="arch-tip-section">Why it's here</span><span class="arch-tip-copy">${esc(why)}</span>
+      <span class="arch-tip-section">Data handled</span><span class="arch-tip-data">${esc(data)}</span>
+      <span class="arch-tip-rule"></span><span class="arch-tip-tags">${tagHtml}</span>
+    </span></button>`;
+}
+
+/* simple RFC-4180-ish CSV parser */
+function parseCSV(text){
+  const rows=[]; let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else { if(c==='"')q=true; else if(c===','){row.push(cur);cur='';}
+      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else if(c==='\r'){} else cur+=c; }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.length>1||(r.length===1&&r[0]!==''));
+}
+
+/* ============================ RENDER ============================ */
+function buildOverview(){
+  document.getElementById('team-tags').innerHTML = TEAM.map(n=>
+    `<span style="display:inline-flex;align-items:center;border:1px solid var(--hair);border-radius:999px;background:var(--surf2);color:var(--ink-m);font-size:11px;font-weight:550;letter-spacing:.02em;padding:7px 11px;line-height:1">${esc(n)}</span>`).join('');
+  document.getElementById('problem-list').innerHTML = PROBLEMS.map(([t,d])=>
+    `<div class="card prob"><strong>${esc(t)}</strong><p>${esc(d)}</p></div>`).join('');
+  document.getElementById('stakeholder-list').innerHTML = STAKEHOLDERS.map(([n,r,c,s,tag])=>
+    `<div class="stk-card"><div class="stk-name">${esc(n)} <span class="stk-tag stk-${s}">${esc(tag)}</span></div><div class="stk-role">${esc(r)}</div><div class="stk-concern">${esc(c)}</div></div>`).join('');
+  document.getElementById('value-drivers').innerHTML = VALUE.map(([t,d],i)=>
+    `<div class="card vd"><div class="num">0${i+1}</div><div class="h">${esc(t)}</div><div class="d">${esc(d)}</div></div>`).join('');
+}
+
+function buildReqs(){
+  document.getElementById('req-list').innerHTML = REQS.map(([id,t,d,svcs])=>
+    `<div class="card"><div class="req-head"><div><span class="req-id">${id}</span><span class="req-title">${esc(t)}</span></div><span class="req-cov"><span class="dot"></span>Fully Covered</span></div><p class="req-desc">${esc(d)}</p><div>${svcs.map(s=>`<span class="badge">${esc(s)}</span>`).join('')}</div></div>`).join('');
+}
+
+function buildUseCases(){
+  document.getElementById('uc-list').innerHTML = USECASES.map(uc=>
+    `<details><summary><strong>${uc.id}</strong> — ${esc(uc.title)}</summary><div class="det-body"><div class="two-col">
+      <div><div style="font-size:12px;color:var(--ink-m);line-height:1.75;margin-bottom:6px">${esc(uc.desc)}</div>
+      <div class="uc-pipe"><strong class="tag-strong" style="font-family:var(--font-body)">Pipeline</strong><br>${esc(uc.pipeline)}</div>
+      <div class="uc-impact"><strong class="tag-strong">Business Impact:</strong> ${esc(uc.impact)}</div></div>
+      <div><div class="section-title">Data Sources</div>${uc.datasets.map(d=>`<span class="badge">${esc(d)}</span>`).join('')}
+      <div class="section-title" style="margin-top:14px">AWS Services</div>${uc.aws.map(s=>`<span class="badge" style="display:block;margin:3px 0;text-align:left">${esc(s)}</span>`).join('')}</div>
+    </div></div></details>`).join('');
+}
+
+async function buildData(){
+  const host = document.getElementById('data-list');
+  host.innerHTML = DATASETS.map(ds=>{
+    const piiColor = ds.pii?'#c8893a':'var(--ink-m)'; const piiText = ds.pii?'Contains PII':'No PII';
+    return `<details data-file="${ds.file}"><summary><strong>${esc(ds.name)}</strong> — ${esc(ds.desc.slice(0,70))}…</summary><div class="det-body">
+      <div class="grid g3" style="margin-bottom:10px">
+        <div class="metric-card"><div class="metric-value" style="font-size:14px;padding-top:6px;letter-spacing:-.3px">${esc(ds.source)}</div><div class="metric-label">Source System</div></div>
+        <div class="metric-card"><div class="metric-value" style="font-size:14px;padding-top:6px;letter-spacing:-.3px">${esc(ds.pattern)}</div><div class="metric-label">Ingestion Pattern</div></div>
+        <div class="metric-card"><div class="metric-value" style="font-size:14px;color:${piiColor};padding-top:6px;letter-spacing:-.3px">${piiText}</div><div class="metric-label">Data Sensitivity</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--ink-m);margin:8px 0 4px"><b>AWS Path:</b> <code>${esc(ds.ingestion)}</code></div>
+      <div style="font-size:11px;color:var(--ink-m);margin-bottom:10px">${esc(ds.desc)}</div>
+      <div style="margin-bottom:8px">${ds.use_cases.map(u=>`<span class="badge">${esc(u)}</span>`).join('')}</div>
+      <div class="csv-host" data-file="${ds.file}"><div class="row-meta">Loading sample…</div></div>
+    </div></details>`;
+  }).join('');
+  // lazy-load CSV when a details opens
+  host.querySelectorAll('details').forEach(d=>{
+    d.addEventListener('toggle',async()=>{
+      if(!d.open) return;
+      const holder = d.querySelector('.csv-host');
+      if(holder.dataset.loaded) return; holder.dataset.loaded='1';
+      try{
+        const res = await fetch('data/'+holder.dataset.file);
+        if(!res.ok) throw new Error('not found');
+        const rows = parseCSV(await res.text());
+        const head = rows[0]; const body = rows.slice(1,11);
+        holder.innerHTML = `<table class="dtable"><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+          <tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${esc(c.length>60?c.slice(0,60)+'…':c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
+          <div class="row-meta">Showing ${body.length} of ${rows.length-1} rows · ${head.length} columns</div>`;
+      }catch(e){
+        holder.innerHTML = `<div class="row-meta">Sample CSV not available (data/${esc(holder.dataset.file)}).</div>`;
+      }
+    });
+  });
+}
+
+/* ---- Plotly charts ---- */
+let reqDrawn=false, ucDrawn=false;
+function drawReqChart(){
+  if(reqDrawn) return; reqDrawn=true;
+  Plotly.newPlot('req-chart',[{type:'bar',x:REQS.map(r=>r[0]),y:REQS.map(()=>100),
+    marker:{color:T.surf2,line:{color:T.accent,width:1.5}},text:REQS.map(()=>'100%'),textposition:'inside',
+    textfont:{color:T.ink,size:12,family:'Inter'},hovertemplate:'%{x}: 100% covered<extra></extra>'}],
+    {plot_bgcolor:T.canvas,paper_bgcolor:T.canvas,font:{color:T.inkM,family:'Inter'},
+     xaxis:{gridcolor:T.hair,title:'Requirement'},yaxis:{gridcolor:T.hair,title:'Coverage %',range:[0,120]},
+     height:260,margin:{l:40,r:20,t:20,b:40}},{displayModeBar:false,responsive:true});
+}
+function drawUcChart(){
+  if(ucDrawn) return; ucDrawn=true;
+  const cases=["Recommendations","Demand Forecast","Sentiment","Dynamic Pricing","Return Optimisation"];
+  const cols=["Sales","Customers","Inventory","Customer Reviews","External Factors","Shipping"];
+  const M=[[1,1,1,0,0,0],[1,0,1,0,1,0],[0,0,0,1,0,0],[1,0,1,0,1,0],[1,1,0,0,0,1]];
+  const txt=M.map(r=>r.map(v=>v?'✓':''));
+  Plotly.newPlot('uc-chart',[{type:'heatmap',z:M,x:cols,y:cases,
+    colorscale:[[0,T.surf1],[1,'#13335a']],showscale:false,xgap:3,ygap:3,
+    text:txt,texttemplate:'%{text}',textfont:{size:16,color:T.accent},hoverinfo:'x+y'}],
+    {plot_bgcolor:T.canvas,paper_bgcolor:T.canvas,font:{color:T.inkM,family:'Inter'},
+     height:280,margin:{l:160,r:20,t:20,b:60},xaxis:{side:'bottom'},yaxis:{autorange:'reversed'}},
+    {displayModeBar:false,responsive:true});
+}
+
+/* ============================ NAV ============================ */
+function showPage(key){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active','anim'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
+  const sec = document.getElementById('page-'+key);
+  sec.classList.add('active'); void sec.offsetWidth; sec.classList.add('anim');
+  if(key==='reqs') drawReqChart();
+  if(key==='usecases') drawUcChart();
+  document.getElementById('main').scrollIntoView({block:'start'});
+  if(location.hash!=='#'+key) history.replaceState(null,'','#'+key);
+}
+
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+
+/* ============================ INIT ============================ */
+document.getElementById('hla-stage').insertAdjacentHTML('beforeend',HLA_HOTSPOTS.map(renderHotspot).join(''));
+document.getElementById('lla-stage').insertAdjacentHTML('beforeend',LLA_HOTSPOTS.map(renderHotspot).join(''));
+buildOverview(); buildReqs(); buildUseCases(); buildData();
+
+const startHash = (location.hash||'#overview').slice(1);
+const valid=['overview','hla','lla','data','reqs','usecases'];
+showPage(valid.includes(startHash)?startHash:'overview');
+
+/* loader */
+(function(){
+  const loader=document.getElementById('manga-loader'); if(!loader) return;
+  const fill=loader.querySelector('.fill'); let pct=0; const started=Date.now();
+  const tick=setInterval(()=>{pct+=Math.max(0.6,(90-pct)*0.08); if(pct>=90){pct=90;clearInterval(tick);} fill.style.width=pct.toFixed(1)+'%';},90);
+  function finish(){clearInterval(tick); const wait=Math.max(0,800-(Date.now()-started));
+    setTimeout(()=>{fill.style.width='100%'; setTimeout(()=>loader.classList.add('done'),340); setTimeout(()=>loader.remove(),860);},wait);}
+  if(document.readyState==='complete') finish(); else window.addEventListener('load',finish);
+  setTimeout(finish,3500);
+})();
+</script>
+</body>
+</html>

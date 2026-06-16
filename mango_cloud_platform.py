@@ -397,7 +397,9 @@ def load_data():
              "External Factors":"external_factors_sample.csv","Shipping":"shipping_sample.csv"}
     out = {}
     for name, fname in files.items():
-        p = base / fname
+        p = base / "Data" / fname
+        if not p.exists():
+            p = base / fname
         if p.exists():
             try: out[name] = pd.read_csv(p)
             except: pass

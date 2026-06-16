@@ -1,4 +1,4 @@
-# CLAUDE.md — Project Context & State
+# AGENT.md — Project Context & State
 
 > **⚠️ KEEP THIS FILE UPDATED.**
 > Every time you push changes to this repo, update the relevant sections below.
@@ -141,13 +141,31 @@ If an AI assistant has any question or uncertainty about how to implement a task
 
 Do not make unclear design or implementation decisions silently. When in doubt, ask first and wait for the answer.
 
-After every 5 user prompts in an active project session, update this `CLAUDE.md` file with the latest project information, including completed changes, new decisions, remaining tasks, known issues, and any important implementation notes.
+After every 5 user prompts in an active project session, update this `AGENT.md` file with the latest project information, including completed changes, new decisions, remaining tasks, known issues, and any important implementation notes.
 
 For engineering work, especially data architecture, implementation quality, deployment decisions, testing strategy, review practices, and project delivery workflows, AI assistants should reference the external skills repository when relevant:
 
 - https://github.com/mattpocock/skills
 
-Use this repository as an additional engineering skills source, while keeping this project's `CLAUDE.md`, `DESIGN.md`, RFP constraints, and Luka's direct instructions as the highest-priority guidance.
+Use this repository as an additional engineering skills source, while keeping this project's `AGENT.md`, `DESIGN.md`, RFP constraints, and Luka's direct instructions as the highest-priority guidance.
+
+---
+
+## 🔏 Git & Contribution Rules
+
+> **These rules are mandatory for every commit and pull request in this repository.**
+
+1. **All commits and PRs must be authored under the human contributor's name** (the team member doing the work — e.g. `Luka Tcheishvili <cheishvililuka.lc@gmail.com>`). Configure git locally before committing:
+   ```bash
+   git config user.name  "Your Name"
+   git config user.email "your-email@example.com"
+   ```
+2. **Never add Claude, Cowork, Codex, or any AI tool as a contributor, author, or co-author.**
+   - Do **not** add `Co-Authored-By: Claude ...` (or any AI) trailers to commit messages.
+   - Do **not** add "Generated with / Co-authored by AI" footers.
+   - The git history must show only human team members.
+3. AI assistants may *prepare* changes, but the commit/PR is always made **in the name of the user**.
+4. Keep commit messages short and descriptive of the change (e.g. `Move sample CSVs into Data/`, `Rename CLAUDE.md to AGENT.md`).
 
 ---
 
@@ -158,22 +176,25 @@ Mango_Cloud_Data_Platform/
 ├── mango_cloud_platform.py        # Main Streamlit app (all 6 pages)
 ├── requirements.txt               # Python dependencies (streamlit, pandas, plotly)
 ├── README.md                      # Project overview and documentation
-├── CLAUDE.md                      # ← THIS FILE — AI context and project state
+├── AGENT.md                      # ← THIS FILE — AI context and project state
 ├── DESIGN.md                      # Design system — colors, typography, spacing, components
-├── sales_sample.csv               # POS / e-commerce transactions
-├── customers_sample.csv           # CRM / loyalty data (contains PII)
-├── inventory_sample.csv           # ERP / WMS stock levels
-├── customer_reviews_sample.csv    # Web/app reviews (text + images, contains PII)
-├── external_factors_sample.csv    # Weather, events, campaigns
-├── shipping_sample.csv            # Logistics partner data (contains PII)
+├── Data/                          # All sample datasets live here
+│   ├── sales_sample.csv               # POS / e-commerce transactions
+│   ├── customers_sample.csv           # CRM / loyalty data (contains PII)
+│   ├── inventory_sample.csv           # ERP / WMS stock levels
+│   ├── customer_reviews_sample.csv    # Web/app reviews (text + images, contains PII)
+│   ├── external_factors_sample.csv    # Weather, events, campaigns
+│   └── shipping_sample.csv            # Logistics partner data (contains PII)
 ├── Group Work B - Retail.pdf      # Original RFP document from professor
 ├── Manga_DataHub_RFP_Response.pdf # Our written RFP response document
 ├── assets/                        # Exported architecture images (from Figma)
 │   ├── manga-cloud-platform-high-level-architecture.jpg
 │   └── manga-cloud-platform-low-level-aws-architecture.jpg
-└── .github/
-    └── workflows/
-        └── update-context-reminder.yml  # Reminds team to update CLAUDE.md on every push
+└── manga-vercel/                  # Static (Vercel) build of the proposal — same content, no Streamlit
+    ├── index.html                     # Single-file app (HTML + CSS + JS, Plotly via CDN)
+    ├── vercel.json                    # Static hosting config
+    ├── assets/                        # Architecture diagrams
+    └── data/                          # CSV copies for the Data Sources page
 ```
 
 ---
@@ -235,8 +256,8 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Figma HLA diagram created: https://www.figma.com/board/UtHLPjygSysLe43cpzNCAp
 - [x] Figma LLA diagram created: https://www.figma.com/board/mvaVaoJErDBqNXt114FPqU
 - [x] README fully rewritten: executive summary, requirements table, what we did, tech stack, use cases
-- [x] CLAUDE.md created (this file)
-- [x] GitHub Actions workflow for CLAUDE.md update reminders
+- [x] AGENT.md created (this file)
+- [x] GitHub Actions workflow for AGENT.md update reminders
 - [x] Figma architecture images exported and added to assets/ folder
 - [x] render_figma_architecture() added to app — displays Figma JPG exports in HLA/LLA pages
 - [x] Sidebar rail toggle improved — localStorage persistence, manga-rail-toggle/manga-fs-toggle IDs
@@ -327,4 +348,30 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 ---
 
-*Last updated: 2026-06-10 | Updated by: Codex*
+*Last updated: 2026-06-16 | Updated by: Luka Tcheishvili*
+
+---
+
+## 🔜 What Has To Be Done
+
+> Running list of open work. Keep this current — add items as they come up, remove them when done (and record them in the Log below).
+
+- [ ] **Presentation / video** — build the slide deck + per-speaker script (~10–15 min); all team members must present.
+- [ ] **Document polish** — fix the Table of Contents in `Manga_DataHub_RFP_Response.pdf`, trim the body to ≤15 pages, add a cost-comparison figure with euro numbers behind the 40–60% claim.
+- [ ] **Quantified cost & ROI model** — defensible colocation-vs-AWS monthly cost breakdown (for the CFO persona).
+- [ ] **Deploy the Vercel build** — push `manga-vercel/` live and swap the proposal/README links from Streamlit to the Vercel URL.
+- [ ] **Proofread** — consistent terminology (Manga, not Mango), correct R1–R8 references across app, PDF, and README.
+- [ ] **Revoke & rotate the GitHub token** that was shared in chat; never commit tokens to the repo.
+
+---
+
+## 🧾 Log
+
+> Newest entries first. Record what was actually done, by whom, and when.
+
+### 2026-06-16 — Luka Tcheishvili
+- Renamed `CLAUDE.md` → `AGENT.md` and updated all internal references (incl. `DESIGN.md`).
+- Added the **Git & Contribution Rules** section (commits/PRs under the human's name; no AI listed as contributor).
+- Moved the 6 sample CSVs into a new `Data/` folder; updated the Streamlit loader to read from `Data/` (with root fallback) so the app still runs.
+- Added a static **Vercel build** of the proposal in `manga-vercel/` (single-file `index.html`, same content/design, Plotly via CDN). Streamlit app kept unchanged as the fallback.
+- Added this **What Has To Be Done** + **Log** structure to AGENT.md.

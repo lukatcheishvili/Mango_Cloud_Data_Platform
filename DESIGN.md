@@ -385,7 +385,7 @@ The clickable HTML diagrams inside `st.components.v1.html()` use this internal C
 | Figma HLA board | Use color tokens for node fills; use `--hairline` for connector lines |
 | Figma LLA board | Same as HLA; layer colors per the node color table above |
 | `DESIGN.md` | ← This file — the single source of truth for all visual decisions |
-| `CLAUDE.md` | Project context and task tracking (not design) |
+| `AGENT.md` | Project context and task tracking (not design) |
 
 ---
 
