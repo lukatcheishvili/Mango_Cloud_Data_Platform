@@ -1,7 +1,7 @@
 # Manga DataHub — Presentation Speaker Script
 
 **Target length:** ~12 minutes · **Format:** 12 slides, 6 presenters
-The same talking points are saved as **speaker notes inside the .pptx** (Presenter View).
+Use this script as the latest presenter source of truth; the `.pptx` also includes presenter notes.
 All six members speak — keep each turn tight and hand off clearly.
 
 | # | Slide | Speaker | Time |
@@ -40,10 +40,10 @@ The conceptual design, no vendor names yet: five layers — **Sources → Ingest
 Same architecture, now on AWS. **Kinesis + Firehose** for streaming, **Glue** for batch, **S3 three-zone lakehouse** (Bronze/Silver/Gold), **Redshift + DynamoDB** for serving, governance via **Lake Formation + Macie**. Every box maps to an R1–R8 requirement — which Ricardo will show.
 
 ## 7 · Requirements R1–R8 — Ricardo
-We don't just claim coverage — the written proposal has a full **traceability table**. Hit highlights: **R3** automation (MWAA replaces cron), **R4** security (Lake Formation + Macie + KMS, 99.9% uptime), **R6** cost. Segue to the numbers.
+We don't just claim coverage — the written proposal has a full **traceability table** plus an **Operating Evidence Appendix**. Hit highlights: **R3** automation (MWAA replaces cron), **R4** security and recovery targets (Lake Formation, Macie, KMS, RPO/RTO), **R5** concrete Glue Data Quality rules, **R6** cost assumptions, and **R8** carbon metrics. Segue to the numbers.
 
 ## 8 · Cost & ROI — Tina (CFO-facing)
-Replacing fixed colocation with AWS pay-per-use cuts annual infra cost **~57% — €1.30M to €0.56M, about €0.74M saved a year**. Illustrative, based on the as-is model and AWS levers (Intelligent-Tiering, Spot Glue, Redshift RIs, QuickSight per-session). **Pause on the −57%.**
+Replacing fixed colocation with AWS pay-per-use cuts annual infra cost **~57% — €1.30M to €0.56M, about €0.74M saved a year**. We now show the assumptions behind that claim: fixed infrastructure, storage/backup, analytics serving, and operational overhead, validated monthly with Cost Explorer, CUR, and FinOps tags. **Pause on the −57%.**
 
 ## 9 · Roadmap & risks — Ricardo
 Phased, controlled-risk delivery — Marta's priority. **Production cutover in month 7, handover by month 9.** Risks explicitly mitigated: DMS runs in parallel before cutover, open-source addresses lock-in, a DPIA precedes any personal data. Hand to Luka.
@@ -57,4 +57,4 @@ The architecture is extensible by design. Short-term reuses existing infra for r
 ## 12 · Live platform & close — Nicklas (all on stage)
 "Everything you've seen is **live and interactive at mangacloud-khaki.vercel.app** — open it on your device while we take questions." Thank the panel.
 
-**Anticipated Q&A:** cost assumptions → Tina · security/GDPR → Ricardo/Mateus · vendor lock-in → Mateus · timeline feasibility → Ricardo. Keep answers ~30 seconds.
+**Anticipated Q&A:** cost assumptions → Tina · security/GDPR and lifecycle controls → Ricardo/Mateus · RTO/RPO and HA/DR → Ricardo · sustainability metrics → Nicklas · vendor lock-in → Mateus · timeline feasibility → Ricardo. Keep answers ~30 seconds.

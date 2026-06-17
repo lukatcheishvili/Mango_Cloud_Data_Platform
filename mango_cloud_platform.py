@@ -304,7 +304,7 @@ header[data-testid="stHeader"]{{display:none}}
 .arch-hover-stage img{{width:100%;max-width:none}}
 .arch-hotspot{{
   position:absolute;display:block;padding:0;margin:0;border:0;border-radius:10px;
-  background:rgba(0,153,255,0);cursor:help;appearance:none;z-index:2;
+  background:rgba(0,153,255,0);cursor:pointer;appearance:none;z-index:2;
 }}
 .arch-hotspot:hover,.arch-hotspot:focus-visible{{
   outline:none;box-shadow:0 0 0 2px rgba(0,153,255,.72),0 10px 28px rgba(0,0,0,.22);
@@ -518,13 +518,13 @@ HLA_FIGMA_HOTSPOTS = [
         "Sales, customers, inventory, shipping tables",["R1 Unified","R5 Quality"]),
     arch_hotspot(48.11,17.20,10.48,3.45,"Data sources","Streaming","Streaming",
         "Captures high-frequency events immediately so managers can act on live signals instead of yesterday's Excel export.",
-        "POS transactions, web clicks, reviews, add-to-cart events",["R1 Real-time","R3 Automation"]),
+        "POS transactions, review submissions, order events",["R1 Real-time","R3 Automation"]),
     arch_hotspot(62.08,17.20,10.48,3.45,"Data sources","Batch","Batch",
         "Supports scheduled large-volume loads where real-time delivery is unnecessary or the source system is legacy.",
         "ERP extracts, CRM syncs, daily inventory reconciliations",["R3 Batch","R6 Cost"]),
     arch_hotspot(76.04,17.20,10.48,3.45,"Data sources","Unstructured","Streaming + batch",
         "Brings text, image and log data into the same governed platform so sentiment and AI use cases are possible.",
-        "Review text, product images, clickstream logs",["R1 Multimodal","ML ready"], align="right"),
+        "Review text, product images, product feedback",["R1 Multimodal","ML ready"], align="right"),
     arch_hotspot(11.15,29.57,10.57,3.57,"Cataloging and search","Cataloging & Search","Governance",
         "Makes datasets discoverable with ownership, schema, lineage and freshness metadata instead of analyst guesswork.",
         "Metadata, lineage, schema versions, dataset tags",["R4 Lineage","R7 Self-service"], align="left"),
@@ -594,9 +594,9 @@ LLA_FIGMA_HOTSPOTS = [
     arch_hotspot(21.09,13.04,6.03,3.15,"Data sources","3rd-Party Data","Batch",
         "Adds market and demographic signals through managed subscriptions instead of manual file exchange.",
         "Market signals, licensed enrichment datasets",["R7 Interoperability","Data Exchange"]),
-    arch_hotspot(29.13,13.04,6.03,3.15,"Data sources","Web and App Events","Streaming",
-        "Captures user behavior and reviews as they happen so personalization and sentiment analysis stay current.",
-        "Clickstream, reviews, add-to-cart, app events",["R1 Real-time","NLP"]),
+    arch_hotspot(29.13,13.04,6.03,3.15,"Data sources","Customer Reviews","Streaming",
+        "Captures customer feedback as it arrives so personalization and sentiment analysis stay current.",
+        "Review text, ratings, product IDs, customer IDs",["R1 Real-time","NLP"]),
     arch_hotspot(37.17,13.04,6.03,3.15,"Data sources","POS and ERP","Streaming + batch",
         "Combines real-time sales movement with scheduled inventory and product master data.",
         "POS transactions, inventory, product and store records",["R1 Sales","R3 Batch"]),
@@ -613,8 +613,8 @@ LLA_FIGMA_HOTSPOTS = [
         "Automates licensed third-party data delivery directly into the platform.",
         "Subscribed datasets, provider updates, license metadata",["R7 Third-party","Batch"]),
     arch_hotspot(30.13,26.45,6.08,3.26,"Ingestion layer","Kinesis Data Streams","Streaming",
-        "Captures POS and web events with sub-second latency for live dashboards and real-time features.",
-        "Sales events, clickstream, review events",["R1 Real-time","Scalable"]),
+        "Captures POS and review events with sub-second latency for live dashboards and real-time features.",
+        "Sales events, review events, order signals",["R1 Real-time","Scalable"]),
     arch_hotspot(38.17,26.45,6.08,3.26,"Ingestion layer","Transfer Family","Batch",
         "Provides managed SFTP/FTPS so partners can land files in S3 without custom servers.",
         "Partner file drops, legacy exports, transfer logs",["R7 SFTP","Managed"]),
@@ -703,13 +703,13 @@ def arch_fig(title, nodes, edges, xr, yr, h=600):
 HLA_NODES = [
     # ── Data Sources row y=7.3
     dict(x=1.0,y=7.3,w=1.5,h=0.65,c=C["src"],label="Streaming",sub="Real-time events",
-         hover="<b>Streaming Sources</b><br><b>What:</b> Continuous high-frequency events — POS transactions, web clicks, reviews, add-to-cart.<br><b>Why:</b> Eliminates Manga's 24-hour lag. Enables sub-second inventory alerts and live sales dashboards impossible with batch.<br><b>RFP: R1, R3</b>"),
+         hover="<b>Streaming Sources</b><br><b>What:</b> Continuous high-frequency retail events — POS transactions, order signals, and reviews.<br><b>Why:</b> Eliminates Manga's 24-hour lag. Enables sub-second inventory alerts and live sales dashboards impossible with batch.<br><b>RFP: R1, R3</b>"),
     dict(x=2.8,y=7.3,w=1.5,h=0.65,c=C["src"],label="Batch",sub="Scheduled loads",
          hover="<b>Batch Sources</b><br><b>What:</b> Scheduled large-volume data loads — nightly ERP, daily CRM sync, hourly inventory reconciliation.<br><b>Why:</b> Not all data needs real-time. Replaces fragile cron scripts with managed, monitored pipelines with retry and alerting.<br><b>RFP: R3, R6</b>"),
     dict(x=4.6,y=7.3,w=1.5,h=0.65,c=C["src"],label="Structured",sub="Tables · schemas",
          hover="<b>Structured Data</b><br><b>What:</b> Tabular, schema-defined records — sales, inventory, customers, shipping.<br><b>Why:</b> Columnar Parquet format enables fast BI queries. Schema enforcement at ingest prevents quality issues downstream.<br><b>RFP: R1, R5</b>"),
     dict(x=6.4,y=7.3,w=1.5,h=0.65,c=C["src"],label="Unstructured",sub="Text · images · logs",
-         hover="<b>Unstructured Data</b><br><b>What:</b> Review text, product images, clickstream logs — no fixed schema.<br><b>Why:</b> Manga's Excel layer ignores this entirely. Capturing review text and images unlocks sentiment analysis, visual search, and brand monitoring.<br><b>RFP: R1, ML use cases</b>"),
+         hover="<b>Unstructured Data</b><br><b>What:</b> Review text, product images, and product feedback — no fixed schema.<br><b>Why:</b> Manga's Excel layer ignores this entirely. Capturing review text and images unlocks sentiment analysis, visual search, and brand monitoring.<br><b>RFP: R1, ML use cases</b>"),
     # ── Ingestion y=6.0
     dict(x=3.7,y=6.0,w=4.6,h=0.7,c=C["ing"],label="INGESTION",sub="Unified entry point — streaming and batch — replaces all cron-job ETL scripts",
          hover="<b>Ingestion Layer</b><br><b>What:</b> Single unified entry point for all source types. Handles streaming and batch with consistent retry logic, job bookmarks, failure alerting, and lineage tracking.<br><b>Why:</b> Replaces 6+ siloed cron scripts with one observable, reliable platform. One monitoring dashboard for all pipelines.<br><b>RFP: R1, R3, R4</b>"),
@@ -778,7 +778,7 @@ LLA_NODES = [
     dict(x=0.8,y=8.1,w=1.3,h=0.65,c=C["src"],label="POS / ERP",sub="Sales · Inventory",
          hover="<b>POS / ERP Systems</b><br><b>What:</b> Generates sales_sample.csv and inventory_sample.csv. High-frequency structured data.<br><b>Why:</b> Highest-value data source. Real-time POS feeds Kinesis for sub-second processing; inventory syncs hourly via Glue batch jobs with job bookmarks to prevent duplicates.<br><b>RFP: R1</b>"),
     dict(x=2.3,y=8.1,w=1.3,h=0.65,c=C["src"],label="Web / App",sub="Events · Reviews",
-         hover="<b>Web & Mobile App</b><br><b>What:</b> customer_reviews_sample.csv plus clickstream events. Semi-structured (text, images). Highest velocity source.<br><b>Why:</b> Streamed via Kinesis for sub-second capture. Review text routed to Comprehend for automated NLP sentiment scoring — zero manual effort.<br><b>RFP: R1</b>"),
+         hover="<b>Customer Reviews</b><br><b>What:</b> customer_reviews_sample.csv with review text, ratings, product IDs, customer IDs, and optional images. Semi-structured text and image feedback.<br><b>Why:</b> Streamed via Kinesis for sub-second capture. Review text routed to Comprehend for automated NLP sentiment scoring — zero manual effort.<br><b>RFP: R1</b>"),
     dict(x=3.8,y=8.1,w=1.3,h=0.65,c=C["src"],label="CRM",sub="Customers · PII",
          hover="<b>CRM System</b><br><b>What:</b> customers_sample.csv — names, addresses, loyalty status. Contains PII.<br><b>Why:</b> Synced via AWS DMS with CDC (change data capture) — zero data loss at cutover. Lake Formation applies column-level masking before any Dev/Pre-Prod environment accesses this data.<br><b>RFP: R4, GDPR</b>"),
     dict(x=5.3,y=8.1,w=1.3,h=0.65,c=C["src"],label="External APIs",sub="Weather · Logistics",
@@ -789,7 +789,7 @@ LLA_NODES = [
          hover="<b>SaaS / File Sources (AWS Transfer Family)</b><br><b>What:</b> Partners and legacy systems delivering data via SFTP/FTPS protocols.<br><b>Why:</b> Not all partners can call APIs. Transfer Family provides a managed SFTP endpoint that lands files directly in S3 — no server to manage. Complements Lambda connectors.<br><b>RFP: R3, R7</b>"),
     # ── Ingestion row y=6.7
     dict(x=0.9,y=6.7,w=1.4,h=0.65,c=C["ing"],label="Kinesis Streams",sub="Sub-second ingest",
-         hover="<b>Amazon Kinesis Data Streams</b><br><b>What:</b> Managed real-time streaming. POS sales and web events flow through at sub-second latency.<br><b>Why:</b> Auto-scales to handle Fashion Week spikes without manual capacity planning. Directly replaces the daily cron job for real-time sources.<br><b>Cost:</b> Pay per shard-hour.<br><b>RFP: R1, R3</b>"),
+         hover="<b>Amazon Kinesis Data Streams</b><br><b>What:</b> Managed real-time streaming. POS sales and review events flow through at sub-second latency.<br><b>Why:</b> Auto-scales to handle Fashion Week spikes without manual capacity planning. Directly replaces the daily cron job for real-time sources.<br><b>Cost:</b> Pay per shard-hour.<br><b>RFP: R1, R3</b>"),
     dict(x=2.5,y=6.7,w=1.4,h=0.65,c=C["ing"],label="Kinesis Firehose",sub="Stream → S3 Parquet",
          hover="<b>Kinesis Data Firehose</b><br><b>What:</b> Reads from Kinesis Streams and delivers micro-batches to S3 Raw Zone. Auto-converts to Parquet on the way.<br><b>Why:</b> Zero-server Parquet conversion reduces downstream query cost by 70%+ vs JSON. Also supports direct delivery to Redshift for hot data.<br><b>Cost:</b> Pay per GB ingested.<br><b>RFP: R1, R6</b>"),
     dict(x=4.1,y=6.7,w=1.4,h=0.65,c=C["ing"],label="AWS Glue ETL",sub="Batch pipelines",
@@ -1185,8 +1185,7 @@ with st.sidebar:
     <div style="margin-top:36px;padding-top:18px;border-top:1px solid {HAIR};
                 font-size:11.5px;color:{INK_F};line-height:1.75;letter-spacing:-.1px;">
       IE University · MBD-EN2025<br>
-      Cloud Analytics · Group B<br>
-      Due: June 19, 2026
+      Cloud Analytics
     </div>""", unsafe_allow_html=True)
 
 PAGE = st.session_state.page
@@ -1267,7 +1266,7 @@ if PAGE == "overview":
     st.markdown('<div class="section-title">Core Value Drivers</div>', unsafe_allow_html=True)
     cols = st.columns(3)
     for i,(title,desc) in enumerate([
-        ("Real-Time Everything","Replace all daily-batch pipelines with Kinesis streaming. Sub-second POS, web events, and inventory updates."),
+        ("Real-Time Everything","Replace all daily-batch pipelines with Kinesis streaming. Sub-second POS, review, and inventory updates."),
         ("Open & Modular","Apache Airflow (MWAA), open Parquet/Delta formats, Terraform IaC. No proprietary lock-in — directly addresses the CTO's concern."),
         ("Security by Design","Lake Formation RBAC, Macie PII scanning, KMS at rest, TLS 1.3 in-transit, CloudTrail GDPR audit logs — built in from day one."),
         ("ML-Ready Platform","SageMaker Feature Store connected to the Curated Zone. Recommendations, forecasting, and dynamic pricing from day one."),
@@ -1417,6 +1416,94 @@ elif PAGE == "reqs":
           <p style="font-size:11.5px;color:{INK_M};line-height:1.65;margin-bottom:10px">{desc}</p>
           <div>{"".join([f'<span class="badge">{s}</span>' for s in svcs])}</div>
         </div>""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown('<div class="section-title">Coverage Summary</div>', unsafe_allow_html=True)
+    fig = go.Figure(go.Bar(
+        x=[r[0] for r in reqs], y=[100]*8,
+        marker_color=SURF2, marker_line_color=ACCENT, marker_line_width=1.5,
+        text=["100%"]*8, textposition="inside",
+        textfont=dict(color=INK, size=12, family="Inter"),
+    ))
+    fig.update_layout(
+        plot_bgcolor=CANVAS, paper_bgcolor=CANVAS,
+        font=dict(color=INK_M, family="Inter"),
+        xaxis=dict(gridcolor=HAIR, title="Requirement"),
+        yaxis=dict(gridcolor=HAIR, title="Coverage %", range=[0,120]),
+        height=260, margin=dict(l=40,r=20,t=20,b=40),
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown('<div class="section-title">Implementation Evidence</div>', unsafe_allow_html=True)
+    evidence_sections = [
+        {
+            "title": "R6 Cost Model Assumptions",
+            "note": "Annual run-rate base case: current colocation EUR 1.30M/year vs AWS target EUR 0.56M/year, an illustrative 57% infrastructure reduction validated monthly with Cost Explorer and FinOps tags.",
+            "cols": ["Cost area", "Current assumption", "AWS target", "Saving lever"],
+            "rows": [
+                ["Compute and ETL", "Always-on partner servers sized for peak nightly jobs", "Glue billed per DPU-hour; Spot for non-critical jobs; small MWAA schedulers", "Pay only when pipelines run"],
+                ["Storage and backup", "SAN/NAS plus backup contract sized for seven-year growth", "S3 Raw/Curated/Serving with Intelligent-Tiering and Glacier lifecycle", "Hot data stays fast; cold data becomes cheap"],
+                ["BI and serving", "Excel distribution plus manual engineering support", "QuickSight pay-per-session, Athena per-query, Redshift RA3 for steady BI", "Usage-based analytics"],
+                ["Operations", "Partner-operated colocation and fixed support contract", "Managed AWS services, CloudWatch/SNS automation, IaC repeatability", "Fewer manual runbooks and escalations"],
+                ["Model result", "About EUR 1.30M/year baseline", "About EUR 0.56M/year target", "40-60% range; 57% base-case reduction"],
+            ],
+        },
+        {
+            "title": "R8 Sustainability Metrics",
+            "note": "Baseline is normalised as carbon index 100 until the current provider supplies measured emissions. Target AWS operating index is 45-60, implying a 40-55% carbon-intensity reduction.",
+            "cols": ["Metric", "Baseline method", "Target/control", "Cadence"],
+            "rows": [
+                ["Operational carbon index", "Current colocation normalised to 100 from invoices, server count, and provider energy/PUE data", "45-60 after migration via AWS Customer Carbon Footprint Tool", "Monthly"],
+                ["Idle compute ratio", "Always-on servers sized for peak batch windows", "Less than 20% idle compute via serverless, autoscaling, and schedules", "Monthly"],
+                ["Storage efficiency", "Historical data held in high-cost tiers", "90-day S3 IA and 180/365-day Glacier transitions", "Monthly"],
+                ["Region policy", "Provider-dependent energy mix", "Prefer EU Ireland / Frankfurt with IaC variables and SCP guardrails", "Every release"],
+                ["Reporting", "Limited provider transparency", "Service, environment, kgCO2e, TB-month, DPU-hour, and EUR dashboard", "Monthly ESG pack"],
+            ],
+        },
+        {
+            "title": "R4 HA/DR Targets",
+            "note": "The 99.9% availability target is backed by workload-specific RPO/RTO objectives and recovery patterns.",
+            "cols": ["Workload", "HA/DR pattern", "RPO", "RTO"],
+            "rows": [
+                ["S3 lakehouse", "Versioning, Object Lock on Raw, lifecycle policies, optional cross-region replication", "15 min for replicated zones", "4 h regional recovery"],
+                ["Kinesis / Firehose", "Managed Multi-AZ stream, retries, failed-record S3 prefix, replay from Raw zone", "<5 min", "<1 h"],
+                ["Glue and MWAA", "DAGs and jobs in Git, Terraform redeploy, Glue bookmarks, retries, backfills", "Last successful checkpoint", "4 h"],
+                ["Redshift / Athena / QuickSight", "Automated snapshots, Spectrum over S3, dashboards repoint to standby warehouse", "15 min-24 h by data mart", "4-8 h"],
+                ["DynamoDB and APIs", "Point-in-time recovery, autoscaling, optional global tables for customer-facing APIs", "<5 min", "<1 h"],
+            ],
+        },
+        {
+            "title": "R5 Data Quality Rule Examples",
+            "note": "Failures block promotion from Curated to Serving and trigger CloudWatch/SNS alerts with dataset, rule, failed row count, and owner.",
+            "cols": ["Dataset", "Example controls"],
+            "rows": [
+                ["sales_sample.csv", "purchase_price > 0; customer_id completeness > 99%; product_id referential integrity to inventory"],
+                ["customers_sample.csv", "customer_id complete and unique; age between 13 and 100; PII detection before non-prod replication"],
+                ["inventory_sample.csv", "stock >= 0; price > 0; product_description completeness > 95%"],
+                ["customer_reviews_sample.csv", "text length 5-2000 chars; rating between 1 and 5; product/customer IDs complete"],
+                ["external_factors_sample.csv", "date complete and unique; fuel_price positive; campaign IDs match agreed pattern when present"],
+                ["shipping_sample.csv", "order_id complete; actual_shipping_cost non-negative; returned flag limited to true/false values"],
+            ],
+        },
+        {
+            "title": "Data Lifecycle and Retention Matrix",
+            "note": "Retention keeps analytics reproducible while controlling PII exposure and storage cost.",
+            "cols": ["Dataset", "Sensitivity", "Raw retention", "Curated/Serving retention", "Archive/deletion policy"],
+            "rows": [
+                ["Sales", "Tokenised customer IDs; financial records", "7 years", "5 years curated, 3 years serving aggregates", "IA after 90 days, Glacier after 365 days; preserve finance aggregates"],
+                ["Customers", "Direct PII", "Active relationship + 24 months", "Masked/tokenised in curated; non-prod anonymised only", "Right-to-erasure tokenises or deletes PII within 30 days, subject to legal hold"],
+                ["Inventory", "No PII", "5 years", "3 years curated and serving", "IA after 180 days; expire obsolete product snapshots after retention"],
+                ["Customer reviews", "PII risk in text/images", "3 years", "3 years curated sentiment/features", "PII scan on landing; remove or anonymise review content on request"],
+                ["External factors", "No PII", "5 years", "5 years curated", "IA after 180 days; retain for forecast reproducibility"],
+                ["Shipping", "Address PII and cost records", "6 years", "3 years curated with addresses masked", "IA after 90 days, Glacier after 365 days; delete/mask addresses under privacy workflow"],
+            ],
+        },
+    ]
+    for section in evidence_sections:
+        with st.expander(section["title"], expanded=section["title"].startswith(("R6", "R8"))):
+            st.caption(section["note"])
+            st.dataframe(pd.DataFrame(section["rows"], columns=section["cols"]), use_container_width=True, hide_index=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

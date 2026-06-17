@@ -12,8 +12,12 @@ venv/
 # OS / editor cruft
 .DS_Store
 Thumbs.db
+*.tmp
+.~lock.*#
+~$*
 
 # Local scratch & stray exports (not part of the repo)
+Course Materials/
 _crop_check.png
 HLA.png
 LLA.png

@@ -359,6 +359,12 @@ details>summary:hover{background:var(--surf2)}
     <div class="page-title">Requirements Coverage</div>
     <div class="page-sub">How each of the 8 RFP requirements (R1–R8) is addressed by the proposed AWS architecture</div>
     <div id="req-list"></div>
+    <hr>
+    <div class="section-title">Coverage Summary</div>
+    <div id="req-chart" style="height:260px"></div>
+    <hr>
+    <div class="section-title">Implementation Evidence</div>
+    <div id="req-evidence"></div>
   </section>
 
   <!-- USE CASES -->
@@ -397,7 +403,7 @@ const STAKEHOLDERS = [
 ];
 
 const VALUE = [
-  ["Real-Time Everything","Replace all daily-batch pipelines with Kinesis streaming. Sub-second POS, web events, and inventory updates."],
+  ["Real-Time Everything","Replace all daily-batch pipelines with Kinesis streaming. Sub-second POS, review, and inventory updates."],
   ["Open & Modular","Apache Airflow (MWAA), open Parquet/Delta formats, Terraform IaC. No proprietary lock-in — directly addresses the CTO's concern."],
   ["Security by Design","Lake Formation RBAC, Macie PII scanning, KMS at rest, TLS 1.3 in-transit, CloudTrail GDPR audit logs — built in from day one."],
   ["ML-Ready Platform","SageMaker Feature Store connected to the Curated Zone. Recommendations, forecasting, and dynamic pricing from day one."],
@@ -425,6 +431,46 @@ const REQS = [
   ["R8","Sustainability","AWS data centres operate with high renewable energy usage. EU (Ireland) / EU (Frankfurt) regions maximise green energy mix. AWS Customer Carbon Footprint Tool provides quantitative emissions dashboard vs on-premises colocation baseline for ESG board reporting.",["AWS Carbon Footprint Tool","Green regions (EU-WEST-1)","Serverless (Lambda, Firehose, Athena)","Auto-scaling (no idle resources)"]]
 ];
 
+const EVIDENCE_SECTIONS = [
+  {title:"R6 Cost Model Assumptions",note:"Annual run-rate base case: current colocation EUR 1.30M/year vs AWS target EUR 0.56M/year, an illustrative 57% infrastructure reduction validated monthly with Cost Explorer and FinOps tags.",cols:["Cost area","Current assumption","AWS target","Saving lever"],rows:[
+    ["Compute and ETL","Always-on partner servers sized for peak nightly jobs","Glue billed per DPU-hour; Spot for non-critical jobs; small MWAA schedulers","Pay only when pipelines run"],
+    ["Storage and backup","SAN/NAS plus backup contract sized for seven-year growth","S3 Raw/Curated/Serving with Intelligent-Tiering and Glacier lifecycle","Hot data stays fast; cold data becomes cheap"],
+    ["BI and serving","Excel distribution plus manual engineering support","QuickSight pay-per-session, Athena per-query, Redshift RA3 for steady BI","Usage-based analytics"],
+    ["Operations","Partner-operated colocation and fixed support contract","Managed AWS services, CloudWatch/SNS automation, IaC repeatability","Fewer manual runbooks and escalations"],
+    ["Model result","About EUR 1.30M/year baseline","About EUR 0.56M/year target","40-60% range; 57% base-case reduction"]
+  ]},
+  {title:"R8 Sustainability Metrics",note:"Baseline is normalised as carbon index 100 until the current provider supplies measured emissions. Target AWS operating index is 45-60, implying a 40-55% carbon-intensity reduction.",cols:["Metric","Baseline method","Target/control","Cadence"],rows:[
+    ["Operational carbon index","Current colocation normalised to 100 from invoices, server count, and provider energy/PUE data","45-60 after migration via AWS Customer Carbon Footprint Tool","Monthly"],
+    ["Idle compute ratio","Always-on servers sized for peak batch windows","Less than 20% idle compute via serverless, autoscaling, and schedules","Monthly"],
+    ["Storage efficiency","Historical data held in high-cost tiers","90-day S3 IA and 180/365-day Glacier transitions","Monthly"],
+    ["Region policy","Provider-dependent energy mix","Prefer EU Ireland / Frankfurt with IaC variables and SCP guardrails","Every release"],
+    ["Reporting","Limited provider transparency","Service, environment, kgCO2e, TB-month, DPU-hour, and EUR dashboard","Monthly ESG pack"]
+  ]},
+  {title:"R4 HA/DR Targets",note:"The 99.9% availability target is backed by workload-specific RPO/RTO objectives and recovery patterns.",cols:["Workload","HA/DR pattern","RPO","RTO"],rows:[
+    ["S3 lakehouse","Versioning, Object Lock on Raw, lifecycle policies, optional cross-region replication","15 min for replicated zones","4 h regional recovery"],
+    ["Kinesis / Firehose","Managed Multi-AZ stream, retries, failed-record S3 prefix, replay from Raw zone","<5 min","<1 h"],
+    ["Glue and MWAA","DAGs and jobs in Git, Terraform redeploy, Glue bookmarks, retries, backfills","Last successful checkpoint","4 h"],
+    ["Redshift / Athena / QuickSight","Automated snapshots, Spectrum over S3, dashboards repoint to standby warehouse","15 min-24 h by data mart","4-8 h"],
+    ["DynamoDB and APIs","Point-in-time recovery, autoscaling, optional global tables for customer-facing APIs","<5 min","<1 h"]
+  ]},
+  {title:"R5 Data Quality Rule Examples",note:"Failures block promotion from Curated to Serving and trigger CloudWatch/SNS alerts with dataset, rule, failed row count, and owner.",cols:["Dataset","Example controls"],rows:[
+    ["sales_sample.csv","purchase_price > 0; customer_id completeness > 99%; product_id referential integrity to inventory"],
+    ["customers_sample.csv","customer_id complete and unique; age between 13 and 100; PII detection before non-prod replication"],
+    ["inventory_sample.csv","stock >= 0; price > 0; product_description completeness > 95%"],
+    ["customer_reviews_sample.csv","text length 5-2000 chars; rating between 1 and 5; product/customer IDs complete"],
+    ["external_factors_sample.csv","date complete and unique; fuel_price positive; campaign IDs match agreed pattern when present"],
+    ["shipping_sample.csv","order_id complete; actual_shipping_cost non-negative; returned flag limited to true/false values"]
+  ]},
+  {title:"Data Lifecycle and Retention Matrix",note:"Retention keeps analytics reproducible while controlling PII exposure and storage cost.",cols:["Dataset","Sensitivity","Raw retention","Curated/Serving retention","Archive/deletion policy"],rows:[
+    ["Sales","Tokenised customer IDs; financial records","7 years","5 years curated, 3 years serving aggregates","IA after 90 days, Glacier after 365 days; preserve finance aggregates"],
+    ["Customers","Direct PII","Active relationship + 24 months","Masked/tokenised in curated; non-prod anonymised only","Right-to-erasure tokenises or deletes PII within 30 days, subject to legal hold"],
+    ["Inventory","No PII","5 years","3 years curated and serving","IA after 180 days; expire obsolete product snapshots after retention"],
+    ["Customer reviews","PII risk in text/images","3 years","3 years curated sentiment/features","PII scan on landing; remove or anonymise review content on request"],
+    ["External factors","No PII","5 years","5 years curated","IA after 180 days; retain for forecast reproducibility"],
+    ["Shipping","Address PII and cost records","6 years","3 years curated with addresses masked","IA after 90 days, Glacier after 365 days; delete/mask addresses under privacy workflow"]
+  ]}
+];
+
 const USECASES = [
   {id:"UC1",title:"Product Recommendation Engine",datasets:["Sales","Customers","Inventory"],aws:["SageMaker (collaborative filtering)","DynamoDB (serving)","API Gateway","Kinesis (real-time signals)"],desc:"Collaborative filtering model trained on purchase history and customer profiles. Real-time inference via SageMaker endpoint, results cached in DynamoDB for <10ms response. Exposed via API Gateway to the e-commerce front-end and virtual shopping assistant.",impact:"+12–18% avg order value",pipeline:"sales + customers → S3 Curated → SageMaker training → DynamoDB → API Gateway → Website"},
   {id:"UC2",title:"Demand Forecasting",datasets:["Sales","External Factors","Inventory"],aws:["SageMaker DeepAR","AWS Glue (feature engineering)","QuickSight (dashboard)","MWAA (weekly retrain DAG)"],desc:"Time-series forecasting using SageMaker DeepAR on sales history enriched with external context — weather, bank holidays, local events, fuel prices. Model retrains weekly via MWAA DAG. Forecasts feed inventory replenishment decisions.",impact:"−30% stockouts, −20% overstock write-offs",pipeline:"sales + external_factors → Glue feature engineering → SageMaker DeepAR → QuickSight"},
@@ -437,9 +483,9 @@ const USECASES = [
 const HLA_HOTSPOTS = [
 [16.39,3.74,20.08,3.68,"Security and governance","Security & Governance","Cross-cutting","Applies access control, encryption, auditability and privacy rules across every layer so the lakehouse can support regulated retail analytics.","All data paths, user access, audit logs, PII masking",["R4 Security","GDPR","All layers"],"left",null],
 [34.14,17.20,10.48,3.45,"Data sources","Structured","Batch","Keeps schema-defined operational records easy to validate and query before they enter the platform.","Sales, customers, inventory, shipping tables",["R1 Unified","R5 Quality"],null,null],
-[48.11,17.20,10.48,3.45,"Data sources","Streaming","Streaming","Captures high-frequency events immediately so managers can act on live signals instead of yesterday's Excel export.","POS transactions, web clicks, reviews, add-to-cart events",["R1 Real-time","R3 Automation"],null,null],
+[48.11,17.20,10.48,3.45,"Data sources","Streaming","Streaming","Captures high-frequency retail events immediately so managers can act on live signals instead of yesterday's Excel export.","POS transactions, review submissions, order events",["R1 Real-time","R3 Automation"],null,null],
 [62.08,17.20,10.48,3.45,"Data sources","Batch","Batch","Supports scheduled large-volume loads where real-time delivery is unnecessary or the source system is legacy.","ERP extracts, CRM syncs, daily inventory reconciliations",["R3 Batch","R6 Cost"],null,null],
-[76.04,17.20,10.48,3.45,"Data sources","Unstructured","Streaming + batch","Brings text, image and log data into the same governed platform so sentiment and AI use cases are possible.","Review text, product images, clickstream logs",["R1 Multimodal","ML ready"],"right",null],
+[76.04,17.20,10.48,3.45,"Data sources","Unstructured","Streaming + batch","Brings text and image data into the same governed platform so sentiment and AI use cases are possible.","Review text, product images, product feedback",["R1 Multimodal","ML ready"],"right",null],
 [11.15,29.57,10.57,3.57,"Cataloging and search","Cataloging & Search","Governance","Makes datasets discoverable with ownership, schema, lineage and freshness metadata instead of analyst guesswork.","Metadata, lineage, schema versions, dataset tags",["R4 Lineage","R7 Self-service"],"left",null],
 [33.17,29.57,16.78,3.57,"Ingestion","Ingestion","Streaming + batch","Creates one controlled entry point for all source types, replacing disconnected cron scripts with monitored pipelines.","Streaming feeds, scheduled files, CDC, API pulls",["R1 Unified","R3 Automation"],null,null],
 [20.95,41.94,11.93,3.62,"Processing","Validate / Clean / Standardize","Streaming + batch","Stops bad records before storage by checking nulls, ranges, duplicates and formats.","Raw records, validation failures, standardized fields",["R5 Quality","R4 Alerts"],"left",null],
@@ -465,13 +511,13 @@ const LLA_HOTSPOTS = [
 [5.02,13.04,6.03,3.15,"Data sources","External APIs","Batch","Brings in scheduled context such as weather and logistics signals without maintaining servers.","Weather, campaigns, logistics updates",["R7 Extensible","Lambda"],"left",null],
 [13.06,13.04,6.03,3.15,"Data sources","CRM System","Batch + CDC","Feeds customer and loyalty data into the lakehouse while preserving change history for migration and sync.","Customer profiles, loyalty status, PII fields",["R4 PII","DMS CDC"],"left",null],
 [21.09,13.04,6.03,3.15,"Data sources","3rd-Party Data","Batch","Adds market and demographic signals through managed subscriptions instead of manual file exchange.","Market signals, licensed enrichment datasets",["R7 Interoperability","Data Exchange"],null,null],
-[29.13,13.04,6.03,3.15,"Data sources","Web and App Events","Streaming","Captures user behavior and reviews as they happen so personalization and sentiment analysis stay current.","Clickstream, reviews, add-to-cart, app events",["R1 Real-time","NLP"],null,null],
+[29.13,13.04,6.03,3.15,"Data sources","Customer Reviews","Streaming","Captures customer feedback as it arrives so personalization and sentiment analysis stay current.","Review text, ratings, product IDs, customer IDs",["R1 Real-time","NLP"],null,null],
 [37.17,13.04,6.03,3.15,"Data sources","POS and ERP","Streaming + batch","Combines real-time sales movement with scheduled inventory and product master data.","POS transactions, inventory, product and store records",["R1 Sales","R3 Batch"],null,null],
 [45.20,13.04,6.03,3.15,"Data sources","SaaS and Files","Batch","Supports partners and legacy systems that can only send SFTP/FTPS files.","Partner files, SaaS exports, SFTP drops",["R7 Partners","File transfer"],null,null],
 [6.03,26.45,6.08,3.26,"Ingestion layer","AWS Lambda","Batch","Runs lightweight API connectors on schedules so new sources can be added independently.","API responses, weather and logistics pulls, connector logs",["R3 Serverless","R7 Extensible"],"left",null],
 [14.06,26.45,6.08,3.26,"Ingestion layer","AWS DMS","Batch + CDC","Migrates and replicates database changes without downtime, especially for CRM and operational stores.","Database snapshots, CDC records, migration state",["R3 Migration","CDC"],"left",null],
 [22.10,26.45,6.08,3.26,"Ingestion layer","AWS Data Exchange","Batch","Automates licensed third-party data delivery directly into the platform.","Subscribed datasets, provider updates, license metadata",["R7 Third-party","Batch"],null,null],
-[30.13,26.45,6.08,3.26,"Ingestion layer","Kinesis Data Streams","Streaming","Captures POS and web events with sub-second latency for live dashboards and real-time features.","Sales events, clickstream, review events",["R1 Real-time","Scalable"],null,null],
+[30.13,26.45,6.08,3.26,"Ingestion layer","Kinesis Data Streams","Streaming","Captures POS and review events with sub-second latency for live dashboards and real-time features.","Sales events, review events, order signals",["R1 Real-time","Scalable"],null,null],
 [38.17,26.45,6.08,3.26,"Ingestion layer","Transfer Family","Batch","Provides managed SFTP/FTPS so partners can land files in S3 without custom servers.","Partner file drops, legacy exports, transfer logs",["R7 SFTP","Managed"],null,null],
 [46.21,26.45,6.08,3.26,"Ingestion layer","AWS Glue ETL","Batch","Runs managed Spark jobs for batch ingestion, cleaning and transformation with bookmarks and retries.","Batch files, source tables, transformed records",["R3 ETL","R5 Quality"],null,null],
 [30.13,33.18,6.08,3.26,"Ingestion layer","Kinesis Firehose","Streaming","Turns streaming records into reliable S3 micro-batches and columnar files with almost no operations burden.","Kinesis records, micro-batches, Parquet files",["R1 Streaming","S3 landing"],null,null],
@@ -514,7 +560,7 @@ const LLA_LOGOS={
   "External APIs":{glyph:'api',color:'#2f5a86'},
   "CRM System":{glyph:'people',color:'#2f5a86'},
   "3rd-Party Data":{glyph:'database',color:'#2f5a86'},
-  "Web and App Events":{glyph:'browser',color:'#2f5a86'},
+  "Customer Reviews":{glyph:'browser',color:'#2f5a86'},
   "POS and ERP":{glyph:'store',color:'#2f5a86'},
   "SaaS and Files":{glyph:'file',color:'#2f5a86'},
   "AWS Lambda":{url:'assets/logos/lambda.png',mono:'LAM'},
@@ -608,6 +654,14 @@ function buildOverview(){
 function buildReqs(){
   document.getElementById('req-list').innerHTML = REQS.map(([id,t,d,svcs])=>
     `<div class="card"><div class="req-head"><div><span class="req-id">${id}</span><span class="req-title">${esc(t)}</span></div><span class="req-cov"><span class="dot"></span>Fully Covered</span></div><p class="req-desc">${esc(d)}</p><div>${svcs.map(s=>`<span class="badge">${esc(s)}</span>`).join('')}</div></div>`).join('');
+  document.getElementById('req-evidence').innerHTML = EVIDENCE_SECTIONS.map((sec,i)=>{
+    const head = sec.cols.map(c=>`<th>${esc(c)}</th>`).join('');
+    const rows = sec.rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+    return `<details ${i<2?'open':''}><summary><strong>${esc(sec.title)}</strong></summary><div class="det-body">
+      <p class="req-desc">${esc(sec.note)}</p>
+      <table class="dtable"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>
+    </div></details>`;
+  }).join('');
 }
 
 function buildUseCases(){
@@ -659,7 +713,16 @@ async function buildData(){
 }
 
 /* ---- Plotly charts ---- */
-let ucDrawn=false;
+let reqDrawn=false, ucDrawn=false;
+function drawReqChart(){
+  if(reqDrawn) return; reqDrawn=true;
+  Plotly.newPlot('req-chart',[{type:'bar',x:REQS.map(r=>r[0]),y:REQS.map(()=>100),
+    marker:{color:T.surf2,line:{color:T.accent,width:1.5}},text:REQS.map(()=>'100%'),textposition:'inside',
+    textfont:{color:T.ink,size:12,family:'Inter'},hovertemplate:'%{x}: 100% covered<extra></extra>'}],
+    {plot_bgcolor:T.canvas,paper_bgcolor:T.canvas,font:{color:T.inkM,family:'Inter'},
+     xaxis:{gridcolor:T.hair,title:'Requirement'},yaxis:{gridcolor:T.hair,title:'Coverage %',range:[0,120]},
+     height:260,margin:{l:40,r:20,t:20,b:40}},{displayModeBar:false,responsive:true});
+}
 function drawUcChart(){
   if(ucDrawn) return; ucDrawn=true;
   const cases=["Recommendations","Demand Forecast","Sentiment","Dynamic Pricing","Return Optimisation"];
@@ -821,6 +884,7 @@ function showPage(key){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
   const sec = document.getElementById('page-'+key);
   sec.classList.add('active'); void sec.offsetWidth; sec.classList.add('anim');
+  if(key==='reqs') drawReqChart();
   if(key==='usecases') drawUcChart();
   document.getElementById('main').scrollIntoView({block:'start'});
   if(location.hash!=='#'+key) history.replaceState(null,'','#'+key);
