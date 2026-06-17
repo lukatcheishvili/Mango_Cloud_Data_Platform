@@ -18,3 +18,9 @@ _crop_check.png
 HLA.png
 LLA.png
 Manga Cloud Platform — *.jpg
+
+# Scratch & build artifacts
+_*.png
+_*.jpg
+deliverables/_*
+_scratch/

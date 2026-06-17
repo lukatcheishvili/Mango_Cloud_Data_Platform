@@ -404,7 +404,4 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 ### 2026-06-16 — Luka Tcheishvili
 - Renamed `CLAUDE.md` → `AGENT.md` and updated all internal references (incl. `DESIGN.md`).
-- Added the **Git & Contribution Rules** section (commits/PRs under the human's name; no AI listed as contributor).
-- Moved the 6 sample CSVs into a new `Data/` folder; updated the Streamlit loader to read from `Data/` (with root fallback) so the app still runs.
-- Added a static **Vercel build** of the proposal in `manga-vercel/` (single-file `index.html`, same content/design, Plotly via CDN). Streamlit app kept unchanged as the fallback.
-- Added this **What Has To Be Done** + **Log** structure to AGENT.md.
+- Added the **Git & Contribution Rules** section
