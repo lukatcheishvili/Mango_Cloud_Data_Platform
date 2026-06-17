@@ -238,6 +238,5 @@ The live site is the static build in [`manga-vercel/`](./manga-vercel), hosted o
 |---|---|
 | **Course** | Data Analytics in the Cloud — MBD-EN2025 |
 | **Institution** | IE University |
-| **Deadline** | June 19, 2026 |
 | **Deliverable** | RFP response document + interactive presentation + video |
 | **Scenario** | Manga operates 100+ physical stores globally with €280M annual revenue, growing at +3.5% vs a higher market average, spending 2× competitors on infrastructure for half the analytical output |
