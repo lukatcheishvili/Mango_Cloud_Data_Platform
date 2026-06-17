@@ -281,6 +281,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Page entrance animations now follow the Risk Fraud HTML deck pattern: scoped fade-up keyframes, deck-style block targeting, staggered delays, reduced-motion/print support, and MutationObserver replay on Streamlit page changes
 - [x] One-time branded loading screen added before the app opens, based on the provided `mango_loader_streamlit.py` reference
 - [x] Loading screen freeze fixed by moving overlay control to executable Streamlit component JS with stale-overlay cleanup and automatic fail-safe completion
+- [x] Vercel static app restored the fixed view controls: sidebar drawer/toggle plus browser fullscreen button
 
 ---
 
@@ -374,6 +375,7 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 > Newest entries first. Record what was actually done, by whom, and when.
 
 ### 2026-06-17 — Luka Tcheishvili
+- Restored the fixed view controls in `manga-vercel/index.html`: a sidebar toggle that becomes a popover drawer on mobile, plus a browser fullscreen toggle with accessible labels and persistent desktop sidebar state.
 - Added **official AWS service logos** to the low-level architecture hover popups: 22 user-supplied logos normalized to uniform 256px white tiles in `manga-vercel/assets/logos/` and referenced locally (no CDN dependency). CloudWatch & Terraform still on fallback; DynamoDB source needs a clean replacement.
 - Enlarged the logos to fill the popup tile (tighter whitespace trim, reduced padding).
 - Fixed Vercel asset caching so updated images appear without a hard refresh (`must-revalidate`).
