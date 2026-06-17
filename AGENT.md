@@ -194,6 +194,11 @@ Mango_Cloud_Data_Platform/
 ├── assets/                        # Exported architecture images (from Figma)
 │   ├── manga-cloud-platform-high-level-architecture.jpg
 │   └── manga-cloud-platform-low-level-aws-architecture.jpg
+├── deliverables/                  # Final deliverables (deck, RFP doc, speaker script, cost figure)
+│   ├── Manga_DataHub_RFP_Response.docx
+│   ├── Manga_DataHub_Deck.pptx
+│   ├── Speaker_Script.md
+│   └── cost_comparison.png
 └── manga-vercel/                  # Static (Vercel) build of the proposal — same content, no Streamlit
     ├── index.html                     # Single-file app (HTML + CSS + JS, Plotly via CDN)
     ├── vercel.json                    # Static hosting config
@@ -282,6 +287,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] One-time branded loading screen added before the app opens, based on the provided `mango_loader_streamlit.py` reference
 - [x] Loading screen freeze fixed by moving overlay control to executable Streamlit component JS with stale-overlay cleanup and automatic fail-safe completion
 - [x] Vercel static app restored the fixed view controls: sidebar drawer/toggle plus browser fullscreen button
+- [x] Removed empty duplicate `AGENTS.md` scaffold; `AGENT.md` is the single canonical agent context file
 
 ---
 
@@ -361,11 +367,8 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 > Running list of open work. Keep this current — add items as they come up, remove them when done (and record them in the Log below).
 
-- [ ] **Presentation / video** — build the slide deck + per-speaker script (~10–15 min); all team members must present.
-- [ ] **Document polish** — fix the Table of Contents in `Manga_DataHub_RFP_Response.pdf`, trim the body to ≤15 pages, add a cost-comparison figure with euro numbers behind the 40–60% claim.
-- [ ] **Quantified cost & ROI model** — defensible colocation-vs-AWS monthly cost breakdown (for the CFO persona).
+- [ ] **Record the video** — the deck (`deliverables/Manga_DataHub_Deck.pptx`) and speaker script (`deliverables/Speaker_Script.md`) are ready; recording is on the team.
 - [ ] **Finish the service logos** — add real images for **CloudWatch** (missing) and **Terraform** (came as HTML), and replace the **DynamoDB** source (has a baked-in checkerboard). The other 22 are wired in.
-- [ ] **Proofread** — consistent terminology (Manga, not Mango), correct R1–R8 references across app, PDF, and README.
 - [ ] **Revoke & rotate the GitHub token** that was shared in chat (do this on GitHub → Settings → Developer settings → Personal access tokens), then put the new token in the local gitignored `.env`.
 
 ---
@@ -374,8 +377,15 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 > Newest entries first. Record what was actually done, by whom, and when.
 
+### 2026-06-17 (deliverables) — Luka Tcheishvili
+- Built the **presentation deck** (`deliverables/Manga_DataHub_Deck.pptx`) — 12 dark slides with per-slide speaker notes — and a timed **speaker script** (`deliverables/Speaker_Script.md`) for all 6 presenters.
+- Rebuilt the **RFP response as an editable Word doc** (`deliverables/Manga_DataHub_RFP_Response.docx`) with a working clickable Table of Contents, 10 pages (≤15), and the cost figure embedded — fixing the empty-TOC issue.
+- Added a **cost-comparison figure** (`deliverables/cost_comparison.png`): colocation vs AWS, ~57% reduction (€1.30M → €0.56M, ~€0.74M/yr saved); illustrative.
+- Organized generated files into `deliverables/`; moved build/preview artifacts to a gitignored `_scratch/`.
+
 ### 2026-06-17 — Luka Tcheishvili
 - Restored the fixed view controls in `manga-vercel/index.html`: a sidebar toggle that becomes a popover drawer on mobile, plus a browser fullscreen toggle with accessible labels and persistent desktop sidebar state.
+- Removed the empty duplicate `AGENTS.md` scaffold so the repository has one canonical agent context file: `AGENT.md`.
 - Added **official AWS service logos** to the low-level architecture hover popups: 22 user-supplied logos normalized to uniform 256px white tiles in `manga-vercel/assets/logos/` and referenced locally (no CDN dependency). CloudWatch & Terraform still on fallback; DynamoDB source needs a clean replacement.
 - Enlarged the logos to fill the popup tile (tighter whitespace trim, reduced padding).
 - Fixed Vercel asset caching so updated images appear without a hard refresh (`must-revalidate`).
