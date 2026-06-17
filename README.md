@@ -92,7 +92,7 @@ with a managed AWS target of approximately **EUR 0.56M/year**, producing an illu
 **~57% infrastructure reduction**.
 
 The detailed formula, AWS public unit prices, assumptions, sensitivity range, and presentation
-talking points are documented in [`deliverables/Detailed_Cost_Analysis.md`](./deliverables/Detailed_Cost_Analysis.md).
+talking points are included as an appendix inside [`deliverables/Manga_DataHub_RFP_Response.pdf`](./deliverables/Manga_DataHub_RFP_Response.pdf).
 
 | Cost area | Current colocation assumption | AWS target assumption | Saving lever |
 |---|---|---|---|
@@ -313,10 +313,10 @@ Final deliverables live in [`deliverables/`](./deliverables):
 
 | File | What it is |
 |---|---|
+| `Manga_DataHub_RFP_Response.pdf` | Final PDF response with the detailed cost-analysis appendix embedded |
 | `Manga_DataHub_RFP_Response.docx` | Editable RFP proposal with operating-evidence appendix, cost assumptions, HA/DR targets, DQ rules, lifecycle controls, and cost figure |
 | `Manga_DataHub_Deck.pptx` | 12-slide presentation with per-slide speaker notes |
 | `Speaker_Script.md` | Timed ~12-minute run-of-show across all 6 presenters |
-| `Detailed_Cost_Analysis.md` | Source-backed cost model with AWS unit prices, formulas, assumptions, fully loaded TCO bridge, and sensitivity analysis |
 | `cost_comparison.png` | Colocation vs. AWS cost figure (~57% reduction; illustrative) |
 
 ---
