@@ -705,11 +705,7 @@ function setupCustomCursor(){
   const isInsideViewport = event =>
     event.clientX >= 0 && event.clientY >= 0 &&
     event.clientX <= window.innerWidth && event.clientY <= window.innerHeight;
-  const hasTextSelection = ()=>{
-    const selection = window.getSelection?.();
-    return !!selection && !selection.isCollapsed && selection.toString().length > 0;
-  };
-  const isSelectingText = ()=>selectionDrag || hasTextSelection();
+  const isSelectingText = ()=>selectionDrag;
   const render = ()=>{
     cursor.style.transform = `translate3d(${x}px,${y}px,0)`;
     frame = 0;
@@ -769,16 +765,22 @@ function setupCustomCursor(){
   window.addEventListener('pointerdown',event=>{
     if(event.pointerType && event.pointerType !== 'mouse') return;
     selectionDrag = false;
-    if(hasTextSelection()){
-      setSelectingText(true);
-      return;
-    }
+    setSelectingText(false);
     cursor.classList.add('is-down');
   },{passive:true});
-  window.addEventListener('pointerup',()=>{
+  window.addEventListener('pointerup',event=>{
     selectionDrag = false;
+    setSelectingText(false);
     cursor.classList.remove('is-down');
-    updateSelectionState();
+    if(event.pointerType && event.pointerType !== 'mouse') return;
+    if(!isInsideViewport(event)){
+      hideCursor();
+      return;
+    }
+    x = event.clientX;
+    y = event.clientY;
+    cursor.classList.add('is-visible');
+    schedule();
   },{passive:true});
   window.addEventListener('blur',hideCursor);
   document.addEventListener('visibilitychange',()=>{
