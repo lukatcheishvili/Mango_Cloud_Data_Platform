@@ -1,13 +1,13 @@
 # AGENT.md — Project Context & State
 
-> **⚠️ KEEP THIS FILE UPDATED.**
+> **KEEP THIS FILE UPDATED.**
 > Every time you push changes to this repo, update the relevant sections below.
 > This file is read automatically by AI assistants (Claude, Cowork) at the start of every session,
 > so all team members get full project context regardless of which device they are working from.
 
 ---
 
-## 🗂️ Project Identity
+## Project Identity
 
 | Field | Value |
 |---|---|
@@ -23,7 +23,7 @@
 
 ---
 
-## 🧠 Project Summary (for AI context)
+## Project Summary (for AI context)
 
 This is a **group university project** for IE University's Cloud Analytics course. We are responding to a fictional RFP from **Manga** (a fictional Spanish fashion retailer modelled on Mango) that wants to modernise its legacy on-premises data infrastructure into a cloud-native AWS data platform.
 
@@ -35,34 +35,34 @@ The project is **not about building the actual cloud infrastructure** — it is 
 
 ---
 
-## 👥 Key Stakeholders (Manga side — from RFP)
+## Key Stakeholders (Manga side — from RFP)
 
 | Person | Role | Stance | Key Concern |
 |---|---|---|---|
-| Marta Ríos | COO | ✅ Champion | End-to-end solution with clear business case |
-| Javier Medina | CTO | ⚠️ Skeptic | Vendor lock-in; open-source preference |
-| Manuel Ortega | CFO | 💰 Cost-focused | 2× infra cost vs competitors; needs clear ROI |
-| Laura Smith | InfoSec Manager | 🔐 Security-first | GDPR; prior security incident; non-negotiable |
-| Alex Lee | Head of Data & AI | 🚀 Champion | Wants modern DataOps; knows current arch is broken |
+| Marta Ríos | COO | Champion | End-to-end solution with clear business case |
+| Javier Medina | CTO | Skeptic | Vendor lock-in; open-source preference |
+| Manuel Ortega | CFO | Cost-focused | 2× infra cost vs competitors; needs clear ROI |
+| Laura Smith | InfoSec Manager | Security-first | GDPR; prior security incident; non-negotiable |
+| Alex Lee | Head of Data & AI | Champion | Wants modern DataOps; knows current arch is broken |
 
 ---
 
-## 📋 RFP Requirements Status
+## RFP Requirements Status
 
 | ID | Requirement | Status | Key AWS Services |
 |---|---|---|---|
-| R1 | Unified multi-modal data platform | ✅ Covered | Kinesis, Glue, S3, Redshift, Athena |
-| R2 | Multi-environment (Dev/Pre-Prod/Prod) | ✅ Covered | AWS Organizations, Terraform, Lake Formation |
-| R3 | Automation & IaC | ✅ Covered | MWAA (Airflow), Terraform/CDK, Glue, EventBridge |
-| R4 | Security & high availability | ✅ Covered | IAM, KMS, TLS, Lake Formation, Macie, CloudTrail, VPC |
-| R5 | Data quality monitoring | ✅ Covered | Glue Data Quality, CloudWatch, SNS |
-| R6 | Cost optimisation | ✅ Covered | S3 Intelligent-Tiering, Spot Instances, QuickSight pay-per-session |
-| R7 | Extensibility & interoperability | ✅ Covered | API Gateway, Lambda, Data Exchange, Transfer Family |
-| R8 | Sustainability & carbon metrics | ✅ Covered | AWS Carbon Footprint Tool, EU green regions |
+| R1 | Unified multi-modal data platform | Covered | Kinesis, Glue, S3, Redshift, Athena |
+| R2 | Multi-environment (Dev/Pre-Prod/Prod) | Covered | AWS Organizations, Terraform, Lake Formation |
+| R3 | Automation & IaC | Covered | MWAA (Airflow), Terraform/CDK, Glue, EventBridge |
+| R4 | Security & high availability | Covered | IAM, KMS, TLS, Lake Formation, Macie, CloudTrail, VPC |
+| R5 | Data quality monitoring | Covered | Glue Data Quality, CloudWatch, SNS |
+| R6 | Cost optimisation | Covered | S3 Intelligent-Tiering, Spot Instances, QuickSight pay-per-session |
+| R7 | Extensibility & interoperability | Covered | API Gateway, Lambda, Data Exchange, Transfer Family |
+| R8 | Sustainability & carbon metrics | Covered | AWS Carbon Footprint Tool, EU green regions |
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### High-Level Architecture (technology-agnostic)
 
@@ -109,7 +109,7 @@ DATA SOURCES          CATALOGING & SEARCH (bidirectional ↔ Processing)
 
 ---
 
-## 🎨 Design System
+## Design System
 
 All visual work (Streamlit app, Figma diagrams) must follow **`DESIGN.md`** in the repo root.
 It covers:
@@ -135,7 +135,7 @@ It covers:
 
 ---
 
-## 🤝 AI Collaboration Rules
+## AI Collaboration Rules
 
 If an AI assistant has any question or uncertainty about how to implement a task, what design direction to use, what visual style to follow, which colors, shapes, fonts, spacing, layout, interaction pattern, or any other project decision to choose, it must ask Luka before implementing.
 
@@ -151,7 +151,7 @@ Use this repository as an additional engineering skills source, while keeping th
 
 ---
 
-## 🔏 Git & Contribution Rules
+## Git & Contribution Rules
 
 > **These rules are mandatory for every commit and pull request in this repository.**
 
@@ -171,7 +171,7 @@ Use this repository as an additional engineering skills source, while keeping th
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 Mango_Cloud_Data_Platform/
@@ -203,7 +203,7 @@ Mango_Cloud_Data_Platform/
 
 ---
 
-## 🖥️ App Structure (mango_cloud_platform.py)
+## App Structure (mango_cloud_platform.py)
 
 The app has **6 pages** navigated via sidebar buttons stored in `st.session_state.page`:
 
@@ -232,7 +232,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 
 ---
 
-## 📊 Dataset Details
+## Dataset Details
 
 | File | Rows (approx) | Key columns | PII | Ingestion pattern |
 |---|---|---|---|---|
@@ -245,7 +245,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 
 ---
 
-## ✅ What Has Been Completed
+## What Has Been Completed
 
 - [x] Initial Streamlit app built with 6 pages and full dark theme
 - [x] Overview page: KPI metrics, executive summary, stakeholder cards, value drivers
@@ -284,7 +284,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 
 ---
 
-## 🔲 Remaining Tasks
+## Remaining Tasks
 
 > Update this section as tasks are completed or new ones are identified.
 
@@ -309,7 +309,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 
 ---
 
-## 🛠️ How to Run Locally
+## How to Run Locally
 
 ```bash
 git clone https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform.git
@@ -322,7 +322,7 @@ Requirements: `streamlit>=1.32.0`, `pandas>=2.0.0`, `plotly>=5.18.0`
 
 ---
 
-## 📌 Important Decisions & Rationale
+## Important Decisions & Rationale
 
 | Decision | Rationale |
 |---|---|
@@ -337,7 +337,7 @@ Requirements: `streamlit>=1.32.0`, `pandas>=2.0.0`, `plotly>=5.18.0`
 
 ---
 
-## 🔄 How to Update This File
+## How to Update This File
 
 When you push changes, update the relevant section(s):
 
@@ -356,7 +356,7 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 ---
 
-## 🔜 What Has To Be Done
+## What Has To Be Done
 
 > Running list of open work. Keep this current — add items as they come up, remove them when done (and record them in the Log below).
 
@@ -369,7 +369,7 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 ---
 
-## 🧾 Log
+## Log
 
 > Newest entries first. Record what was actually done, by whom, and when.
 

@@ -1,4 +1,4 @@
-# 🛍️ Manga Cloud Platform — RFP Response
+# Manga Cloud Platform — RFP Response
 
 > **IE University · MBD-EN2025 · Cloud Analytics · Group Work B**
 > Interactive proposal for migrating a retail data architecture to AWS — live on Vercel.
@@ -10,13 +10,13 @@
 
 ---
 
-## 🚀 Live App
+## Live App
 
 **[https://mangacloud-khaki.vercel.app/](https://mangacloud-khaki.vercel.app/)**
 
 ---
 
-## 👥 Project Team
+## Project Team
 
 - ANDREA ALARCÓN VALLES
 - MATEUS CARNEIRO
@@ -25,16 +25,16 @@
 - LUKA TCHEISHVILI
 - NICKLAS URBAN
 
-### 📐 Architecture Diagrams (Figma)
+### Architecture Diagrams (Figma)
 
 | Diagram | Link |
 |---|---|
-| 🗺️ High-Level Architecture | **[View in FigJam](https://www.figma.com/board/UtHLPjygSysLe43cpzNCAp)** |
-| ⚙️ Low-Level AWS Architecture | **[View in FigJam](https://www.figma.com/board/mvaVaoJErDBqNXt114FPqU)** |
+| High-Level Architecture | **[View in FigJam](https://www.figma.com/board/UtHLPjygSysLe43cpzNCAp)** |
+| Low-Level AWS Architecture | **[View in FigJam](https://www.figma.com/board/mvaVaoJErDBqNXt114FPqU)** |
 
 ---
 
-## 📋 Executive Summary
+## Executive Summary
 
 **Manga** is a fictional Spanish fashion retailer (inspired by Mango) operating **100+ physical stores** globally with **€280M annual revenue**. Despite steady growth, Manga spends **2× more on infrastructure than its competitors** while producing far less analytical output. The root cause: a fragile, outdated data architecture that cannot support the speed or scale modern retail demands.
 
@@ -59,7 +59,7 @@ We proposed a **cloud-native AWS data lakehouse** that replaces every part of th
 
 ---
 
-## 🎯 What Was Required (RFP)
+## What Was Required (RFP)
 
 The RFP issued by Manga specified **8 mandatory requirements**:
 
@@ -78,7 +78,7 @@ All **8 requirements are fully covered** by our proposed architecture.
 
 ---
 
-## ✅ What We Did
+## What We Did
 
 ### Architecture Design
 
@@ -125,7 +125,7 @@ The proposal is deployed as a static web build (`manga-vercel/`) on **Vercel**, 
 
 ---
 
-## 🛠️ What We Used
+## What We Used
 
 ### App Stack
 
@@ -178,22 +178,22 @@ The proposal is deployed as a static web build (`manga-vercel/`) on **Vercel**, 
 
 ---
 
-## 📊 Dataset Overview
+## Dataset Overview
 
 Six synthetic datasets representing Manga's existing systems:
 
 | Dataset | Source | Ingestion Pattern | PII |
 |---|---|---|---|
 | `sales_sample.csv` | POS / E-commerce | Kinesis (streaming) | No |
-| `customers_sample.csv` | CRM / Loyalty | Glue batch (daily) | ✅ Yes |
+| `customers_sample.csv` | CRM / Loyalty | Glue batch (daily) |  Yes |
 | `inventory_sample.csv` | ERP / WMS | Glue batch (hourly) | No |
-| `customer_reviews_sample.csv` | Web / App | Kinesis + Comprehend | ✅ Yes |
+| `customer_reviews_sample.csv` | Web / App | Kinesis + Comprehend |  Yes |
 | `external_factors_sample.csv` | Weather API / Internal | Lambda (daily pull) | No |
-| `shipping_sample.csv` | Logistics Partner API | Lambda + Glue | ✅ Yes |
+| `shipping_sample.csv` | Logistics Partner API | Lambda + Glue |  Yes |
 
 ---
 
-## 💡 ML Use Cases
+## ML Use Cases
 
 | Use Case | Datasets Used | AWS Services | Business Impact |
 |---|---|---|---|
@@ -205,7 +205,7 @@ Six synthetic datasets representing Manga's existing systems:
 
 ---
 
-## ▶️ Run Locally
+## Run Locally
 
 ```bash
 git clone https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform.git
@@ -218,7 +218,7 @@ All 6 sample CSV files are included in the repo. The app handles missing files g
 
 ---
 
-## ☁️ Deployment (Vercel)
+## Deployment (Vercel)
 
 The live site is the static build in [`manga-vercel/`](./manga-vercel), hosted on **Vercel** and auto-deployed on every push to `main`:
 
@@ -232,7 +232,7 @@ The live site is the static build in [`manga-vercel/`](./manga-vercel), hosted o
 
 ---
 
-## 📁 Project Context
+## Project Context
 
 | | |
 |---|---|

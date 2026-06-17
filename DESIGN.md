@@ -1,7 +1,7 @@
 # DESIGN.md — Manga Cloud Platform Design System
 
 > **Source:** [Framer Design System (awesome-design-md)](https://github.com/VoltAgent/awesome-design-md/tree/main/design-md/framer)
-> **⚠️ ALL team members must follow this file.** Every UI change to the Streamlit app,
+> **ALL team members must follow this file.** Every UI change to the Streamlit app,
 > Figma boards, or any other visual output must use the tokens defined here.
 > Consistency across devices and contributors depends on it.
 
@@ -56,10 +56,10 @@ aesthetic signals technical credibility to the Manga stakeholders.
 --accent-border:#2a5a90   /* Accent borders */
 
 /* Semantic */
---success:      #50c880   /* ✅ Covered, positive states */
+--success:      #50c880   /* Covered, positive states */
 --success-bg:   #0a1e14   /* Success card backgrounds */
 --success-border:#1a4828  /* Success borders */
---warning:      #f0a040   /* ⚠️ Skeptic, cost flags */
+--warning:      #f0a040   /* Skeptic, cost flags */
 --warning-bg:   #2a1800   /* Warning card backgrounds */
 --warning-border:#5a3000  /* Warning borders */
 --danger:       #f07070   /* Problems, errors */
@@ -237,7 +237,7 @@ Accent colors for top borders: use `--accent` (#4a9af0), `--success` (#50c880),
 
 **When to use each:**
 - Blue → default, AWS service names, dataset names, neutral info
-- Green → ✅ covered requirements, positive outcomes, open-source
+- Green → covered requirements, positive outcomes, open-source
 - Orange → RFP requirements, cost flags, skeptic stakeholders, warnings
 - Purple → ML/AI use cases, SageMaker, Comprehend
 - Red → problems, current pain points, security incidents
@@ -340,7 +340,7 @@ The clickable HTML diagrams inside `st.components.v1.html()` use this internal C
 
 ## Do's and Don'ts
 
-### ✅ Do
+### Do
 
 - Use `--canvas` (`#0a0e1a`) as the only page background — never white, never gray
 - Use surface lifts (`--surface-1` → `--surface-2`) to show hierarchy — not color changes
@@ -352,7 +352,7 @@ The clickable HTML diagrams inside `st.components.v1.html()` use this internal C
 - Use `--ink` (`#c8d8f0`) for headings, `--ink-muted` (`#6a8aaa`) for secondary text — nothing else
 - Keep badge text uppercase and small (10px) — they should read as labels, not sentences
 
-### ❌ Don't
+### Don't
 
 - Don't use white (`#ffffff`) backgrounds anywhere in the app
 - Don't introduce new colors not listed in this file
