@@ -182,7 +182,7 @@ Mango_Cloud_Data_Platform/
 ├── README.md                      # Project overview and documentation
 ├── AGENT.md                      # ← THIS FILE — AI context and project state
 ├── DESIGN.md                      # Design system — colors, typography, spacing, components
-├── Data/                          # All sample datasets live here
+├── data/                          # All sample datasets live here
 │   ├── sales_sample.csv               # POS / e-commerce transactions
 │   ├── customers_sample.csv           # CRM / loyalty data (contains PII)
 │   ├── inventory_sample.csv           # ERP / WMS stock levels
