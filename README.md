@@ -91,6 +91,9 @@ The base case compares a fixed colocation operating model of approximately **EUR
 with a managed AWS target of approximately **EUR 0.56M/year**, producing an illustrative
 **~57% infrastructure reduction**.
 
+The detailed formula, AWS public unit prices, assumptions, sensitivity range, and presentation
+talking points are documented in [`deliverables/Detailed_Cost_Analysis.md`](./deliverables/Detailed_Cost_Analysis.md).
+
 | Cost area | Current colocation assumption | AWS target assumption | Saving lever |
 |---|---|---|---|
 | Compute and ETL | Always-on partner servers sized for peak nightly jobs | Glue jobs billed per DPU-hour; non-critical jobs use Spot; MWAA runs small schedulers | Pay only when pipelines run |
@@ -313,6 +316,7 @@ Final deliverables live in [`deliverables/`](./deliverables):
 | `Manga_DataHub_RFP_Response.docx` | Editable RFP proposal with operating-evidence appendix, cost assumptions, HA/DR targets, DQ rules, lifecycle controls, and cost figure |
 | `Manga_DataHub_Deck.pptx` | 12-slide presentation with per-slide speaker notes |
 | `Speaker_Script.md` | Timed ~12-minute run-of-show across all 6 presenters |
+| `Detailed_Cost_Analysis.md` | Source-backed cost model with AWS unit prices, formulas, assumptions, fully loaded TCO bridge, and sensitivity analysis |
 | `cost_comparison.png` | Colocation vs. AWS cost figure (~57% reduction; illustrative) |
 
 ---

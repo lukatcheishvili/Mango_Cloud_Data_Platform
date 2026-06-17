@@ -45,6 +45,8 @@ We don't just claim coverage — the written proposal has a full **traceability 
 ## 8 · Cost & ROI — Tina (CFO-facing)
 Replacing fixed colocation with AWS pay-per-use cuts annual infra cost **~57% — €1.30M to €0.56M, about €0.74M saved a year**. We now show the assumptions behind that claim: fixed infrastructure, storage/backup, analytics serving, and operational overhead, validated monthly with Cost Explorer, CUR, and FinOps tags. **Pause on the −57%.**
 
+If challenged on the number: "We prepared a detailed backup model. It separates raw AWS metered prices from the fully loaded TCO, cites each AWS pricing source, and shows the exact formula: EUR 1.30M baseline minus EUR 0.56M target equals EUR 0.74M annual saving, or 56.9%."
+
 ## 9 · Roadmap & risks — Ricardo
 Phased, controlled-risk delivery — Marta's priority. **Production cutover in month 7, handover by month 9.** Risks explicitly mitigated: DMS runs in parallel before cutover, open-source addresses lock-in, a DPIA precedes any personal data. Hand to Luka.
 
