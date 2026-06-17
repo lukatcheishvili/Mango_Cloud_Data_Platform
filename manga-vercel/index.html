@@ -569,7 +569,7 @@ function setupArchitectureTooltips(){
     };
     const close = ()=>{
       clearTimeout(closeTimer);
-      closeTimer = setTimeout(()=>hotspot.classList.remove('is-hovered'), 140);
+      closeTimer = setTimeout(()=>hotspot.classList.remove('is-hovered'), 70);
     };
     hotspot.addEventListener('pointerenter', open);
     hotspot.addEventListener('pointerleave', close);
@@ -682,6 +682,15 @@ function setupCustomCursor(){
   if(!finePointer.matches || reducedMotion.matches) return;
   document.documentElement.classList.add('custom-cursor-enabled');
   let x = -80, y = -80, frame = 0;
+  const hideCursor = ()=>{
+    cursor.classList.remove('is-visible','is-down');
+    x = -80;
+    y = -80;
+    schedule();
+  };
+  const isInsideViewport = event =>
+    event.clientX >= 0 && event.clientY >= 0 &&
+    event.clientX <= window.innerWidth && event.clientY <= window.innerHeight;
   const render = ()=>{
     cursor.style.transform = `translate3d(${x}px,${y}px,0)`;
     frame = 0;
@@ -691,16 +700,51 @@ function setupCustomCursor(){
   };
   window.addEventListener('pointermove',event=>{
     if(event.pointerType && event.pointerType !== 'mouse') return;
+    if(!isInsideViewport(event)){
+      hideCursor();
+      return;
+    }
     x = event.clientX;
     y = event.clientY;
     cursor.classList.add('is-visible');
     schedule();
   },{passive:true});
-  window.addEventListener('pointerenter',()=>cursor.classList.add('is-visible'));
-  window.addEventListener('pointerleave',()=>cursor.classList.remove('is-visible'));
-  window.addEventListener('pointerdown',()=>cursor.classList.add('is-down'),{passive:true});
-  window.addEventListener('pointerup',()=>cursor.classList.remove('is-down'),{passive:true});
-  window.addEventListener('blur',()=>cursor.classList.remove('is-visible'));
+  window.addEventListener('pointerenter',event=>{
+    if(event.pointerType && event.pointerType !== 'mouse') return;
+    if(!isInsideViewport(event)) return;
+    x = event.clientX;
+    y = event.clientY;
+    cursor.classList.add('is-visible');
+    schedule();
+  });
+  window.addEventListener('pointerleave',hideCursor);
+  window.addEventListener('pointerout',event=>{
+    if(!event.relatedTarget) hideCursor();
+  });
+  document.addEventListener('mouseleave',hideCursor);
+  document.addEventListener('mouseout',event=>{
+    if(!event.relatedTarget && !event.toElement) hideCursor();
+  });
+  window.addEventListener('pointerdown',event=>{
+    if(event.pointerType && event.pointerType !== 'mouse') return;
+    cursor.classList.add('is-down');
+  },{passive:true});
+  window.addEventListener('pointerup',event=>{
+    cursor.classList.remove('is-down');
+    if(event.pointerType && event.pointerType !== 'mouse') return;
+    if(!isInsideViewport(event)){
+      hideCursor();
+      return;
+    }
+    x = event.clientX;
+    y = event.clientY;
+    cursor.classList.add('is-visible');
+    schedule();
+  },{passive:true});
+  window.addEventListener('blur',hideCursor);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden) hideCursor();
+  });
 }
 
 /* ============================ VIEW CONTROLS ============================ */
