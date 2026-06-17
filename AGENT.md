@@ -286,6 +286,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Page entrance animations now follow the Risk Fraud HTML deck pattern: scoped fade-up keyframes, deck-style block targeting, staggered delays, reduced-motion/print support, and MutationObserver replay on Streamlit page changes
 - [x] One-time branded loading screen added before the app opens, based on the provided `mango_loader_streamlit.py` reference
 - [x] Loading screen freeze fixed by moving overlay control to executable Streamlit component JS with stale-overlay cleanup and automatic fail-safe completion
+- [x] Standalone Framer-inspired HTML presentation created from `deliverables/Manga_DataHub_Deck.pptx`
 - [x] Vercel static app restored the fixed view controls: sidebar drawer/toggle plus browser fullscreen button
 - [x] Vercel view controls stacked vertically with fullscreen above the sidebar toggle
 - [x] Removed empty duplicate `AGENTS.md` scaffold; `AGENT.md` is the single canonical agent context file
