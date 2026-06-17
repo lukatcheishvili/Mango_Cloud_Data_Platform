@@ -572,7 +572,7 @@ function setupArchitectureTooltips(){
     };
     const close = ()=>{
       clearTimeout(closeTimer);
-      closeTimer = setTimeout(()=>hotspot.classList.remove('is-hovered'), 360);
+      closeTimer = setTimeout(()=>hotspot.classList.remove('is-hovered'), 140);
     };
     hotspot.addEventListener('pointerenter', open);
     hotspot.addEventListener('pointerleave', close);
