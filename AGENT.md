@@ -287,6 +287,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] One-time branded loading screen added before the app opens, based on the provided `mango_loader_streamlit.py` reference
 - [x] Loading screen freeze fixed by moving overlay control to executable Streamlit component JS with stale-overlay cleanup and automatic fail-safe completion
 - [x] Vercel static app restored the fixed view controls: sidebar drawer/toggle plus browser fullscreen button
+- [x] Vercel view controls stacked vertically with fullscreen above the sidebar toggle
 - [x] Removed empty duplicate `AGENTS.md` scaffold; `AGENT.md` is the single canonical agent context file
 
 ---
@@ -385,6 +386,7 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 ### 2026-06-17 — Luka Tcheishvili
 - Restored the fixed view controls in `manga-vercel/index.html`: a sidebar toggle that becomes a popover drawer on mobile, plus a browser fullscreen toggle with accessible labels and persistent desktop sidebar state.
+- Stacked the Vercel view controls vertically and placed the fullscreen button above the sidebar toggle while preserving the sidebar-following position.
 - Removed the empty duplicate `AGENTS.md` scaffold so the repository has one canonical agent context file: `AGENT.md`.
 - Added **official AWS service logos** to the low-level architecture hover popups: 22 user-supplied logos normalized to uniform 256px white tiles in `manga-vercel/assets/logos/` and referenced locally (no CDN dependency). CloudWatch & Terraform still on fallback; DynamoDB source needs a clean replacement.
 - Enlarged the logos to fill the popup tile (tighter whitespace trim, reduced padding).
