@@ -185,11 +185,11 @@ Six synthetic datasets representing Manga's existing systems:
 | Dataset | Source | Ingestion Pattern | PII |
 |---|---|---|---|
 | `sales_sample.csv` | POS / E-commerce | Kinesis (streaming) | No |
-| `customers_sample.csv` | CRM / Loyalty | Glue batch (daily) |  Yes |
+| `customers_sample.csv` | CRM / Loyalty | Glue batch (daily) | Yes |
 | `inventory_sample.csv` | ERP / WMS | Glue batch (hourly) | No |
-| `customer_reviews_sample.csv` | Web / App | Kinesis + Comprehend |  Yes |
+| `customer_reviews_sample.csv` | Web / App | Kinesis + Comprehend | Yes |
 | `external_factors_sample.csv` | Weather API / Internal | Lambda (daily pull) | No |
-| `shipping_sample.csv` | Logistics Partner API | Lambda + Glue |  Yes |
+| `shipping_sample.csv` | Logistics Partner API | Lambda + Glue | Yes |
 
 ---
 
