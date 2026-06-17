@@ -165,7 +165,7 @@ Use this repository as an additional engineering skills source, while keeping th
    - Do **not** add "Generated with / Co-authored by AI" footers.
    - The git history must show only human team members.
 3. AI assistants may *prepare* changes, but the commit/PR is always made **in the name of the user**.
-4. Keep commit messages short and descriptive of the change (e.g. `Move sample CSVs into Data/`, `Rename CLAUDE.md to AGENT.md`).
+4. Keep commit messages short and descriptive of the change (e.g. `Move sample CSVs into data/`, `Rename CLAUDE.md to AGENT.md`).
 5. **Update the Log every 5 prompts.** After every 5 prompts in an agent/LLM session, append a dated entry to the **Log** section at the bottom of this file summarising what was done, and keep the **What Has To Be Done** section current at the same time.
 6. **Never commit secrets.** API keys and tokens go in a local `.env` (gitignored) — never in tracked files or commit history.
 
@@ -289,6 +289,7 @@ The app has **6 pages** navigated via sidebar buttons stored in `st.session_stat
 - [x] Vercel static app restored the fixed view controls: sidebar drawer/toggle plus browser fullscreen button
 - [x] Vercel view controls stacked vertically with fullscreen above the sidebar toggle
 - [x] Removed empty duplicate `AGENTS.md` scaffold; `AGENT.md` is the single canonical agent context file
+- [x] Root sample dataset folder normalized to lowercase `data/`
 
 ---
 
@@ -388,6 +389,7 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 - Restored the fixed view controls in `manga-vercel/index.html`: a sidebar toggle that becomes a popover drawer on mobile, plus a browser fullscreen toggle with accessible labels and persistent desktop sidebar state.
 - Stacked the Vercel view controls vertically and placed the fullscreen button above the sidebar toggle while preserving the sidebar-following position.
 - Removed the empty duplicate `AGENTS.md` scaffold so the repository has one canonical agent context file: `AGENT.md`.
+- Renamed the root sample dataset directory to lowercase `data/` on GitHub and updated the Streamlit loader to prefer the lowercase path.
 - Added **official AWS service logos** to the low-level architecture hover popups: 22 user-supplied logos normalized to uniform 256px white tiles in `manga-vercel/assets/logos/` and referenced locally (no CDN dependency). CloudWatch & Terraform still on fallback; DynamoDB source needs a clean replacement.
 - Enlarged the logos to fill the popup tile (tighter whitespace trim, reduced padding).
 - Fixed Vercel asset caching so updated images appear without a hard refresh (`must-revalidate`).

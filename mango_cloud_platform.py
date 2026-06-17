@@ -397,7 +397,9 @@ def load_data():
              "External Factors":"external_factors_sample.csv","Shipping":"shipping_sample.csv"}
     out = {}
     for name, fname in files.items():
-        p = base / "Data" / fname
+        p = base / "data" / fname
+        if not p.exists():
+            p = base / "Data" / fname
         if not p.exists():
             p = base / fname
         if p.exists():
