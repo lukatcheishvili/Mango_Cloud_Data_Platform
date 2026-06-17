@@ -115,6 +115,14 @@ Created professional architecture diagrams in Figma FigJam:
 - [High-Level Architecture](https://www.figma.com/board/UtHLPjygSysLe43cpzNCAp) — technology-agnostic process flow
 - [Low-Level AWS Architecture](https://www.figma.com/board/mvaVaoJErDBqNXt114FPqU) — full AWS service map
 
+### Live Web App (Vercel)
+
+The proposal is deployed as a static web build (`manga-vercel/`) on **Vercel**, auto-deploying on every push to `main`:
+
+- **Live:** https://mangacloud-khaki.vercel.app/
+- **Interactive architecture diagrams** — hover any box in the high- and low-level views for its role, rationale, cost model, and RFP coverage
+- **Official AWS service logos** — each low-level service box shows its real logo (Lambda, Glue, S3, Redshift, SageMaker, Kinesis, and more) in the hover popup
+
 ---
 
 ## 🛠️ What We Used

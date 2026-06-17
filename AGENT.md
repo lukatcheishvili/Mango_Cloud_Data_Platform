@@ -14,11 +14,10 @@
 | **Project name** | Manga Cloud Platform — RFP Response |
 | **Course** | Data Analytics in the Cloud — MBD-EN2025 |
 | **Institution** | IE University |
-| **Deliverable** | RFP response document + interactive Streamlit presentation + video walkthrough |
+| **Deliverable** | RFP response document + interactive web app (Vercel) + video walkthrough |
 | **Deadline** | June 19, 2026 |
 | **GitHub repo** | https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform |
 | **Live website (Vercel)** | https://mangacloud-khaki.vercel.app/ |
-| **Streamlit app (fallback)** | https://manga-cloud-platform.streamlit.app/ |
 | **Figma HLA diagram** | https://www.figma.com/board/UtHLPjygSysLe43cpzNCAp |
 | **Figma LLA diagram** | https://www.figma.com/board/mvaVaoJErDBqNXt114FPqU |
 
@@ -353,7 +352,7 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 
 ---
 
-*Last updated: 2026-06-16 | Updated by: Luka Tcheishvili*
+*Last updated: 2026-06-17 | Updated by: Luka Tcheishvili*
 
 ---
 
@@ -364,7 +363,7 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 - [ ] **Presentation / video** — build the slide deck + per-speaker script (~10–15 min); all team members must present.
 - [ ] **Document polish** — fix the Table of Contents in `Manga_DataHub_RFP_Response.pdf`, trim the body to ≤15 pages, add a cost-comparison figure with euro numbers behind the 40–60% claim.
 - [ ] **Quantified cost & ROI model** — defensible colocation-vs-AWS monthly cost breakdown (for the CFO persona).
-- [ ] **Official AWS logos** in the low-level popups (Lambda, Firehose, etc.) where they can be sourced; keep a fallback icon otherwise.
+- [ ] **Finish the service logos** — add real images for **CloudWatch** (missing) and **Terraform** (came as HTML), and replace the **DynamoDB** source (has a baked-in checkerboard). The other 22 are wired in.
 - [ ] **Proofread** — consistent terminology (Manga, not Mango), correct R1–R8 references across app, PDF, and README.
 - [ ] **Revoke & rotate the GitHub token** that was shared in chat (do this on GitHub → Settings → Developer settings → Personal access tokens), then put the new token in the local gitignored `.env`.
 
@@ -373,6 +372,13 @@ A GitHub Action will warn you on every push if you forgot to update this file.
 ## 🧾 Log
 
 > Newest entries first. Record what was actually done, by whom, and when.
+
+### 2026-06-17 — Luka Tcheishvili
+- Added **official AWS service logos** to the low-level architecture hover popups: 22 user-supplied logos normalized to uniform 256px white tiles in `manga-vercel/assets/logos/` and referenced locally (no CDN dependency). CloudWatch & Terraform still on fallback; DynamoDB source needs a clean replacement.
+- Enlarged the logos to fill the popup tile (tighter whitespace trim, reduced padding).
+- Fixed Vercel asset caching so updated images appear without a hard refresh (`must-revalidate`).
+- Confirmed the site is live and auto-deploying from `main`: https://mangacloud-khaki.vercel.app/
+- Removed the Streamlit live link from the README and AGENT.md — **Vercel is the single live URL** (Streamlit remains only as local source, not linked).
 
 ### 2026-06-16 (later) — Luka Tcheishvili
 - Re-exported the low-level architecture diagram from Figma with vertically-centered labels; replaced the image (web-optimized) and fixed the "Bronze" label typo.
