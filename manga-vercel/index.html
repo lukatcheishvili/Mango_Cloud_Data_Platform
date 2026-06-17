@@ -25,6 +25,20 @@ html,body{margin:0;padding:0;background:var(--canvas);color:var(--ink);
 a,a:visited{color:var(--accent);text-decoration:none}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 
+/* Custom cursor */
+.custom-cursor{display:none}
+@media (pointer:fine){
+  html.custom-cursor-enabled,html.custom-cursor-enabled *{cursor:none!important}
+  .custom-cursor{position:fixed;left:0;top:0;width:120px;height:48px;display:block;z-index:1000000;
+    pointer-events:none;opacity:0;transform:translate3d(-80px,-80px,0);will-change:transform;transition:opacity .12s ease}
+  .custom-cursor.is-visible{opacity:1}
+  .custom-cursor-arrow{width:32px;height:32px;display:block;overflow:visible;filter:drop-shadow(0 1px 2px rgba(0,0,0,.22))}
+  .custom-cursor-label{position:absolute;top:27px;left:19px;background:#18A0FB;color:#fff;
+    font-family:var(--font-body);font-size:10px;font-weight:500;line-height:1.2;padding:2px 6px;
+    border-radius:3px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .custom-cursor.is-down .custom-cursor-arrow{transform:scale(.94)}
+}
+
 /* ── LAYOUT ── */
 #app{display:flex;min-height:100vh}
 #sidebar{width:var(--sidebar-w);flex:0 0 var(--sidebar-w);background:#0a0a0a;border-right:1px solid var(--hair);
@@ -125,7 +139,8 @@ hr{border:none;border-top:1px solid var(--hair);margin:26px 0}
 .arch-hover-stage{position:relative;width:100%;max-width:1500px;margin:0 auto;line-height:0}
 .arch-hover-stage img{display:block;width:100%;max-width:none;height:auto;mix-blend-mode:multiply}
 .arch-hotspot{position:absolute;display:block;padding:0;margin:0;border:0;border-radius:10px;
-  background:rgba(0,153,255,0);cursor:help;appearance:none;z-index:2}
+  background:rgba(0,153,255,0);cursor:pointer;appearance:none;z-index:2}
+.arch-hotspot:hover,.arch-hotspot:focus-visible,.arch-hotspot.is-hovered{z-index:60}
 .arch-hotspot:hover,.arch-hotspot:focus-visible{outline:none;
   box-shadow:0 0 0 2px rgba(0,153,255,.72),0 10px 28px rgba(0,0,0,.22);background:rgba(0,153,255,.035)}
 .arch-tooltip{position:absolute;left:50%;top:calc(100% + 12px);width:min(340px,42vw);
@@ -133,15 +148,17 @@ hr{border:none;border-top:1px solid var(--hair);margin:26px 0}
   background:rgba(20,20,20,.97);border:1px solid rgba(255,255,255,.09);border-radius:18px;
   padding:18px 20px 17px;text-align:left;line-height:1.45;box-shadow:0 24px 70px rgba(0,0,0,.44);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:opacity .14s,transform .14s}
-.arch-hotspot:hover .arch-tooltip,.arch-hotspot:focus-visible .arch-tooltip{opacity:1;transform:translate(-50%,0)}
+.arch-tooltip::before{content:"";position:absolute;left:0;right:0;top:-16px;height:16px;background:rgba(255,255,255,.001);pointer-events:auto}
+.arch-hotspot:hover .arch-tooltip,.arch-hotspot:focus-visible .arch-tooltip,.arch-hotspot.is-hovered .arch-tooltip{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
 .arch-hotspot[data-placement="above"] .arch-tooltip{top:auto;bottom:calc(100% + 12px);transform:translate(-50%,-8px)}
-.arch-hotspot[data-placement="above"]:hover .arch-tooltip,.arch-hotspot[data-placement="above"]:focus-visible .arch-tooltip{transform:translate(-50%,0)}
+.arch-hotspot[data-placement="above"]:hover .arch-tooltip,.arch-hotspot[data-placement="above"]:focus-visible .arch-tooltip,.arch-hotspot[data-placement="above"].is-hovered .arch-tooltip{transform:translate(-50%,0)}
+.arch-hotspot[data-placement="above"] .arch-tooltip::before{top:auto;bottom:-16px}
 .arch-hotspot[data-align="left"] .arch-tooltip{left:0;transform:translate(0,8px)}
-.arch-hotspot[data-align="left"]:hover .arch-tooltip,.arch-hotspot[data-align="left"]:focus-visible .arch-tooltip{transform:translate(0,0)}
+.arch-hotspot[data-align="left"]:hover .arch-tooltip,.arch-hotspot[data-align="left"]:focus-visible .arch-tooltip,.arch-hotspot[data-align="left"].is-hovered .arch-tooltip{transform:translate(0,0)}
 .arch-hotspot[data-align="right"] .arch-tooltip{left:auto;right:0;transform:translate(0,8px)}
-.arch-hotspot[data-align="right"]:hover .arch-tooltip,.arch-hotspot[data-align="right"]:focus-visible .arch-tooltip{transform:translate(0,0)}
+.arch-hotspot[data-align="right"]:hover .arch-tooltip,.arch-hotspot[data-align="right"]:focus-visible .arch-tooltip,.arch-hotspot[data-align="right"].is-hovered .arch-tooltip{transform:translate(0,0)}
 .arch-hotspot[data-placement="above"][data-align="left"] .arch-tooltip,.arch-hotspot[data-placement="above"][data-align="right"] .arch-tooltip{transform:translate(0,-8px)}
-.arch-hotspot[data-placement="above"][data-align="left"]:hover .arch-tooltip,.arch-hotspot[data-placement="above"][data-align="right"]:hover .arch-tooltip{transform:translate(0,0)}
+.arch-hotspot[data-placement="above"][data-align="left"]:hover .arch-tooltip,.arch-hotspot[data-placement="above"][data-align="right"]:hover .arch-tooltip,.arch-hotspot[data-placement="above"][data-align="left"].is-hovered .arch-tooltip,.arch-hotspot[data-placement="above"][data-align="right"].is-hovered .arch-tooltip{transform:translate(0,0)}
 .arch-tip-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
 .arch-tip-layer{display:block;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-f);margin-bottom:5px}
 .arch-tip-title{display:block;font-size:18px;font-weight:650;color:var(--ink);letter-spacing:-.45px;line-height:1.08}
@@ -226,6 +243,13 @@ details>summary:hover{background:var(--surf2)}
 </style>
 </head>
 <body>
+
+<div id="custom-cursor" class="custom-cursor" aria-hidden="true">
+  <svg class="custom-cursor-arrow" width="32" height="32" viewBox="0 0 12.5 17.5" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+    <path d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z" fill="white" stroke="#1a1a1a" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+  <div class="custom-cursor-label">Figma User</div>
+</div>
 
 <div id="manga-loader" aria-label="Loading Manga Cloud Platform">
   <div class="wm">MANGA</div>
@@ -542,6 +566,27 @@ function renderHotspot(h){
     </span></button>`;
 }
 
+function setupArchitectureTooltips(){
+  document.querySelectorAll('.arch-hotspot').forEach(hotspot=>{
+    const tooltip = hotspot.querySelector('.arch-tooltip');
+    let closeTimer;
+    const open = ()=>{
+      clearTimeout(closeTimer);
+      hotspot.classList.add('is-hovered');
+    };
+    const close = ()=>{
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(()=>hotspot.classList.remove('is-hovered'), 360);
+    };
+    hotspot.addEventListener('pointerenter', open);
+    hotspot.addEventListener('pointerleave', close);
+    hotspot.addEventListener('focus', open);
+    hotspot.addEventListener('blur', close);
+    tooltip?.addEventListener('pointerenter', open);
+    tooltip?.addEventListener('pointerleave', close);
+  });
+}
+
 /* simple RFC-4180-ish CSV parser */
 function parseCSV(text){
   const rows=[]; let row=[],cur='',q=false;
@@ -645,6 +690,35 @@ function drawUcChart(){
     {displayModeBar:false,responsive:true});
 }
 
+function setupCustomCursor(){
+  const cursor = document.getElementById('custom-cursor');
+  if(!cursor) return;
+  const finePointer = window.matchMedia('(pointer:fine)');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if(!finePointer.matches || reducedMotion.matches) return;
+  document.documentElement.classList.add('custom-cursor-enabled');
+  let x = -80, y = -80, frame = 0;
+  const render = ()=>{
+    cursor.style.transform = `translate3d(${x}px,${y}px,0)`;
+    frame = 0;
+  };
+  const schedule = ()=>{
+    if(!frame) frame = requestAnimationFrame(render);
+  };
+  window.addEventListener('pointermove',event=>{
+    if(event.pointerType && event.pointerType !== 'mouse') return;
+    x = event.clientX;
+    y = event.clientY;
+    cursor.classList.add('is-visible');
+    schedule();
+  },{passive:true});
+  window.addEventListener('pointerenter',()=>cursor.classList.add('is-visible'));
+  window.addEventListener('pointerleave',()=>cursor.classList.remove('is-visible'));
+  window.addEventListener('pointerdown',()=>cursor.classList.add('is-down'),{passive:true});
+  window.addEventListener('pointerup',()=>cursor.classList.remove('is-down'),{passive:true});
+  window.addEventListener('blur',()=>cursor.classList.remove('is-visible'));
+}
+
 /* ============================ VIEW CONTROLS ============================ */
 const app = document.getElementById('app');
 const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -711,6 +785,7 @@ if(mobileNav.addEventListener) mobileNav.addEventListener('change',restoreSideba
 else mobileNav.addListener(restoreSidebarState);
 restoreSidebarState();
 syncFullscreenState();
+setupCustomCursor();
 
 /* ============================ NAV ============================ */
 function showPage(key){
@@ -732,6 +807,7 @@ document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>
 /* ============================ INIT ============================ */
 document.getElementById('hla-stage').insertAdjacentHTML('beforeend',HLA_HOTSPOTS.map(renderHotspot).join(''));
 document.getElementById('lla-stage').insertAdjacentHTML('beforeend',LLA_HOTSPOTS.map(renderHotspot).join(''));
+setupArchitectureTooltips();
 buildOverview(); buildReqs(); buildUseCases(); buildData();
 
 const startHash = (location.hash||'#overview').slice(1);
