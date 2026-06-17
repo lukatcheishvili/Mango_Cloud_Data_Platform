@@ -29,6 +29,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .custom-cursor{display:none}
 @media (pointer:fine){
   html.custom-cursor-enabled,html.custom-cursor-enabled *{cursor:none!important}
+  html.custom-cursor-enabled.is-selecting-text,html.custom-cursor-enabled.is-selecting-text *{cursor:auto!important}
   .custom-cursor{position:fixed;left:0;top:0;width:24px;height:24px;display:block;z-index:1000000;
     pointer-events:none;opacity:0;transform:translate3d(-80px,-80px,0);will-change:transform;transition:opacity .12s ease}
   .custom-cursor.is-visible{opacity:1}
@@ -694,6 +695,7 @@ function setupCustomCursor(){
   if(!finePointer.matches || reducedMotion.matches) return;
   document.documentElement.classList.add('custom-cursor-enabled');
   let x = -80, y = -80, frame = 0;
+  let selectionDrag = false;
   const hideCursor = ()=>{
     cursor.classList.remove('is-visible','is-down');
     x = -80;
@@ -703,6 +705,11 @@ function setupCustomCursor(){
   const isInsideViewport = event =>
     event.clientX >= 0 && event.clientY >= 0 &&
     event.clientX <= window.innerWidth && event.clientY <= window.innerHeight;
+  const hasTextSelection = ()=>{
+    const selection = window.getSelection?.();
+    return !!selection && !selection.isCollapsed && selection.toString().length > 0;
+  };
+  const isSelectingText = ()=>selectionDrag || hasTextSelection();
   const render = ()=>{
     cursor.style.transform = `translate3d(${x}px,${y}px,0)`;
     frame = 0;
@@ -710,12 +717,24 @@ function setupCustomCursor(){
   const schedule = ()=>{
     if(!frame) frame = requestAnimationFrame(render);
   };
+  const setSelectingText = active=>{
+    document.documentElement.classList.toggle('is-selecting-text', active);
+    if(active) hideCursor();
+  };
+  const updateSelectionState = ()=>{
+    setSelectingText(isSelectingText());
+  };
   window.addEventListener('pointermove',event=>{
     if(event.pointerType && event.pointerType !== 'mouse') return;
     if(!isInsideViewport(event)){
       hideCursor();
       return;
     }
+    if(isSelectingText()){
+      setSelectingText(true);
+      return;
+    }
+    setSelectingText(false);
     x = event.clientX;
     y = event.clientY;
     cursor.classList.add('is-visible');
@@ -724,6 +743,11 @@ function setupCustomCursor(){
   window.addEventListener('pointerenter',event=>{
     if(event.pointerType && event.pointerType !== 'mouse') return;
     if(!isInsideViewport(event)) return;
+    if(isSelectingText()){
+      setSelectingText(true);
+      return;
+    }
+    setSelectingText(false);
     x = event.clientX;
     y = event.clientY;
     cursor.classList.add('is-visible');
@@ -737,8 +761,25 @@ function setupCustomCursor(){
   document.addEventListener('mouseout',event=>{
     if(!event.relatedTarget && !event.toElement) hideCursor();
   });
-  window.addEventListener('pointerdown',()=>cursor.classList.add('is-down'),{passive:true});
-  window.addEventListener('pointerup',()=>cursor.classList.remove('is-down'),{passive:true});
+  document.addEventListener('selectstart',()=>{
+    selectionDrag = true;
+    setSelectingText(true);
+  });
+  document.addEventListener('selectionchange',updateSelectionState);
+  window.addEventListener('pointerdown',event=>{
+    if(event.pointerType && event.pointerType !== 'mouse') return;
+    selectionDrag = false;
+    if(hasTextSelection()){
+      setSelectingText(true);
+      return;
+    }
+    cursor.classList.add('is-down');
+  },{passive:true});
+  window.addEventListener('pointerup',()=>{
+    selectionDrag = false;
+    cursor.classList.remove('is-down');
+    updateSelectionState();
+  },{passive:true});
   window.addEventListener('blur',hideCursor);
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden) hideCursor();
