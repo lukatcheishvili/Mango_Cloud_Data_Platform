@@ -1418,23 +1418,6 @@ elif PAGE == "reqs":
           <div>{"".join([f'<span class="badge">{s}</span>' for s in svcs])}</div>
         </div>""", unsafe_allow_html=True)
 
-    st.markdown("---")
-    st.markdown('<div class="section-title">Coverage Summary</div>', unsafe_allow_html=True)
-    fig = go.Figure(go.Bar(
-        x=[r[0] for r in reqs], y=[100]*8,
-        marker_color=SURF2, marker_line_color=ACCENT, marker_line_width=1.5,
-        text=["100%"]*8, textposition="inside",
-        textfont=dict(color=INK, size=12, family="Inter"),
-    ))
-    fig.update_layout(
-        plot_bgcolor=CANVAS, paper_bgcolor=CANVAS,
-        font=dict(color=INK_M, family="Inter"),
-        xaxis=dict(gridcolor=HAIR, title="Requirement"),
-        yaxis=dict(gridcolor=HAIR, title="Coverage %", range=[0,120]),
-        height=260, margin=dict(l=40,r=20,t=20,b=40),
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE: USE CASES
