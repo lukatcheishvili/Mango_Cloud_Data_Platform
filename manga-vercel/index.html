@@ -359,9 +359,6 @@ details>summary:hover{background:var(--surf2)}
     <div class="page-title">Requirements Coverage</div>
     <div class="page-sub">How each of the 8 RFP requirements (R1–R8) is addressed by the proposed AWS architecture</div>
     <div id="req-list"></div>
-    <hr>
-    <div class="section-title">Coverage Summary</div>
-    <div id="req-chart" style="height:260px"></div>
   </section>
 
   <!-- USE CASES -->
@@ -662,16 +659,7 @@ async function buildData(){
 }
 
 /* ---- Plotly charts ---- */
-let reqDrawn=false, ucDrawn=false;
-function drawReqChart(){
-  if(reqDrawn) return; reqDrawn=true;
-  Plotly.newPlot('req-chart',[{type:'bar',x:REQS.map(r=>r[0]),y:REQS.map(()=>100),
-    marker:{color:T.surf2,line:{color:T.accent,width:1.5}},text:REQS.map(()=>'100%'),textposition:'inside',
-    textfont:{color:T.ink,size:12,family:'Inter'},hovertemplate:'%{x}: 100% covered<extra></extra>'}],
-    {plot_bgcolor:T.canvas,paper_bgcolor:T.canvas,font:{color:T.inkM,family:'Inter'},
-     xaxis:{gridcolor:T.hair,title:'Requirement'},yaxis:{gridcolor:T.hair,title:'Coverage %',range:[0,120]},
-     height:260,margin:{l:40,r:20,t:20,b:40}},{displayModeBar:false,responsive:true});
-}
+let ucDrawn=false;
 function drawUcChart(){
   if(ucDrawn) return; ucDrawn=true;
   const cases=["Recommendations","Demand Forecast","Sentiment","Dynamic Pricing","Return Optimisation"];
@@ -789,7 +777,6 @@ function showPage(key){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
   const sec = document.getElementById('page-'+key);
   sec.classList.add('active'); void sec.offsetWidth; sec.classList.add('anim');
-  if(key==='reqs') drawReqChart();
   if(key==='usecases') drawUcChart();
   document.getElementById('main').scrollIntoView({block:'start'});
   if(location.hash!=='#'+key) history.replaceState(null,'','#'+key);
