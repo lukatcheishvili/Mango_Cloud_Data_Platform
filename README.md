@@ -16,6 +16,14 @@
 
 ---
 
+## Deliverable
+
+- **[Manga_DataHub_RFP_Response.pdf](https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform/blob/main/Manga_DataHub_RFP_Response.pdf)** — Final RFP response document
+- **[PowerPoint Presentation — Cloud Analytics.pptx](https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform/blob/main/powerpoint%20presentation%20-%20Cloud%20Analytics.pptx)** — Presentation deck
+- **[Live App — mangacloud-khaki.vercel.app](https://mangacloud-khaki.vercel.app/)** — Interactive deployed proposal
+
+---
+
 ## Project Team
 
 - ANDREA ALARCÓN VALLES
