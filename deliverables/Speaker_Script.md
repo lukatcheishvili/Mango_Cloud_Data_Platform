@@ -11,11 +11,11 @@ All six members speak. Keep each turn tight and hand off clearly.
 | 3 | The Solution - 3 pillars | Andrea to Mateus | 1:00 |
 | 4 | Stakeholders | Mateus | 0:50 |
 | 5 | High-Level Architecture | Mateus | 1:20 |
-| 6 | Low-Level Architecture (AWS) | Tina | 1:30 |
+| 6 | Low-Level Architecture (AWS) | Ricardo | 1:30 |
 | 7 | Requirements R1-R8 | Ricardo | 1:00 |
 | 8 | Cost & ROI | Tina | 0:55 |
 | 9 | Cost Analysis Detail | Tina | 0:55 |
-| 10 | Roadmap & risks | Ricardo | 1:00 |
+| 10 | Roadmap & risks | Luka | 1:00 |
 | 11 | ML Use Cases | Luka | 1:15 |
 | 12 | Future Improvements | Nicklas | 1:00 |
 | 13 | Live platform & close / Q&A | Nicklas (all on stage) | 0:40 |
