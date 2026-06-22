@@ -37,7 +37,7 @@ We mapped the proposal to the five named decision-makers. Do not read all five. 
 ## 5 - High-Level Architecture - Mateus
 The conceptual design, no vendor names yet: five layers: **Sources to Ingestion to three-zone Lakehouse to Processing to Consumption**, with **Security & Governance spanning everything** and a clean split between streaming and batch. Call out the four principles: separation of concerns, modularity, elasticity, open standards. Hand to Tina.
 
-## 6 - Low-Level Architecture - Tina
+## 6 - Low-Level Architecture - Luka
 Same architecture, now on AWS. **Kinesis + Firehose** for streaming, **Glue** for batch, **S3 three-zone lakehouse** (Bronze/Silver/Gold), **Redshift + DynamoDB** for serving, governance via **Lake Formation + Macie**. Every box maps to an R1-R8 requirement, which Ricardo will show.
 
 ## 7 - Requirements R1-R8 - Ricardo
