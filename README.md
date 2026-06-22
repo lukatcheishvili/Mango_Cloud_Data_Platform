@@ -12,7 +12,8 @@
 
 ## Live App
 
-**[https://mangacloud-khaki.vercel.app/](https://mangacloud-khaki.vercel.app/)**
+**Alias:** `mangacloud.web`  
+**URL:** **[https://mangacloud-khaki.vercel.app/](https://mangacloud-khaki.vercel.app/)**
 
 ---
 
@@ -20,7 +21,7 @@
 
 - **[Manga_DataHub_RFP_Response.pdf](https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform/blob/main/Manga_DataHub_RFP_Response.pdf)** — Final RFP response document
 - **[PowerPoint Presentation — Cloud Analytics.pptx](https://github.com/lukatcheishvili/Mango_Cloud_Data_Platform/blob/main/powerpoint%20presentation%20-%20Cloud%20Analytics.pptx)** — Presentation deck
-- **[Live App — mangacloud-khaki.vercel.app](https://mangacloud-khaki.vercel.app/)** — Interactive deployed proposal
+- **Live App — `mangacloud.web`** ([https://mangacloud-khaki.vercel.app/](https://mangacloud-khaki.vercel.app/)) — Interactive deployed proposal
 
 ---
 
@@ -202,7 +203,8 @@ Created professional architecture diagrams in Figma FigJam:
 
 The proposal is deployed as a static web build (`manga-vercel/`) on **Vercel**, auto-deploying on every push to `main`:
 
-- **Live:** https://mangacloud-khaki.vercel.app/
+- **Alias:** `mangacloud.web`
+- **Live URL:** https://mangacloud-khaki.vercel.app/
 - **Interactive architecture diagrams** — hover any box in the high- and low-level views for its role, rationale, cost model, and RFP coverage
 - **Official AWS service logos** — each low-level service box shows its real logo (Lambda, Glue, S3, Redshift, SageMaker, Kinesis, and more) in the hover popup
 
@@ -309,6 +311,8 @@ The live site is the static build in [`manga-vercel/`](./manga-vercel), hosted o
 2. Set **Root Directory** to `manga-vercel` · Framework preset **Other** · leave build/output empty
 3. **Deploy** — live in ~1 minute
 
+> Alias: `mangacloud.web`
+>
 > Live URL: https://mangacloud-khaki.vercel.app/
 >
 > The Streamlit app (`mango_cloud_platform.py`) remains as a local/fallback version — see **Run Locally** above.

@@ -8,4 +8,6 @@
 | `Speaker_Script.md` | Timed ~13-min run-of-show across all 6 presenters |
 | `cost_comparison.png` | Colocation vs. AWS cost figure (~57% reduction; illustrative) |
 
-The live interactive proposal is at https://mangacloud-khaki.vercel.app/
+The live interactive proposal alias is `mangacloud.web`.
+
+Live URL: https://mangacloud-khaki.vercel.app/

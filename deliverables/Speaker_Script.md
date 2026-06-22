@@ -63,6 +63,6 @@ Three end-to-end use cases on Manga's actual data: **demand forecasting (-30% st
 The architecture is extensible by design. Short-term reuses existing infrastructure for real-time personalisation and smart labels; medium-term adds a **Bedrock shopping assistant** and data monetisation; long-term, an **AI-agent ecosystem** and carbon-neutrality. Note the RFP explicitly asked for AI-agent data exposure: we have a path.
 
 ## 13 - Live platform & close - Nicklas (all on stage)
-"Everything you've seen is **live and interactive at mangacloud-khaki.vercel.app**. Open it on your device while we take questions." Thank the panel.
+"Everything you've seen is **live and interactive at mangacloud.web**. The URL is **https://mangacloud-khaki.vercel.app/**. Open it on your device while we take questions." Thank the panel.
 
 **Anticipated Q&A:** cost assumptions -> Tina; security/GDPR and lifecycle controls -> Ricardo/Mateus; RTO/RPO and HA/DR -> Ricardo; sustainability metrics -> Nicklas; vendor lock-in -> Mateus; timeline feasibility -> Ricardo. Keep answers around 30 seconds.
