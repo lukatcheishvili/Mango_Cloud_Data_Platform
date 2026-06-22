@@ -98,6 +98,10 @@ body.is-fullscreen .fs-icon{transform:scale(.84)}
 .two-col{display:grid;grid-template-columns:3fr 2fr;gap:22px}
 .badge{display:inline-block;font-size:10px;font-weight:500;padding:4px 11px;border-radius:100px;margin:2px;letter-spacing:.01em;background:var(--surf2);color:var(--ink-m);border:1px solid var(--hair)}
 hr{border:none;border-top:1px solid var(--hair);margin:26px 0}
+.team-card{padding:16px 18px}
+.team-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.team-chip{min-height:42px;display:flex;align-items:center;gap:9px;border:1px solid var(--hair);border-radius:12px;background:var(--surf2);color:var(--ink);font-size:12px;font-weight:650;letter-spacing:-.12px;padding:10px 12px;line-height:1.15}
+.team-chip span{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--surf1);border:1px solid var(--hair);color:var(--ink-m);font-size:10px;font-weight:650;font-variant-numeric:tabular-nums}
 
 /* ── SPOTLIGHT ── */
 .spotlight{border-radius:30px;padding:30px 34px;margin:4px 0 18px;color:#fff;
@@ -235,6 +239,7 @@ details>summary:hover{background:var(--surf2)}
   #main{padding:76px 20px 80px}
   .app-controls,#app.sidebar-collapsed .app-controls{top:14px;left:14px;right:auto}
   .two-col,.g4,.g3{grid-template-columns:1fr}
+  .team-strip{grid-template-columns:1fr}
   .arch-tooltip{width:min(300px,76vw)}
 }
 </style>
@@ -291,8 +296,15 @@ details>summary:hover{background:var(--surf2)}
       <div class="sl-sub">One governed AWS lakehouse for every data source · time-to-insight cut from 24 hours to sub-second · ML-powered recommendations, dynamic pricing and demand forecasting that are impossible today.</div>
     </div>
     <div class="section-title" style="margin-top:18px">Project Team</div>
-    <div class="card" style="padding:16px 18px">
-      <div id="team-tags" style="display:flex;flex-wrap:wrap;gap:8px 9px"></div>
+    <div class="card team-card">
+      <div id="team-tags" class="team-strip">
+        <span class="team-chip"><span>01</span>ANDREA ALARCÓN VALLES</span>
+        <span class="team-chip"><span>02</span>MATEUS CARNEIRO</span>
+        <span class="team-chip"><span>03</span>TINA JANNASCH</span>
+        <span class="team-chip"><span>04</span>RICARDO LIÉVANO PEDROZA</span>
+        <span class="team-chip"><span>05</span>LUKA TCHEISHVILI</span>
+        <span class="team-chip"><span>06</span>NICKLAS URBAN</span>
+      </div>
     </div>
     <div class="grid g4" style="margin:18px 0">
       <div class="metric-card"><div class="metric-value">€280M</div><div class="metric-label">Annual Revenue</div></div>
@@ -641,8 +653,8 @@ function parseCSV(text){
 
 /* ============================ RENDER ============================ */
 function buildOverview(){
-  document.getElementById('team-tags').innerHTML = TEAM.map(n=>
-    `<span style="display:inline-flex;align-items:center;border:1px solid var(--hair);border-radius:999px;background:var(--surf2);color:var(--ink-m);font-size:11px;font-weight:550;letter-spacing:.02em;padding:7px 11px;line-height:1">${esc(n)}</span>`).join('');
+  document.getElementById('team-tags').innerHTML = TEAM.map((n,i)=>
+    `<span class="team-chip"><span>${String(i+1).padStart(2,'0')}</span>${esc(n)}</span>`).join('');
   document.getElementById('problem-list').innerHTML = PROBLEMS.map(([t,d])=>
     `<div class="card prob"><strong>${esc(t)}</strong><p>${esc(d)}</p></div>`).join('');
   document.getElementById('stakeholder-list').innerHTML = STAKEHOLDERS.map(([n,r,c,s,tag])=>
