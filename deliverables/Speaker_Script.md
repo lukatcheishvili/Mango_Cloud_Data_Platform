@@ -37,8 +37,8 @@ We mapped the proposal to the five named decision-makers. Do not read all five. 
 ## 5 - High-Level Architecture - Mateus
 The conceptual design, no vendor names yet: five layers: **Sources to Ingestion to three-zone Lakehouse to Processing to Consumption**, with **Security & Governance spanning everything** and a clean split between streaming and batch. Call out the four principles: separation of concerns, modularity, elasticity, open standards. Hand to Tina.
 
-## 6 - Low-Level Architecture - Luka
-Same architecture, now on AWS. **Kinesis + Firehose** for streaming, **Glue** for batch, **S3 three-zone lakehouse** (Bronze/Silver/Gold), **Redshift + DynamoDB** for serving, governance via **Lake Formation + Macie**. Every box maps to an R1-R8 requirement, which Ricardo will show.
+## 6 - Low-Level Architecture - Ricardo
+Same architecture, now on AWS. **Kinesis + Firehose** for streaming, **Glue** for batch, **S3 three-zone lakehouse** (Bronze/Silver/Gold), **Redshift + DynamoDB** for serving, governance via **Lake Formation + Macie**. Every box maps to an R1-R8 requirement, which I will show.
 
 ## 7 - Requirements R1-R8 - Ricardo
 We do not just claim coverage: the written proposal has a full **traceability table** plus an **Operating Evidence Appendix**. Hit highlights: **R3** automation (MWAA replaces cron), **R4** security and recovery targets (Lake Formation, Macie, KMS, RPO/RTO), **R5** concrete Glue Data Quality rules, **R6** cost assumptions, and **R8** carbon metrics. Segue to the numbers.
@@ -53,7 +53,7 @@ Then walk through the AWS budget bridge: **EUR 217k direct AWS meters**, **EUR 1
 
 If challenged on the price sources: "The unit prices shown are public AWS pricing anchors. The full formulas, assumptions, and citations are in the PDF cost appendix."
 
-## 10 - Roadmap & risks - Ricardo
+## 10 - Roadmap & risks - Luka
 Phased, controlled-risk delivery: Marta's priority. **Production cutover in month 7, handover by month 9.** Risks explicitly mitigated: DMS runs in parallel before cutover, open-source addresses lock-in, and a DPIA precedes any personal data. Hand to Luka.
 
 ## 11 - ML Use Cases - Luka
